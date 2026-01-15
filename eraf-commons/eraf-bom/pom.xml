@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.eraf</groupId>
+    <artifactId>eraf-bom</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>ERAF BOM</name>
+    <description>ERAF Bill of Materials - Version Management</description>
+
+    <properties>
+        <eraf.version>1.0.0-SNAPSHOT</eraf.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- ERAF Core -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Starters -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-web</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-session</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-redis</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-actuator</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-security</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-jpa</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-mybatis</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-cache</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-kafka</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-batch</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Bundles -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-all</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-minimal</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

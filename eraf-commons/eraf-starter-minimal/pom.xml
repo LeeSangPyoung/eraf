@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-commons</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>eraf-starter-minimal</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Starter Minimal</name>
+    <description>ERAF Minimal Bundle - Essential ERAF Starters for Web Applications</description>
+
+    <dependencies>
+        <!-- ERAF Core -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core</artifactId>
+        </dependency>
+
+        <!-- Essential Starters -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-session</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-actuator</artifactId>
+        </dependency>
+    </dependencies>
+</project>

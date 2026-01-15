@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.eraf</groupId>
+    <artifactId>eraf-commons</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>ERAF Commons</name>
+    <description>Enterprise Reusable Asset Factory - Common Module Library</description>
+
+    <modules>
+        <module>eraf-bom</module>
+        <module>eraf-core</module>
+        <module>eraf-starter-web</module>
+        <module>eraf-starter-session</module>
+        <module>eraf-starter-redis</module>
+        <module>eraf-starter-actuator</module>
+        <module>eraf-starter-security</module>
+        <module>eraf-starter-jpa</module>
+        <module>eraf-starter-mybatis</module>
+        <module>eraf-starter-cache</module>
+        <module>eraf-starter-kafka</module>
+        <module>eraf-starter-batch</module>
+        <module>eraf-starter-service-client</module>
+        <module>eraf-starter-messaging</module>
+        <module>eraf-starter-rabbitmq</module>
+        <module>eraf-starter-s3</module>
+        <module>eraf-starter-elasticsearch</module>
+        <module>eraf-starter-ftp</module>
+        <module>eraf-starter-tcp</module>
+        <module>eraf-starter-notification</module>
+        <module>eraf-starter-scheduler</module>
+        <module>eraf-starter-statemachine</module>
+        <module>eraf-starter-database</module>
+        <module>eraf-starter-all</module>
+        <module>eraf-starter-minimal</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- ERAF Version -->
+        <eraf.version>1.0.0-SNAPSHOT</eraf.version>
+
+        <!-- Dependency Versions -->
+        <jjwt.version>0.12.6</jjwt.version>
+        <bcrypt.version>0.10.2</bcrypt.version>
+        <poi.version>5.2.5</poi.version>
+        <openpdf.version>2.0.2</openpdf.version>
+        <zxing.version>3.5.3</zxing.version>
+        <thumbnailator.version>0.4.20</thumbnailator.version>
+        <okhttp.version>4.12.0</okhttp.version>
+        <zip4j.version>2.11.5</zip4j.version>
+        <flying-saucer.version>9.1.22</flying-saucer.version>
+        <querydsl.version>5.1.0</querydsl.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- ERAF Modules -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-web</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-session</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-redis</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-actuator</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-security</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-jpa</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-mybatis</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-cache</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-kafka</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-batch</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-all</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-minimal</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- QueryDSL -->
+            <dependency>
+                <groupId>com.querydsl</groupId>
+                <artifactId>querydsl-jpa</artifactId>
+                <version>${querydsl.version}</version>
+                <classifier>jakarta</classifier>
+            </dependency>
+
+            <!-- JWT -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- Password Hashing -->
+            <dependency>
+                <groupId>at.favre.lib</groupId>
+                <artifactId>bcrypt</artifactId>
+                <version>${bcrypt.version}</version>
+            </dependency>
+
+            <!-- Excel -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+
+            <!-- PDF -->
+            <dependency>
+                <groupId>com.github.librepdf</groupId>
+                <artifactId>openpdf</artifactId>
+                <version>${openpdf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xhtmlrenderer</groupId>
+                <artifactId>flying-saucer-pdf-openpdf</artifactId>
+                <version>${flying-saucer.version}</version>
+            </dependency>
+
+            <!-- Barcode/QR -->
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>core</artifactId>
+                <version>${zxing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>javase</artifactId>
+                <version>${zxing.version}</version>
+            </dependency>
+
+            <!-- Image -->
+            <dependency>
+                <groupId>net.coobird</groupId>
+                <artifactId>thumbnailator</artifactId>
+                <version>${thumbnailator.version}</version>
+            </dependency>
+
+            <!-- HTTP Client -->
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+
+            <!-- ZIP -->
+            <dependency>
+                <groupId>net.lingala.zip4j</groupId>
+                <artifactId>zip4j</artifactId>
+                <version>${zip4j.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.12.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.6.3</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

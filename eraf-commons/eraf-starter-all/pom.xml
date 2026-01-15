@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-commons</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>eraf-starter-all</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Starter All</name>
+    <description>ERAF All Bundle - All ERAF Starters</description>
+
+    <dependencies>
+        <!-- ERAF Core -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core</artifactId>
+        </dependency>
+
+        <!-- All Starters -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-session</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-starter-batch</artifactId>
+        </dependency>
+    </dependencies>
+</project>
