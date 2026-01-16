@@ -6,6 +6,8 @@ import com.eraf.core.code.InMemoryCodeRepository;
 import com.eraf.core.config.FeatureToggle;
 import com.eraf.core.config.FeatureToggleAspect;
 import com.eraf.core.exception.GlobalExceptionHandler;
+import com.eraf.core.file.FileStorageService;
+import com.eraf.core.file.LocalFileStorageService;
 import com.eraf.core.i18n.MessageAspect;
 import com.eraf.core.i18n.MessageService;
 import com.eraf.core.idempotent.IdempotencyStore;
@@ -16,8 +18,13 @@ import com.eraf.core.lock.InMemoryLockProvider;
 import com.eraf.core.lock.LockProvider;
 import com.eraf.core.response.ApiResponse;
 import com.eraf.core.sequence.SequenceAspect;
+import com.eraf.starter.web.filter.RequestLoggingFilter;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.MessageSource;
+import org.springframework.core.Ordered;
+
+import java.util.Arrays;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -160,5 +167,43 @@ public class ErafWebAutoConfiguration {
     @ConditionalOnProperty(name = "eraf.web.i18n.enabled", havingValue = "true", matchIfMissing = true)
     public MessageAspect messageAspect(MessageSource messageSource) {
         return new MessageAspect(messageSource);
+    }
+
+    /**
+     * 요청/응답 로깅 필터
+     */
+    @Bean
+    @ConditionalOnMissingBean(RequestLoggingFilter.class)
+    @ConditionalOnProperty(name = "eraf.web.logging.enabled", havingValue = "true", matchIfMissing = true)
+    public FilterRegistrationBean<RequestLoggingFilter> requestLoggingFilter(ErafWebProperties properties) {
+        ErafWebProperties.LoggingConfig config = properties.getLogging();
+
+        RequestLoggingFilter filter = new RequestLoggingFilter(
+                config.isIncludePayload(),
+                config.getMaxPayloadLength(),
+                Arrays.asList(config.getExcludePatterns())
+        );
+
+        FilterRegistrationBean<RequestLoggingFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registration.addUrlPatterns("/*");
+        registration.setName("requestLoggingFilter");
+
+        return registration;
+    }
+
+    /**
+     * 로컬 파일 저장소 서비스
+     */
+    @Bean
+    @ConditionalOnMissingBean(FileStorageService.class)
+    @ConditionalOnProperty(name = "eraf.web.file-upload.enabled", havingValue = "true", matchIfMissing = true)
+    public FileStorageService localFileStorageService(ErafWebProperties properties) {
+        ErafWebProperties.FileUploadConfig config = properties.getFileUpload();
+        return new LocalFileStorageService(
+                config.getUploadPath(),
+                config.getBaseUrl(),
+                config.isCreateDateDirectory()
+        );
     }
 }

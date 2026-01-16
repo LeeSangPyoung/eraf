@@ -36,6 +36,27 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Data Redis (optional - for RedisHealthIndicator) -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring JDBC (optional - for DatabaseHealthIndicator) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Kafka (optional - for KafkaHealthIndicator) -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -24,14 +24,24 @@ public class ErafStateMachineService {
 
     private final ErafStateMachineRegistry registry;
     private final ApplicationEventPublisher eventPublisher;
+    private final StateStore stateStore;
     private final ExpressionParser expressionParser = new SpelExpressionParser();
 
-    // 엔티티별 상태 저장 (실제 환경에서는 DB 또는 Redis로 대체)
-    private final Map<String, StateInfo> stateStore = new ConcurrentHashMap<>();
-
+    /**
+     * 기본 생성자 (InMemory StateStore 사용)
+     */
     public ErafStateMachineService(ErafStateMachineRegistry registry, ApplicationEventPublisher eventPublisher) {
+        this(registry, eventPublisher, new InMemoryStateStore());
+    }
+
+    /**
+     * StateStore를 지정하는 생성자 (분산 환경용)
+     */
+    public ErafStateMachineService(ErafStateMachineRegistry registry, ApplicationEventPublisher eventPublisher, StateStore stateStore) {
         this.registry = registry;
         this.eventPublisher = eventPublisher;
+        this.stateStore = stateStore;
+        log.info("ErafStateMachineService initialized with store: {}", stateStore.getClass().getSimpleName());
     }
 
     /**
@@ -55,8 +65,7 @@ public class ErafStateMachineService {
         stateInfo.setStateChangedAt(Instant.now());
         stateInfo.setContext(new ConcurrentHashMap<>(context));
 
-        String storeKey = createStoreKey(machineId, entityId);
-        stateStore.put(storeKey, stateInfo);
+        stateStore.save(machineId, entityId, stateInfo);
 
         log.info("State machine initialized: machineId={}, entityId={}, initialState={}",
                 machineId, entityId, definition.getInitialState());
@@ -109,6 +118,9 @@ public class ErafStateMachineService {
         // 이벤트 컨텍스트 병합
         stateInfo.getContext().putAll(eventContext);
 
+        // 상태 저장
+        stateStore.save(machineId, entityId, stateInfo);
+
         log.info("State transition: machineId={}, entityId={}, {} -> {} (event={})",
                 machineId, entityId, previousState, transition.getTarget(), event);
 
@@ -124,8 +136,7 @@ public class ErafStateMachineService {
      * 현재 상태 조회
      */
     public Optional<StateInfo> getState(String machineId, String entityId) {
-        String storeKey = createStoreKey(machineId, entityId);
-        return Optional.ofNullable(stateStore.get(storeKey));
+        return stateStore.find(machineId, entityId);
     }
 
     /**
@@ -205,6 +216,9 @@ public class ErafStateMachineService {
         stateInfo.setCurrentState(state);
         stateInfo.setStateChangedAt(Instant.now());
 
+        // 상태 저장
+        stateStore.save(machineId, entityId, stateInfo);
+
         log.warn("State forced: machineId={}, entityId={}, {} -> {}",
                 machineId, entityId, previousState, state);
 
@@ -215,12 +229,21 @@ public class ErafStateMachineService {
      * 상태 삭제
      */
     public void removeState(String machineId, String entityId) {
-        String storeKey = createStoreKey(machineId, entityId);
-        stateStore.remove(storeKey);
+        stateStore.remove(machineId, entityId);
     }
 
-    private String createStoreKey(String machineId, String entityId) {
-        return machineId + ":" + entityId;
+    /**
+     * 상태 존재 여부 확인
+     */
+    public boolean hasState(String machineId, String entityId) {
+        return stateStore.exists(machineId, entityId);
+    }
+
+    /**
+     * 사용 중인 StateStore 반환
+     */
+    public StateStore getStateStore() {
+        return stateStore;
     }
 
     private boolean evaluateGuard(TransitionInfo transition, StateInfo stateInfo, Map<String, Object> eventContext) {

@@ -18,18 +18,28 @@ ERAF는 Spring Boot 3.4.x 기반의 엔터프라이즈 공통 모듈 라이브�
 eraf-commons/
 ├── eraf-bom/                    # 버전 관리 BOM
 ├── eraf-core/                   # 핵심 기능 모듈
-├── eraf-starter-web/            # 웹 자동설정
+├── eraf-starter-web/            # 웹 자동설정 (로깅필터, 파일업로드)
 ├── eraf-starter-database/       # DB 자동설정
 ├── eraf-starter-jpa/            # JPA 자동설정
+├── eraf-starter-mybatis/        # MyBatis 자동설정
 ├── eraf-starter-redis/          # Redis 자동설정
+├── eraf-starter-cache/          # 캐시 자동설정
 ├── eraf-starter-session/        # 세션 관리
+├── eraf-starter-security/       # 보안 자동설정
+├── eraf-starter-actuator/       # Health Check/Metrics
+├── eraf-starter-swagger/        # API 문서화 (OpenAPI)
 ├── eraf-starter-notification/   # 알림 (Email, SMS, Push)
 ├── eraf-starter-scheduler/      # 스케줄러
 ├── eraf-starter-statemachine/   # 상태머신
 ├── eraf-starter-messaging/      # 메시징
+├── eraf-starter-kafka/          # Kafka 자동설정
+├── eraf-starter-rabbitmq/       # RabbitMQ 자동설정
+├── eraf-starter-batch/          # Spring Batch 자동설정
 ├── eraf-starter-s3/             # S3/파일 스토리지
 ├── eraf-starter-ftp/            # FTP/SFTP
 ├── eraf-starter-tcp/            # TCP 클라이언트
+├── eraf-starter-elasticsearch/  # Elasticsearch 자동설정
+├── eraf-starter-service-client/ # 서비스 간 호출 클라이언트
 ├── eraf-starter-minimal/        # 최소 번들
 └── eraf-starter-all/            # 전체 번들
 ```
@@ -257,6 +267,39 @@ PdfSplitter.split(pdfFile, outputDir);
 String text = PdfTextUtils.extract(pdfFile);
 ```
 
+### 10-1. 파일 업로드/다운로드 서비스
+
+```java
+// 파일 저장소 서비스
+@Autowired
+private FileStorageService fileStorage;
+
+// 파일 업로드
+StoredFile stored = fileStorage.store(multipartFile);
+StoredFile stored = fileStorage.store(multipartFile, "documents");
+List<StoredFile> files = fileStorage.storeAll(multipartFiles);
+
+// 파일 다운로드
+Resource resource = fileStorage.load(filePath);
+
+// 파일 관리
+boolean exists = fileStorage.exists(filePath);
+fileStorage.delete(filePath);
+fileStorage.copy(sourcePath, destPath);
+fileStorage.move(sourcePath, destPath);
+
+// 파일 검증
+ValidationResult result = FileValidationUtils.validateImage(file, 10); // 10MB 제한
+result.throwIfInvalid();
+
+boolean isImage = FileValidationUtils.isImageFile(file);
+boolean isDangerous = FileValidationUtils.isDangerousFile(file);
+
+// 파일 다운로드 응답 생성
+return FileDownloadHelper.download(resource, "문서.pdf");
+return FileDownloadHelper.inline(resource, "이미지.png"); // 브라우저에서 직접 표시
+```
+
 ### 11. 바코드/QR (barcode)
 
 ```java
@@ -391,6 +434,17 @@ eraf:
       enabled: true
     feature-toggle:
       enabled: true
+    logging:
+      enabled: true
+      include-payload: true
+      max-payload-length: 1000
+      exclude-patterns: ["/actuator", "/health"]
+    file-upload:
+      enabled: true
+      upload-path: ./uploads
+      base-url: /files
+      create-date-directory: true
+      max-file-size-mb: 10
 ```
 
 **자동 등록 빈:**
@@ -401,6 +455,8 @@ eraf:
 - FeatureToggleAspect
 - MessageAspect
 - CodeService
+- RequestLoggingFilter (TraceId 자동 전파)
+- FileStorageService (로컬 파일 저장소)
 
 ### eraf-starter-jpa
 
@@ -442,6 +498,142 @@ eraf:
 - RedisIdempotencyStore
 - DistributedLockAspect (Redis)
 - IdempotentAspect (Redis)
+
+### eraf-starter-actuator
+
+Health Check 및 메트릭 확장
+
+```yaml
+eraf:
+  actuator:
+    health-enabled: true
+    metrics-enabled: true
+    application-name: my-app
+    health:
+      redis:
+        enabled: true
+      database:
+        enabled: true
+      kafka:
+        enabled: true
+```
+
+**자동 등록 빈:**
+- RedisHealthIndicator (Redis 연결 상태)
+- DatabaseHealthIndicator (DB 연결 상태)
+- KafkaHealthIndicator (Kafka 클러스터 상태)
+
+### eraf-starter-swagger
+
+API 문서화 (SpringDoc OpenAPI 3)
+
+```yaml
+eraf:
+  swagger:
+    enabled: true
+    api-info:
+      title: My API Documentation
+      description: API 설명
+      version: 1.0.0
+      contact:
+        name: 개발팀
+        email: dev@example.com
+    security:
+      enabled: true
+      scheme-name: bearerAuth
+      scheme: bearer
+      bearer-format: JWT
+    group:
+      default-group: all
+      paths-to-match: ["/**"]
+      paths-to-exclude: ["/actuator/**"]
+```
+
+**자동 등록 빈:**
+- OpenAPI (JWT 인증 스키마 자동 설정)
+- GroupedOpenApi
+
+### eraf-starter-kafka
+
+Apache Kafka 자동 설정
+
+```yaml
+eraf:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      retries: 3
+    retry:
+      max-attempts: 3
+      backoff-ms: 1000
+    dlq:
+      enabled: true
+      topic-suffix: .dlq
+    transaction:
+      enabled: false
+```
+
+```java
+// 메시지 발행
+@Autowired
+private ErafKafkaProducer producer;
+
+ErafKafkaEvent<OrderDto> event = ErafKafkaEvent.of("ORDER_CREATED", orderDto);
+producer.send("order-topic", event);
+
+// 메시지 수신
+@Autowired
+private ErafKafkaConsumer consumer;
+
+consumer.subscribe("order-topic", event -> {
+    OrderDto order = event.getPayload();
+    // 처리
+});
+```
+
+**자동 등록 빈:**
+- ErafKafkaProducer
+- ErafKafkaConsumer
+- ErafKafkaErrorHandler (DLQ 지원)
+
+### eraf-starter-batch
+
+Spring Batch 자동 설정
+
+```yaml
+eraf:
+  batch:
+    enabled: true
+    job:
+      chunk-size: 100
+      skip-limit: 10
+      retry-limit: 3
+    thread-pool:
+      core-size: 4
+      max-size: 8
+```
+
+```java
+@Autowired
+private ErafBatchJobBuilder jobBuilder;
+
+Job job = jobBuilder
+    .name("sampleJob")
+    .chunk(100, SampleItem.class)
+    .reader(itemReader)
+    .processor(itemProcessor)
+    .writer(itemWriter)
+    .build();
+```
+
+**자동 등록 빈:**
+- ErafBatchJobBuilder
+- ErafJobListener (실행 로깅)
+- ErafStepListener (스텝 로깅)
 
 ### eraf-starter-notification
 

@@ -1,0 +1,219 @@
+# =====================================================
+# ERAF Commons - Application Configuration Example
+# =====================================================
+# 이 파일은 ERAF Commons 라이브러리의 모든 설정 옵션 예제입니다.
+# 프로젝트에 필요한 설정만 선택하여 사용하세요.
+# =====================================================
+
+eraf:
+
+  # ===================================================
+  # 세션 설정 (JWT + Redis 고정)
+  # ===================================================
+  session:
+    timeout: 1h                          # 세션 타임아웃 (기본: 1시간)
+    refresh-token-expiration: 7d         # 리프레시 토큰 만료 (기본: 7일)
+    concurrent:
+      max-sessions: 1                    # 동시 세션 수 (1 = 기존 세션 만료)
+
+  # ===================================================
+  # 암호화 설정
+  # ===================================================
+  crypto:
+    secret-key: ${ERAF_CRYPTO_SECRET_KEY}  # AES-256 암호화 키 (32바이트)
+    jwt:
+      secret-key: ${ERAF_JWT_SECRET_KEY}   # JWT 서명 키 (최소 32바이트)
+      expiration: 60                        # JWT 만료 시간 (분)
+
+  # ===================================================
+  # 파일 저장소 설정
+  # ===================================================
+  storage:
+    type: s3                             # local | s3 | minio | nas
+
+    # Local 저장소
+    local:
+      base-path: /data/files
+
+    # AWS S3
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+    # MinIO (S3 호환)
+    minio:
+      endpoint: http://minio:9000
+      bucket: eraf-files
+      access-key: ${MINIO_ACCESS_KEY}
+      secret-key: ${MINIO_SECRET_KEY}
+
+  # ===================================================
+  # 메시징 설정
+  # ===================================================
+  messaging:
+    type: kafka                          # kafka | rabbitmq | sqs
+
+  # ===================================================
+  # 알림 설정
+  # ===================================================
+  notification:
+    # 이메일 설정
+    email:
+      provider: smtp                     # smtp | ses
+      smtp:
+        host: smtp.gmail.com
+        port: 587
+        username: ${SMTP_USERNAME}
+        password: ${SMTP_PASSWORD}
+        from: noreply@example.com
+      ses:
+        region: ${AWS_REGION:ap-northeast-2}
+
+    # SMS 설정
+    sms:
+      provider: custom                   # twilio | naver | nhn | custom
+      custom:
+        url: https://sms-api.example.com/send
+        method: POST
+        headers:
+          Authorization: Bearer ${SMS_API_KEY}
+        body-template: |
+          {"to": "${to}", "message": "${message}"}
+
+    # 메신저 설정
+    messenger:
+      slack:
+        enabled: true
+        webhook-url: ${SLACK_WEBHOOK_URL}
+      teams:
+        enabled: false
+      kakao:
+        enabled: false
+
+  # ===================================================
+  # 상태머신 설정
+  # ===================================================
+  statemachine:
+    enabled: true
+    store-type: memory                   # memory | redis | jdbc
+    state-ttl: 7d                        # Redis 상태 TTL
+    auto-create-table: true              # JDBC 테이블 자동 생성
+
+  # ===================================================
+  # 스케줄러 설정
+  # ===================================================
+  scheduler:
+    enabled: true
+    cluster:
+      enabled: false                     # ShedLock 활성화 (분산 환경)
+
+  # ===================================================
+  # PDF 설정 (한글 폰트 필수)
+  # ===================================================
+  pdf:
+    font-path: /fonts/NanumGothic.ttf    # 한글 폰트 경로
+
+  # ===================================================
+  # 웹 설정
+  # ===================================================
+  web:
+    cors:
+      enabled: true
+      allowed-origins:
+        - http://localhost:3000
+        - https://example.com
+    request-logging:
+      enabled: true
+      include-headers: false
+      include-payload: false
+
+  # ===================================================
+  # 액추에이터 설정
+  # ===================================================
+  actuator:
+    enabled: true
+
+# =====================================================
+# Spring Boot 기본 설정
+# =====================================================
+
+spring:
+  application:
+    name: eraf-sample-app
+
+  # 데이터소스 설정
+  datasource:
+    url: jdbc:mysql://localhost:3306/eraf?useSSL=false&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Redis 설정
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+
+  # RabbitMQ 설정
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+# =====================================================
+# 로깅 설정
+# =====================================================
+
+logging:
+  level:
+    root: INFO
+    com.eraf: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+
+# =====================================================
+# 서버 설정
+# =====================================================
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+
+# =====================================================
+# 액추에이터 설정
+# =====================================================
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized

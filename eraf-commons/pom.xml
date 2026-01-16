@@ -43,6 +43,7 @@
         <module>eraf-starter-scheduler</module>
         <module>eraf-starter-statemachine</module>
         <module>eraf-starter-database</module>
+        <module>eraf-starter-swagger</module>
         <module>eraf-starter-all</module>
         <module>eraf-starter-minimal</module>
     </modules>
@@ -134,6 +135,11 @@
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-starter-minimal</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-swagger</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
