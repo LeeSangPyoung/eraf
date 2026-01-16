@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.eraf</groupId>
+    <artifactId>eraf-api-gateway</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>ERAF API Gateway</name>
+    <description>ERAF API Gateway - Kong-like features for API Management</description>
+
+    <modules>
+        <module>eraf-gateway-core</module>
+        <module>eraf-gateway-store-memory</module>
+        <module>eraf-gateway-store-jpa</module>
+        <module>eraf-gateway-starter</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- ERAF Commons -->
+        <eraf-commons.version>1.0.0-SNAPSHOT</eraf-commons.version>
+
+        <!-- JWT -->
+        <jjwt.version>0.12.5</jjwt.version>
+
+        <!-- Feature Flags (can be overridden via -D options) -->
+        <gateway.feature.ratelimit>true</gateway.feature.ratelimit>
+        <gateway.feature.iprestriction>true</gateway.feature.iprestriction>
+        <gateway.feature.apikey>true</gateway.feature.apikey>
+        <gateway.feature.circuitbreaker>true</gateway.feature.circuitbreaker>
+        <gateway.feature.analytics>true</gateway.feature.analytics>
+        <gateway.feature.cache>true</gateway.feature.cache>
+        <gateway.feature.jwt>true</gateway.feature.jwt>
+        <gateway.feature.bot>true</gateway.feature.bot>
+        <gateway.feature.transform>true</gateway.feature.transform>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- ERAF Commons BOM -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-bom</artifactId>
+                <version>${eraf-commons.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Internal Modules -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-store-memory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-store-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- JWT (jjwt) -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.12.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <encoding>UTF-8</encoding>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- Feature Profiles -->
+    <profiles>
+        <!-- Full Profile: All features enabled (default) -->
+        <profile>
+            <id>full</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <!-- Minimal Profile: Only basic features (Rate Limit, IP Restriction) -->
+        <profile>
+            <id>minimal</id>
+            <properties>
+                <gateway.feature.apikey>false</gateway.feature.apikey>
+                <gateway.feature.circuitbreaker>false</gateway.feature.circuitbreaker>
+                <gateway.feature.analytics>false</gateway.feature.analytics>
+                <gateway.feature.cache>false</gateway.feature.cache>
+                <gateway.feature.jwt>false</gateway.feature.jwt>
+                <gateway.feature.bot>false</gateway.feature.bot>
+                <gateway.feature.transform>false</gateway.feature.transform>
+            </properties>
+        </profile>
+
+        <!-- Security Profile: Security-related features only -->
+        <profile>
+            <id>security</id>
+            <properties>
+                <gateway.feature.circuitbreaker>false</gateway.feature.circuitbreaker>
+                <gateway.feature.analytics>false</gateway.feature.analytics>
+                <gateway.feature.cache>false</gateway.feature.cache>
+                <gateway.feature.transform>false</gateway.feature.transform>
+            </properties>
+        </profile>
+
+        <!-- Performance Profile: Performance-related features -->
+        <profile>
+            <id>performance</id>
+            <properties>
+                <gateway.feature.apikey>false</gateway.feature.apikey>
+                <gateway.feature.jwt>false</gateway.feature.jwt>
+                <gateway.feature.bot>false</gateway.feature.bot>
+            </properties>
+        </profile>
+
+        <!-- No JWT Profile: Exclude JWT dependencies -->
+        <profile>
+            <id>no-jwt</id>
+            <properties>
+                <gateway.feature.jwt>false</gateway.feature.jwt>
+            </properties>
+        </profile>
+    </profiles>
+</project>

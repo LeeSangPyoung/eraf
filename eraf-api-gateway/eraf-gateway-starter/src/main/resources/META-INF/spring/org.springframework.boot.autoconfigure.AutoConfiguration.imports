@@ -1,0 +1,2 @@
+com.eraf.gateway.starter.ErafGatewayAutoConfiguration
+com.eraf.gateway.starter.ErafGatewayJpaAutoConfiguration

@@ -1,0 +1,104 @@
+# =====================================================
+# ERAF API Gateway Configuration Example
+# =====================================================
+# Copy this file to your application's resources as
+# application-gateway.yml and customize as needed.
+# =====================================================
+
+eraf:
+  gateway:
+    # Master switch for the entire gateway
+    enabled: true
+
+    # Storage type: memory (default), jpa, redis
+    store-type: memory
+
+    # ============================================
+    # Rate Limiting
+    # ============================================
+    rate-limit:
+      enabled: true
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+      default-limit-per-second: 100
+      default-window-seconds: 1
+
+    # ============================================
+    # IP Restriction (Whitelist/Blacklist)
+    # ============================================
+    ip-restriction:
+      enabled: true
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+
+    # ============================================
+    # API Key Authentication
+    # ============================================
+    api-key:
+      enabled: false
+      header-name: X-API-Key
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /public/**
+
+    # ============================================
+    # Circuit Breaker
+    # ============================================
+    circuit-breaker:
+      enabled: false
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+      failure-threshold: 5        # Open after 5 consecutive failures
+      success-threshold: 3        # Close after 3 consecutive successes
+      open-timeout-ms: 30000      # Wait 30 seconds before half-open
+
+    # ============================================
+    # API Analytics
+    # ============================================
+    analytics:
+      enabled: false
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+      max-records: 100000         # Max records in memory
+
+    # ============================================
+    # Response Caching
+    # ============================================
+    cache:
+      enabled: false
+      max-entries: 10000
+      default-ttl-seconds: 300    # 5 minutes
+
+    # ============================================
+    # JWT Validation
+    # ============================================
+    jwt:
+      enabled: false
+      secret-key: your-256-bit-secret-key-here-minimum-32-chars
+      header-name: Authorization
+      token-prefix: "Bearer "
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /public/**
+        - /auth/**
+
+    # ============================================
+    # Bot Detection
+    # ============================================
+    bot-detection:
+      enabled: false
+      block-bots: false           # Only detect, don't block
+      block-unknown-bots: false
+      allowed-bots:
+        - Googlebot
+        - Bingbot
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /robots.txt

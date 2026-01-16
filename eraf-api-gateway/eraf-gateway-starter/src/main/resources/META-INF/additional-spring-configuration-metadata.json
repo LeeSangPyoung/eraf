@@ -1,0 +1,65 @@
+{
+  "properties": [
+    {
+      "name": "eraf.gateway.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable ERAF Gateway features",
+      "defaultValue": true
+    },
+    {
+      "name": "eraf.gateway.store-type",
+      "type": "java.lang.String",
+      "description": "Storage type for gateway data (memory, jpa, redis)",
+      "defaultValue": "memory"
+    },
+    {
+      "name": "eraf.gateway.rate-limit.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable rate limiting",
+      "defaultValue": true
+    },
+    {
+      "name": "eraf.gateway.rate-limit.exclude-patterns",
+      "type": "java.lang.String[]",
+      "description": "Path patterns to exclude from rate limiting",
+      "defaultValue": ["/actuator/**", "/health/**"]
+    },
+    {
+      "name": "eraf.gateway.ip-restriction.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable IP restriction",
+      "defaultValue": true
+    },
+    {
+      "name": "eraf.gateway.api-key.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable API key authentication",
+      "defaultValue": false
+    },
+    {
+      "name": "eraf.gateway.api-key.header-name",
+      "type": "java.lang.String",
+      "description": "HTTP header name for API key",
+      "defaultValue": "X-API-Key"
+    }
+  ],
+  "hints": [
+    {
+      "name": "eraf.gateway.store-type",
+      "values": [
+        {
+          "value": "memory",
+          "description": "In-memory storage (default, for development)"
+        },
+        {
+          "value": "jpa",
+          "description": "JPA/Database storage (for production)"
+        },
+        {
+          "value": "redis",
+          "description": "Redis storage (for distributed systems)"
+        }
+      ]
+    }
+  ]
+}
