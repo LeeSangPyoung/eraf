@@ -1,0 +1,41 @@
+# Load Balancer Configuration
+eraf:
+  gateway:
+    load-balancer:
+      # Enable/disable load balancer
+      enabled: true
+
+      # Default load balancing algorithm
+      # Options: ROUND_ROBIN, WEIGHTED_ROUND_ROBIN, LEAST_CONNECTIONS, RANDOM, IP_HASH
+      default-algorithm: ROUND_ROBIN
+
+      # Connection and read timeouts
+      connect-timeout: 5000
+      read-timeout: 30000
+
+      # Health check configuration
+      health-check:
+        enabled: true
+        interval: 10s
+        timeout: 5s
+        path: /health
+        expected-statuses: [200, 204]
+        healthy-threshold: 2
+        unhealthy-threshold: 3
+
+        # Passive health check (based on actual traffic)
+        passive-enabled: true
+        passive-unhealthy-threshold: 5
+        passive-window: 1m
+
+      # Canary deployment configuration
+      canary:
+        enabled: false
+        default-percentage: 10
+        version-header: X-Canary-Version
+
+      # Path patterns to exclude from load balancing
+      exclude-patterns:
+        - /actuator/.*
+        - /health
+        - /metrics

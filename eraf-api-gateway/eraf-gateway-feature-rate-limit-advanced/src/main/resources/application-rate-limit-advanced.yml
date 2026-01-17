@@ -1,0 +1,136 @@
+# ERAF Gateway Advanced Rate Limit Configuration Example
+
+eraf:
+  gateway:
+    rate-limit-advanced:
+      # Enable/disable advanced rate limiting
+      enabled: true
+
+      # Default algorithm: TOKEN_BUCKET, LEAKY_BUCKET, SLIDING_WINDOW, FIXED_WINDOW
+      default-algorithm: TOKEN_BUCKET
+
+      # Default limits
+      default-max-requests: 100
+      default-window-seconds: 60
+      default-burst-size: 150
+      default-refill-rate: 10.0
+
+      # Distributed mode (Redis)
+      distributed-mode: false
+      redis:
+        host: localhost
+        port: 6379
+        password:
+        database: 0
+        timeout: 2000
+        cluster: false
+        cluster-nodes: []
+
+      # Exclude patterns
+      exclude-patterns:
+        - /health
+        - /actuator/**
+        - /swagger-ui/**
+        - /v3/api-docs/**
+
+      # Path-specific algorithms
+      path-algorithms:
+        "/api/v1/upload/**": LEAKY_BUCKET
+        "/api/v1/search/**": SLIDING_WINDOW
+        "/api/v1/static/**": FIXED_WINDOW
+
+      # Path-specific limits
+      path-limits:
+        "/api/v1/upload/**": 10
+        "/api/v1/search/**": 100
+        "/api/v1/static/**": 1000
+        "/api/v1/heavy/**": 5
+
+      # Consumer-based limits (per API key or user ID)
+      consumers:
+        premium-user:
+          id: premium-user
+          max-requests: 1000
+          burst-size: 1500
+          refill-rate: 50.0
+          algorithm: TOKEN_BUCKET
+        basic-user:
+          id: basic-user
+          max-requests: 100
+          burst-size: 150
+          refill-rate: 10.0
+          algorithm: FIXED_WINDOW
+        enterprise-user:
+          id: enterprise-user
+          max-requests: 10000
+          burst-size: 15000
+          refill-rate: 500.0
+          algorithm: TOKEN_BUCKET
+
+      # Header-based limits
+      header-limits:
+        # Googlebot gets higher limit
+        "Mozilla/5.0 (compatible; Googlebot/2.1)": 10000
+        # Curl gets lower limit
+        "curl/7.68.0": 10
+        # Mobile apps get special limit
+        "MyApp-Mobile/1.0": 500
+
+---
+# Production configuration with Redis cluster
+spring:
+  config:
+    activate:
+      on-profile: production
+
+eraf:
+  gateway:
+    rate-limit-advanced:
+      enabled: true
+      distributed-mode: true
+      default-algorithm: TOKEN_BUCKET
+      redis:
+        cluster: true
+        cluster-nodes:
+          - redis-node-1:7000
+          - redis-node-2:7001
+          - redis-node-3:7002
+          - redis-node-4:7003
+          - redis-node-5:7004
+          - redis-node-6:7005
+        password: ${REDIS_PASSWORD}
+        timeout: 3000
+
+---
+# Development configuration with local Redis
+spring:
+  config:
+    activate:
+      on-profile: development
+
+eraf:
+  gateway:
+    rate-limit-advanced:
+      enabled: true
+      distributed-mode: true
+      default-algorithm: TOKEN_BUCKET
+      default-max-requests: 1000  # Higher limit for dev
+      redis:
+        host: localhost
+        port: 6379
+        cluster: false
+
+---
+# Testing configuration with local in-memory
+spring:
+  config:
+    activate:
+      on-profile: test
+
+eraf:
+  gateway:
+    rate-limit-advanced:
+      enabled: true
+      distributed-mode: false  # Local mode for tests
+      default-algorithm: FIXED_WINDOW  # Fast algorithm for tests
+      default-max-requests: 100

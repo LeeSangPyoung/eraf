@@ -1,0 +1,29 @@
+# Test Configuration
+eraf:
+  gateway:
+    load-balancer:
+      enabled: true
+      default-algorithm: ROUND_ROBIN
+      connect-timeout: 5000
+      read-timeout: 30000
+
+      health-check:
+        enabled: true
+        interval: 5s
+        timeout: 3s
+        path: /health
+        expected-statuses: [200, 204]
+        healthy-threshold: 2
+        unhealthy-threshold: 3
+        passive-enabled: true
+        passive-unhealthy-threshold: 3
+        passive-window: 30s
+
+      canary:
+        enabled: false
+        default-percentage: 10
+        version-header: X-Canary-Version
+
+      exclude-patterns:
+        - /actuator/.*
+        - /health

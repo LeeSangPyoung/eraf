@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
-        <relativePath/>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-commons</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../eraf-commons/pom.xml</relativePath>
     </parent>
 
     <groupId>com.eraf</groupId>
@@ -20,9 +20,38 @@
     <description>ERAF API Gateway - Kong-like features for API Management</description>
 
     <modules>
+        <!-- Common Infrastructure -->
+        <module>eraf-gateway-common</module>
+
+        <!-- Feature Modules -->
+        <module>eraf-gateway-feature-rate-limit</module>
+        <module>eraf-gateway-feature-rate-limit-advanced</module>
+        <!-- FIXME: Lombok annotation processing issues -->
+        <!-- <module>eraf-gateway-feature-validation</module> -->
+        <module>eraf-gateway-feature-api-key</module>
+        <module>eraf-gateway-feature-oauth2</module>
+        <module>eraf-gateway-feature-ip-restriction</module>
+        <module>eraf-gateway-feature-jwt</module>
+        <module>eraf-gateway-feature-circuit-breaker</module>
+        <!-- FIXME: Old eraf-gateway-core dependencies -->
+        <!-- <module>eraf-gateway-feature-load-balancer</module> -->
+        <module>eraf-gateway-feature-analytics</module>
+        <!-- FIXME: Lombok annotation processing issues -->
+        <!-- <module>eraf-gateway-feature-analytics-advanced</module> -->
+        <module>eraf-gateway-feature-cache</module>
+        <module>eraf-gateway-feature-bot-detection</module>
+
+        <!-- Legacy Core (To be deprecated) -->
         <module>eraf-gateway-core</module>
+
+        <!-- Storage Implementations -->
         <module>eraf-gateway-store-memory</module>
         <module>eraf-gateway-store-jpa</module>
+
+        <!-- Builder (Composable Gateway) -->
+        <module>eraf-gateway-builder</module>
+
+        <!-- Starter -->
         <module>eraf-gateway-starter</module>
     </modules>
 
@@ -40,6 +69,7 @@
         <gateway.feature.ratelimit>true</gateway.feature.ratelimit>
         <gateway.feature.iprestriction>true</gateway.feature.iprestriction>
         <gateway.feature.apikey>true</gateway.feature.apikey>
+        <gateway.feature.oauth2>true</gateway.feature.oauth2>
         <gateway.feature.circuitbreaker>true</gateway.feature.circuitbreaker>
         <gateway.feature.analytics>true</gateway.feature.analytics>
         <gateway.feature.cache>true</gateway.feature.cache>
@@ -59,7 +89,89 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- ERAF Core (from eraf-commons) -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core</artifactId>
+                <version>${eraf-commons.version}</version>
+            </dependency>
+
             <!-- Internal Modules -->
+            <!-- Common Infrastructure -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Feature Modules -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-rate-limit</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-rate-limit-advanced</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-validation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-api-key</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-oauth2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-ip-restriction</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-jwt</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-circuit-breaker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-load-balancer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-analytics</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-analytics-advanced</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway-feature-bot-detection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Legacy Core -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-gateway-core</artifactId>
@@ -100,23 +212,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.12.1</version>
-                    <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                        <encoding>UTF-8</encoding>
-                        <parameters>true</parameters>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
     <!-- Feature Profiles -->
     <profiles>

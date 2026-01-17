@@ -267,4 +267,430 @@ public final class StringUtils {
     public static int byteLength(String str) {
         return byteLength(str, StandardCharsets.UTF_8);
     }
+
+    // ===== 부분 문자열 =====
+
+    /**
+     * 안전한 substring (IndexOutOfBoundsException 방지)
+     */
+    public static String substring(String str, int start) {
+        if (str == null) {
+            return null;
+        }
+        if (start < 0) {
+            start = 0;
+        }
+        if (start >= str.length()) {
+            return "";
+        }
+        return str.substring(start);
+    }
+
+    /**
+     * 안전한 substring (IndexOutOfBoundsException 방지)
+     */
+    public static String substring(String str, int start, int end) {
+        if (str == null) {
+            return null;
+        }
+        if (start < 0) {
+            start = 0;
+        }
+        if (end > str.length()) {
+            end = str.length();
+        }
+        if (start >= end) {
+            return "";
+        }
+        return str.substring(start, end);
+    }
+
+    /**
+     * 구분자 이전 문자열 반환
+     */
+    public static String substringBefore(String str, String separator) {
+        if (isEmpty(str) || separator == null) {
+            return str;
+        }
+        if (separator.isEmpty()) {
+            return "";
+        }
+        int pos = str.indexOf(separator);
+        if (pos == -1) {
+            return str;
+        }
+        return str.substring(0, pos);
+    }
+
+    /**
+     * 구분자 이후 문자열 반환
+     */
+    public static String substringAfter(String str, String separator) {
+        if (isEmpty(str) || separator == null) {
+            return str;
+        }
+        if (separator.isEmpty()) {
+            return str;
+        }
+        int pos = str.indexOf(separator);
+        if (pos == -1) {
+            return "";
+        }
+        return str.substring(pos + separator.length());
+    }
+
+    /**
+     * 마지막 구분자 이전 문자열 반환
+     */
+    public static String substringBeforeLast(String str, String separator) {
+        if (isEmpty(str) || separator == null) {
+            return str;
+        }
+        if (separator.isEmpty()) {
+            return "";
+        }
+        int pos = str.lastIndexOf(separator);
+        if (pos == -1) {
+            return str;
+        }
+        return str.substring(0, pos);
+    }
+
+    /**
+     * 마지막 구분자 이후 문자열 반환
+     */
+    public static String substringAfterLast(String str, String separator) {
+        if (isEmpty(str) || separator == null) {
+            return str;
+        }
+        if (separator.isEmpty()) {
+            return "";
+        }
+        int pos = str.lastIndexOf(separator);
+        if (pos == -1) {
+            return "";
+        }
+        return str.substring(pos + separator.length());
+    }
+
+    /**
+     * 두 구분자 사이의 문자열 반환
+     */
+    public static String substringBetween(String str, String open, String close) {
+        if (str == null || open == null || close == null) {
+            return null;
+        }
+        int start = str.indexOf(open);
+        if (start == -1) {
+            return null;
+        }
+        int end = str.indexOf(close, start + open.length());
+        if (end == -1) {
+            return null;
+        }
+        return str.substring(start + open.length(), end);
+    }
+
+    // ===== 분할/조인 =====
+
+    /**
+     * 문자열을 구분자로 분할 (null-safe)
+     */
+    public static String[] split(String str, String separator) {
+        if (str == null) {
+            return new String[0];
+        }
+        if (separator == null || separator.isEmpty()) {
+            return new String[]{str};
+        }
+        return str.split(java.util.regex.Pattern.quote(separator));
+    }
+
+    /**
+     * 문자열을 구분자로 분할하고 트림
+     */
+    public static String[] splitAndTrim(String str, String separator) {
+        String[] parts = split(str, separator);
+        for (int i = 0; i < parts.length; i++) {
+            parts[i] = trim(parts[i]);
+        }
+        return parts;
+    }
+
+    /**
+     * 배열을 구분자로 조인
+     */
+    public static String join(String[] array, String separator) {
+        if (array == null || array.length == 0) {
+            return "";
+        }
+        if (separator == null) {
+            separator = "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(separator);
+            }
+            if (array[i] != null) {
+                sb.append(array[i]);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Iterable을 구분자로 조인
+     */
+    public static String join(Iterable<?> iterable, String separator) {
+        if (iterable == null) {
+            return "";
+        }
+        if (separator == null) {
+            separator = "";
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Object obj : iterable) {
+            if (!first) {
+                sb.append(separator);
+            }
+            if (obj != null) {
+                sb.append(obj);
+            }
+            first = false;
+        }
+        return sb.toString();
+    }
+
+    // ===== 시작/끝 확인 =====
+
+    /**
+     * 특정 문자열로 시작하는지 확인 (null-safe)
+     */
+    public static boolean startsWith(String str, String prefix) {
+        if (str == null || prefix == null) {
+            return false;
+        }
+        return str.startsWith(prefix);
+    }
+
+    /**
+     * 대소문자 구분 없이 특정 문자열로 시작하는지 확인
+     */
+    public static boolean startsWithIgnoreCase(String str, String prefix) {
+        if (str == null || prefix == null) {
+            return false;
+        }
+        return str.toLowerCase().startsWith(prefix.toLowerCase());
+    }
+
+    /**
+     * 특정 문자열로 끝나는지 확인 (null-safe)
+     */
+    public static boolean endsWith(String str, String suffix) {
+        if (str == null || suffix == null) {
+            return false;
+        }
+        return str.endsWith(suffix);
+    }
+
+    /**
+     * 대소문자 구분 없이 특정 문자열로 끝나는지 확인
+     */
+    public static boolean endsWithIgnoreCase(String str, String suffix) {
+        if (str == null || suffix == null) {
+            return false;
+        }
+        return str.toLowerCase().endsWith(suffix.toLowerCase());
+    }
+
+    // ===== 치환 =====
+
+    /**
+     * 문자열 치환 (null-safe)
+     */
+    public static String replace(String str, String searchString, String replacement) {
+        if (isEmpty(str) || isEmpty(searchString) || replacement == null) {
+            return str;
+        }
+        return str.replace(searchString, replacement);
+    }
+
+    /**
+     * 첫 번째 일치만 치환
+     */
+    public static String replaceFirst(String str, String searchString, String replacement) {
+        if (isEmpty(str) || isEmpty(searchString) || replacement == null) {
+            return str;
+        }
+        int index = str.indexOf(searchString);
+        if (index == -1) {
+            return str;
+        }
+        return str.substring(0, index) + replacement + str.substring(index + searchString.length());
+    }
+
+    /**
+     * 마지막 일치만 치환
+     */
+    public static String replaceLast(String str, String searchString, String replacement) {
+        if (isEmpty(str) || isEmpty(searchString) || replacement == null) {
+            return str;
+        }
+        int index = str.lastIndexOf(searchString);
+        if (index == -1) {
+            return str;
+        }
+        return str.substring(0, index) + replacement + str.substring(index + searchString.length());
+    }
+
+    // ===== 반복 =====
+
+    /**
+     * 문자열 반복
+     */
+    public static String repeat(String str, int count) {
+        if (str == null || count <= 0) {
+            return "";
+        }
+        return str.repeat(count);
+    }
+
+    /**
+     * 문자 반복
+     */
+    public static String repeat(char ch, int count) {
+        if (count <= 0) {
+            return "";
+        }
+        return String.valueOf(ch).repeat(count);
+    }
+
+    // ===== 기타 =====
+
+    /**
+     * 인덱스 찾기 (null-safe)
+     */
+    public static int indexOf(String str, String searchStr) {
+        if (str == null || searchStr == null) {
+            return -1;
+        }
+        return str.indexOf(searchStr);
+    }
+
+    /**
+     * 마지막 인덱스 찾기 (null-safe)
+     */
+    public static int lastIndexOf(String str, String searchStr) {
+        if (str == null || searchStr == null) {
+            return -1;
+        }
+        return str.lastIndexOf(searchStr);
+    }
+
+    /**
+     * 문자열의 특정 위치 문자 반환 (null-safe)
+     */
+    public static Character charAt(String str, int index) {
+        if (str == null || index < 0 || index >= str.length()) {
+            return null;
+        }
+        return str.charAt(index);
+    }
+
+    /**
+     * 대문자로 변환 (null-safe)
+     */
+    public static String toUpperCase(String str) {
+        return str == null ? null : str.toUpperCase();
+    }
+
+    /**
+     * 소문자로 변환 (null-safe)
+     */
+    public static String toLowerCase(String str) {
+        return str == null ? null : str.toLowerCase();
+    }
+
+    /**
+     * 공백 정규화 (연속된 공백을 하나로)
+     */
+    public static String normalizeSpace(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.trim().replaceAll("\\s+", " ");
+    }
+
+    /**
+     * 줄바꿈을 공백으로 변환
+     */
+    public static String removeNewlines(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.replaceAll("[\\r\\n]+", " ");
+    }
+
+    /**
+     * 특정 문자열이 몇 번 나타나는지 카운트
+     */
+    public static int countMatches(String str, String sub) {
+        if (isEmpty(str) || isEmpty(sub)) {
+            return 0;
+        }
+        int count = 0;
+        int index = 0;
+        while ((index = str.indexOf(sub, index)) != -1) {
+            count++;
+            index += sub.length();
+        }
+        return count;
+    }
+
+    /**
+     * 숫자만 포함하는지 확인
+     */
+    public static boolean isNumeric(String str) {
+        if (isEmpty(str)) {
+            return false;
+        }
+        for (char c : str.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 알파벳만 포함하는지 확인
+     */
+    public static boolean isAlpha(String str) {
+        if (isEmpty(str)) {
+            return false;
+        }
+        for (char c : str.toCharArray()) {
+            if (!Character.isLetter(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 알파벳과 숫자만 포함하는지 확인
+     */
+    public static boolean isAlphanumeric(String str) {
+        if (isEmpty(str)) {
+            return false;
+        }
+        for (char c : str.toCharArray()) {
+            if (!Character.isLetterOrDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

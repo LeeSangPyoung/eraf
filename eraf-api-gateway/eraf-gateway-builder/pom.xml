@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-api-gateway</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>eraf-gateway-builder</artifactId>
+    <packaging>jar</packaging>
+    <name>ERAF Gateway Builder</name>
+    <description>Composable API Gateway with selectable features at build time</description>
+
+    <dependencies>
+        <!-- Common is ALWAYS included -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-gateway-common</artifactId>
+        </dependency>
+
+        <!-- ERAF Commons (통합 JAR) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-commons-aggregator</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Spring Boot Starter Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Boot AutoConfiguration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Configuration Processor -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Feature modules are added via profiles below -->
+    </dependencies>
+
+    <build>
+        <finalName>eraf-gateway-${project.version}</finalName>
+        <plugins>
+            <!-- Spring Boot Maven Plugin for executable JAR -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.eraf.gateway.builder.GatewayApplication</mainClass>
+                    <layout>JAR</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.36</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>3.3.6</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- ================================== -->
+    <!-- Feature Selection Profiles         -->
+    <!-- ================================== -->
+    <profiles>
+        <!-- Full Profile: All features including Phase 2 Advanced (default) -->
+        <profile>
+            <id>full</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <!-- Phase 1 Core Features -->
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-api-key</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-ip-restriction</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-jwt</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-circuit-breaker</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-analytics</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-cache</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-bot-detection</artifactId>
+                </dependency>
+                <!-- Phase 2 Advanced Features (OAuth2 only - others need additional fixes or Redis) -->
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-oauth2</artifactId>
+                </dependency>
+                <!-- NOTE: rate-limit-advanced requires Redis, analytics-advanced requires Micrometer,
+                     validation and load-balancer need code fixes. All disabled for basic full profile. -->
+                <!-- Storage -->
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-memory</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Minimal Profile: Common + Memory Store only -->
+        <profile>
+            <id>minimal</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-memory</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Individual Feature Profiles -->
+        <profile>
+            <id>rate-limit</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>api-key</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-api-key</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>ip-restriction</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-ip-restriction</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>jwt</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-jwt</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>circuit-breaker</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-circuit-breaker</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>analytics</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-analytics</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>cache</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-cache</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>bot-detection</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-bot-detection</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Phase 2: Advanced Feature Profiles -->
+        <profile>
+            <id>oauth2</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-oauth2</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>rate-limit-advanced</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit-advanced</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>validation</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-validation</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>load-balancer</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-load-balancer</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>analytics-advanced</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-analytics-advanced</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Storage Profiles -->
+        <profile>
+            <id>store-memory</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-memory</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>store-jpa</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-jpa</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Preset Combination Profiles -->
+        <profile>
+            <id>security</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-api-key</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-ip-restriction</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-jwt</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-bot-detection</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-memory</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>performance</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-circuit-breaker</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-cache</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-memory</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Enterprise Profile: Phase 2 Advanced Features -->
+        <profile>
+            <id>enterprise</id>
+            <dependencies>
+                <!-- Phase 1 Core Features -->
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-api-key</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-ip-restriction</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-jwt</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-circuit-breaker</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-cache</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-bot-detection</artifactId>
+                </dependency>
+                <!-- Phase 2 Advanced Features -->
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-oauth2</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-rate-limit-advanced</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-validation</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-load-balancer</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-feature-analytics-advanced</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-gateway-store-memory</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+</project>

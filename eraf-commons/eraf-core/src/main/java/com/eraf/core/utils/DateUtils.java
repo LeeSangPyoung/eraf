@@ -230,4 +230,269 @@ public final class DateUtils {
     public static DayOfWeek getDayOfWeek(LocalDate date) {
         return date.getDayOfWeek();
     }
+
+    // ===== 시작/끝 시간 =====
+
+    /**
+     * 날짜의 시작 시간 (00:00:00)
+     */
+    public static LocalDateTime startOfDay(LocalDate date) {
+        return date.atStartOfDay();
+    }
+
+    /**
+     * LocalDateTime의 시작 시간 (00:00:00)
+     */
+    public static LocalDateTime startOfDay(LocalDateTime dateTime) {
+        return dateTime.toLocalDate().atStartOfDay();
+    }
+
+    /**
+     * 날짜의 마지막 시간 (23:59:59.999999999)
+     */
+    public static LocalDateTime endOfDay(LocalDate date) {
+        return date.atTime(23, 59, 59, 999999999);
+    }
+
+    /**
+     * LocalDateTime의 마지막 시간 (23:59:59.999999999)
+     */
+    public static LocalDateTime endOfDay(LocalDateTime dateTime) {
+        return dateTime.toLocalDate().atTime(23, 59, 59, 999999999);
+    }
+
+    /**
+     * 달의 시작 시간
+     */
+    public static LocalDateTime startOfMonth(LocalDateTime dateTime) {
+        return startOfMonth(dateTime.toLocalDate()).atStartOfDay();
+    }
+
+    /**
+     * 달의 마지막 시간
+     */
+    public static LocalDateTime endOfMonth(LocalDateTime dateTime) {
+        return endOfDay(endOfMonth(dateTime.toLocalDate()));
+    }
+
+    // ===== 타임스탬프 =====
+
+    /**
+     * 현재 타임스탬프 (밀리초)
+     */
+    public static long timestamp() {
+        return System.currentTimeMillis();
+    }
+
+    /**
+     * 현재 타임스탬프 (초)
+     */
+    public static long timestampSeconds() {
+        return System.currentTimeMillis() / 1000;
+    }
+
+    /**
+     * LocalDateTime을 타임스탬프로 변환 (밀리초)
+     */
+    public static long toTimestamp(LocalDateTime dateTime) {
+        return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    /**
+     * LocalDate를 타임스탬프로 변환 (밀리초)
+     */
+    public static long toTimestamp(LocalDate date) {
+        return toTimestamp(date.atStartOfDay());
+    }
+
+    /**
+     * Date를 타임스탬프로 변환 (밀리초)
+     */
+    public static long toTimestamp(Date date) {
+        return date == null ? 0 : date.getTime();
+    }
+
+    /**
+     * 타임스탬프를 LocalDateTime으로 변환
+     */
+    public static LocalDateTime fromTimestamp(long timestamp) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+    }
+
+    /**
+     * 타임스탬프를 LocalDate로 변환
+     */
+    public static LocalDate fromTimestampToDate(long timestamp) {
+        return fromTimestamp(timestamp).toLocalDate();
+    }
+
+    /**
+     * 타임스탬프를 Date로 변환
+     */
+    public static Date fromTimestampToJavaDate(long timestamp) {
+        return new Date(timestamp);
+    }
+
+    // ===== 문자열 변환 (추가) =====
+
+    /**
+     * 문자열을 Date로 변환 (java.util.Date)
+     */
+    public static Date parseToDate(String dateStr) {
+        LocalDate localDate = parseDate(dateStr);
+        return localDate != null ? toDate(localDate) : null;
+    }
+
+    /**
+     * 문자열을 Date로 변환 (java.util.Date, 패턴 지정)
+     */
+    public static Date parseToDate(String dateStr, String pattern) {
+        LocalDate localDate = parseDate(dateStr, pattern);
+        return localDate != null ? toDate(localDate) : null;
+    }
+
+    /**
+     * 문자열을 Date로 변환 (DateTime)
+     */
+    public static Date parseToDateTime(String dateTimeStr) {
+        LocalDateTime localDateTime = parseDateTime(dateTimeStr);
+        return localDateTime != null ? toDate(localDateTime) : null;
+    }
+
+    // ===== ISO 8601 =====
+
+    /**
+     * ISO 8601 형식으로 변환 (예: 2024-01-15T10:30:00)
+     */
+    public static String toIso8601(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        return dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+
+    /**
+     * ISO 8601 형식으로 변환 (타임존 포함)
+     */
+    public static String toIso8601WithZone(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        return dateTime.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    /**
+     * ISO 8601 형식 파싱
+     */
+    public static LocalDateTime parseIso8601(String isoString) {
+        if (isoString == null || isoString.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(isoString, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        } catch (DateTimeParseException e) {
+            try {
+                return ZonedDateTime.parse(isoString, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDateTime();
+            } catch (DateTimeParseException ex) {
+                return null;
+            }
+        }
+    }
+
+    // ===== 나이 계산 =====
+
+    /**
+     * 생년월일로 나이 계산
+     */
+    public static int calculateAge(LocalDate birthDate) {
+        return calculateAge(birthDate, LocalDate.now());
+    }
+
+    /**
+     * 특정 날짜 기준 나이 계산
+     */
+    public static int calculateAge(LocalDate birthDate, LocalDate referenceDate) {
+        if (birthDate == null || referenceDate == null) {
+            return 0;
+        }
+        return (int) yearsBetween(birthDate, referenceDate);
+    }
+
+    // ===== 유틸리티 =====
+
+    /**
+     * 특정 날짜가 오늘인지 확인
+     */
+    public static boolean isYesterday(LocalDate date) {
+        return date.equals(LocalDate.now().minusDays(1));
+    }
+
+    /**
+     * 특정 날짜가 내일인지 확인
+     */
+    public static boolean isTomorrow(LocalDate date) {
+        return date.equals(LocalDate.now().plusDays(1));
+    }
+
+    /**
+     * 현재 시간 (초 단위까지, 밀리초/나노초 제거)
+     */
+    public static LocalDateTime nowTruncatedToSeconds() {
+        return LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    /**
+     * 현재 시간 (분 단위까지, 초/밀리초/나노초 제거)
+     */
+    public static LocalDateTime nowTruncatedToMinutes() {
+        return LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+    }
+
+    /**
+     * 두 날짜가 같은 날인지 확인
+     */
+    public static boolean isSameDay(LocalDate date1, LocalDate date2) {
+        if (date1 == null || date2 == null) {
+            return false;
+        }
+        return date1.equals(date2);
+    }
+
+    /**
+     * 두 LocalDateTime이 같은 날인지 확인
+     */
+    public static boolean isSameDay(LocalDateTime dateTime1, LocalDateTime dateTime2) {
+        if (dateTime1 == null || dateTime2 == null) {
+            return false;
+        }
+        return dateTime1.toLocalDate().equals(dateTime2.toLocalDate());
+    }
+
+    /**
+     * 윤년인지 확인
+     */
+    public static boolean isLeapYear(int year) {
+        return java.time.Year.isLeap(year);
+    }
+
+    /**
+     * 윤년인지 확인
+     */
+    public static boolean isLeapYear(LocalDate date) {
+        return date.isLeapYear();
+    }
+
+    /**
+     * 해당 월의 일수 반환
+     */
+    public static int lengthOfMonth(LocalDate date) {
+        return date.lengthOfMonth();
+    }
+
+    /**
+     * 해당 년도의 일수 반환 (365 or 366)
+     */
+    public static int lengthOfYear(LocalDate date) {
+        return date.lengthOfYear();
+    }
 }

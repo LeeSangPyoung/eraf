@@ -1,0 +1,51 @@
+eraf:
+  gateway:
+    analytics-advanced:
+      # 기능 활성화
+      enabled: true
+
+      # 실시간 대시보드
+      real-time-dashboard: true
+
+      # 비동기 기록
+      async-recording: true
+      batch-size: 100
+      async-threads: 2
+
+      # 인메모리 저장소 최대 크기
+      max-storage-size: 10000
+
+      # 집계 간격
+      aggregation-intervals:
+        - ONE_MINUTE
+        - FIVE_MINUTES
+        - ONE_HOUR
+
+      # 보존 정책
+      retention-policy:
+        raw-data-retention-hours: 24
+        one-minute-retention-days: 7
+        five-minute-retention-days: 30
+        one-hour-retention-days: 90
+        one-day-retention-days: 365
+
+      # Prometheus 익스포트
+      prometheus:
+        enabled: false
+        metrics-prefix: eraf_gateway
+
+      # Datadog 익스포트
+      datadog:
+        enabled: false
+        host: localhost
+        port: 8125
+        metrics-prefix: eraf.gateway
+        environment: production
+
+      # Elasticsearch 익스포트
+      elasticsearch:
+        enabled: false
+        host: localhost
+        port: 9200
+        index-prefix: eraf-gateway
+        bulk-batch-size: 1000

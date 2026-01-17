@@ -1,0 +1,90 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: eraf-api-gateway
+
+eraf:
+  gateway:
+    # Rate Limit Configuration
+    rate-limit:
+      enabled: true
+      default-limit-per-second: 100
+      default-window-seconds: 60
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+
+    # API Key Configuration
+    api-key:
+      enabled: true
+      header-name: X-API-Key
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /public/**
+
+    # IP Restriction Configuration
+    ip-restriction:
+      enabled: true
+      support-cidr: true
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+
+    # JWT Configuration
+    jwt:
+      enabled: true
+      secret-key: ${JWT_SECRET_KEY:your-secret-key-at-least-256-bits-long-for-security}
+      header-name: Authorization
+      token-prefix: "Bearer "
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /auth/login
+        - /public/**
+
+    # Circuit Breaker Configuration
+    circuit-breaker:
+      enabled: true
+      default-failure-threshold: 5
+      default-success-threshold: 2
+      default-open-timeout-ms: 60000
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+
+    # Analytics Configuration
+    analytics:
+      enabled: true
+      retention-days: 30
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+
+    # Cache Configuration
+    cache:
+      enabled: true
+      default-ttl-seconds: 300
+      vary-by-query-params: true
+      vary-by-headers: false
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /auth/**
+
+    # Bot Detection Configuration
+    bot-detection:
+      enabled: true
+      block-bots: false
+      add-bot-headers: true
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+
+# Logging
+logging:
+  level:
+    com.eraf.gateway: DEBUG
+    org.springframework.web: INFO

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
+        <version>3.2.11</version>
         <relativePath/>
     </parent>
 
@@ -46,6 +46,8 @@
         <module>eraf-starter-swagger</module>
         <module>eraf-starter-all</module>
         <module>eraf-starter-minimal</module>
+        <!-- Maven Profile 기반 통합 JAR 생성 -->
+        <module>eraf-commons-aggregator</module>
     </modules>
 
     <properties>
@@ -59,7 +61,7 @@
         <!-- Dependency Versions -->
         <jjwt.version>0.12.6</jjwt.version>
         <bcrypt.version>0.10.2</bcrypt.version>
-        <poi.version>5.2.5</poi.version>
+        <poi.version>5.4.0</poi.version>
         <openpdf.version>2.0.2</openpdf.version>
         <zxing.version>3.5.3</zxing.version>
         <thumbnailator.version>0.4.20</thumbnailator.version>
@@ -71,6 +73,15 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Override Spring Boot QueryDSL BOM -->
+            <dependency>
+                <groupId>com.querydsl</groupId>
+                <artifactId>querydsl-bom</artifactId>
+                <version>${querydsl.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- ERAF Modules -->
             <dependency>
                 <groupId>com.eraf</groupId>
@@ -125,6 +136,61 @@
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-starter-batch</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-service-client</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-database</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-messaging</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-rabbitmq</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-s3</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-elasticsearch</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-ftp</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-tcp</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-notification</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-scheduler</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-starter-statemachine</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
@@ -246,6 +312,13 @@
                         <target>${java.version}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <parameters>true</parameters>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>1.18.36</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>

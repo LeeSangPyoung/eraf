@@ -1,21 +1,72 @@
 # ERAF API Gateway
 
-ERAF Commons 기반의 API Gateway 기능 모듈입니다.
+ERAF Commons 기반의 Kong-style API Gateway 기능 모듈입니다.
+
+> **빌드 가이드**: 전체 빌드 가이드는 [BUILD_GUIDE.md](../BUILD_GUIDE.md)를 참조하세요.
 
 ## 주요 기능
 
+### Phase 1: Core Features
 - **Rate Limiting**: IP 기반 요청 제한
 - **IP Restriction**: IP 화이트리스트/블랙리스트
 - **API Key Authentication**: API Key 기반 인증
+- **JWT Validation**: JWT 토큰 검증
+- **Circuit Breaker**: 서킷 브레이커 패턴
+- **Analytics**: API 호출 분석/통계
+- **Cache**: 응답 캐싱
+- **Bot Detection**: 봇 탐지
+
+### Phase 2: Advanced Features
+- **OAuth2**: OAuth2 인증 서버
+- **Advanced Rate Limit**: Token Bucket, Sliding Window 알고리즘 (Redis 필요)
+- **Request Validation**: JSON Schema/OpenAPI 기반 검증
+- **Load Balancer**: 업스트림 로드 밸런싱
+- **Advanced Analytics**: 상세 메트릭, 외부 익스포트
 
 ## 모듈 구조
 
 ```
 eraf-api-gateway/
-├── eraf-gateway-core/          # 핵심 도메인, 인터페이스
-├── eraf-gateway-store-memory/  # In-Memory 구현체
-├── eraf-gateway-store-jpa/     # JPA 구현체
-└── eraf-gateway-starter/       # Spring Boot Auto Configuration
+├── eraf-gateway-common/              # 공통 도메인, 필터 기본 클래스
+├── eraf-gateway-builder/             # 실행 가능 JAR 빌더 (Maven Profile)
+├── eraf-gateway-store-memory/        # In-Memory 스토리지
+├── eraf-gateway-store-jpa/           # JPA 스토리지
+│
+├── eraf-gateway-feature-rate-limit/       # Rate Limit 기능
+├── eraf-gateway-feature-api-key/          # API Key 인증
+├── eraf-gateway-feature-ip-restriction/   # IP 제한
+├── eraf-gateway-feature-jwt/              # JWT 검증
+├── eraf-gateway-feature-circuit-breaker/  # 서킷 브레이커
+├── eraf-gateway-feature-analytics/        # 분석/통계
+├── eraf-gateway-feature-cache/            # 응답 캐시
+├── eraf-gateway-feature-bot-detection/    # 봇 탐지
+├── eraf-gateway-feature-oauth2/           # OAuth2
+└── ...
+```
+
+## 빠른 시작
+
+### 1. 빌드
+
+```bash
+# 전체 기능 빌드
+cd eraf-api-gateway/eraf-gateway-builder
+mvn clean package -P full -DskipTests
+
+# 특정 기능만 빌드
+mvn clean package -P rate-limit,jwt,api-key -DskipTests
+```
+
+### 2. 실행
+
+```bash
+java -jar target/eraf-gateway-1.0.0-SNAPSHOT.jar
+```
+
+### 3. 확인
+
+```
+http://localhost:8080/actuator/health
 ```
 
 ## 의존성 추가

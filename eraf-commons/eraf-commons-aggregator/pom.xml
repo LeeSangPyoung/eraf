@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-commons</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>eraf-commons-aggregator</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Commons Aggregator</name>
+    <description>Maven Profile 기반 Starter 선택 및 통합 JAR 생성</description>
+
+    <dependencies>
+        <!-- Core는 항상 포함 -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>eraf-commons-${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.eraf:*</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.factories</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring-autoconfigure-metadata.properties</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</resource>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- ============================================ -->
+        <!-- Minimal Profile: Core만 포함 (기본값) -->
+        <!-- ============================================ -->
+        <profile>
+            <id>minimal</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <!-- eraf-core만 포함 (위에서 이미 선언됨) -->
+        </profile>
+
+        <!-- ============================================ -->
+        <!-- Individual Starter Profiles -->
+        <!-- ============================================ -->
+        <profile>
+            <id>web</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-web</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>session</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-session</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>redis</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-redis</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>actuator</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-actuator</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>security</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-security</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>jpa</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-jpa</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>mybatis</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-mybatis</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>cache</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-cache</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>kafka</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-kafka</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>batch</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-batch</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>service-client</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-service-client</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>messaging</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-messaging</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>rabbitmq</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-rabbitmq</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>s3</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-s3</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>elasticsearch</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-elasticsearch</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>ftp</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-ftp</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>tcp</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-tcp</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>notification</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-notification</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>scheduler</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-scheduler</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>statemachine</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-statemachine</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>database</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-database</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>swagger</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-swagger</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- ============================================ -->
+        <!-- Full Profile: 모든 Starter 포함 -->
+        <!-- ============================================ -->
+        <profile>
+            <id>full</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.eraf</groupId>
+                    <artifactId>eraf-starter-all</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+</project>
