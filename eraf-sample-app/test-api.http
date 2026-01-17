@@ -1,0 +1,72 @@
+### ========================================
+### ERAF Sample App - 로그인/로그아웃/세션 테스트
+### 포트: 8081
+### ========================================
+
+### 1. 헬스 체크
+GET http://localhost:8081/health
+
+### 2. 공개 정보
+GET http://localhost:8081/public/info
+
+### ========================================
+### 로그인 테스트
+### 테스트 계정: admin/admin123, user/user123, test/test123
+### ========================================
+
+### 3. 로그인 (성공)
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin123"
+}
+
+### 4. 로그인 (실패 - 잘못된 비밀번호)
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "wrongpassword"
+}
+
+### 5. 로그인 (실패 - 존재하지 않는 사용자)
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "unknown",
+    "password": "password"
+}
+
+### ========================================
+### 세션 체크 (로그인 후 테스트)
+### ========================================
+
+### 6. 세션 체크 (쿠키 필요 - 브라우저나 Postman에서 테스트)
+GET http://localhost:8081/api/auth/session
+
+### 7. 현재 사용자 정보
+GET http://localhost:8081/api/auth/me
+
+### ========================================
+### 로그아웃
+### ========================================
+
+### 8. 로그아웃
+POST http://localhost:8081/api/auth/logout
+
+### ========================================
+### user 계정으로 로그인
+### ========================================
+
+### 9. user 계정 로그인
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "user",
+    "password": "user123"
+}

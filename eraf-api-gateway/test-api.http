@@ -1,0 +1,48 @@
+### ========================================
+### ERAF API Gateway 테스트
+### ========================================
+
+### 1. Public 경로 테스트 (인증 없이 접근 가능)
+GET http://localhost:8080/public/test
+
+### 2. API Key 없이 호출 (차단됨)
+GET http://localhost:8080/api/users
+
+### 3. API Key 포함 호출
+GET http://localhost:8080/api/users
+X-API-Key: test-api-key-12345
+
+### 4. JWT 없이 보호된 경로 호출 (차단됨)
+GET http://localhost:8080/api/secure/data
+
+### 5. Rate Limit 테스트 - 여러번 호출해보세요
+GET http://localhost:8080/public/rate-test
+
+### 6. POST 요청 테스트
+POST http://localhost:8080/public/submit
+Content-Type: application/json
+
+{
+    "name": "홍길동",
+    "email": "hong@example.com"
+}
+
+### 7. Auth 경로 (인증 없이 접근 가능)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "password123"
+}
+
+### 8. 다양한 경로 테스트 (Analytics 기록용)
+GET http://localhost:8080/public/products
+
+### 9. 쿼리 파라미터 포함
+GET http://localhost:8080/public/search?q=spring&page=1
+
+### 10. 헤더 포함 요청
+GET http://localhost:8080/public/info
+Accept: application/json
+X-Custom-Header: custom-value

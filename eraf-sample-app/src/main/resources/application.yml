@@ -1,0 +1,36 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: eraf-sample-app
+
+  # 세션 설정
+  session:
+    timeout: 30m
+
+# Swagger/OpenAPI 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: always
+
+# 로깅
+logging:
+  level:
+    com.eraf.sample: DEBUG
+    com.eraf.core: DEBUG
+    org.springframework.web: INFO

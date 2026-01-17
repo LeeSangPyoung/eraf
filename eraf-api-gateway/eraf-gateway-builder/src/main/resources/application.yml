@@ -83,6 +83,15 @@ eraf:
         - /actuator/**
         - /health/**
 
+    # OAuth2 Configuration
+    oauth2:
+      enabled: true
+      exclude-patterns:
+        - /actuator/**
+        - /health/**
+        - /public/**
+        - /auth/**
+
 # Logging
 logging:
   level:
