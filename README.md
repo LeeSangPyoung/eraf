@@ -4,49 +4,59 @@
 
 ## 개요
 
-ERAF는 Spring Boot 3.4.x 기반의 엔터프라이즈 공통 모듈 라이브러리입니다. 반복적으로 구현되는 기능들을 표준화하여 개발 생산성을 높이고 코드 품질을 일관되게 유지할 수 있습니다.
+ERAF는 Spring Boot 3.x 기반의 엔터프라이즈 공통 모듈 라이브러리입니다. 반복적으로 구현되는 기능들을 표준화하여 개발 생산성을 높이고 코드 품질을 일관되게 유지할 수 있습니다.
+
+### 주요 컴포넌트
+
+| 모듈 | 설명 |
+|------|------|
+| **eraf-commons** | 공통 유틸리티, Starter 모듈 (22개) |
+| **eraf-api-gateway** | Kong-style API Gateway (13개 기능) |
+
+> **빌드 가이드**: Maven Profile 기반 선택적 빌드는 [BUILD_GUIDE.md](BUILD_GUIDE.md)를 참조하세요.
 
 ## 기술 스택
 
-- **Java**: 21
-- **Spring Boot**: 3.4.1
-- **Build Tool**: Maven
+- **Java**: 17+
+- **Spring Boot**: 3.2.x / 3.4.x
+- **Build Tool**: Maven (Profile 기반 선택적 빌드)
 
 ## 프로젝트 구조
 
 ```
-eraf-commons/
-├── eraf-bom/                    # 버전 관리 BOM
-├── eraf-core/                   # 핵심 기능 모듈
-├── eraf-starter-web/            # 웹 자동설정 (로깅필터, 파일업로드)
-├── eraf-starter-database/       # DB 자동설정
-├── eraf-starter-jpa/            # JPA 자동설정
-├── eraf-starter-mybatis/        # MyBatis 자동설정
-├── eraf-starter-redis/          # Redis 자동설정
-├── eraf-starter-cache/          # 캐시 자동설정
-├── eraf-starter-session/        # 세션 관리
-├── eraf-starter-security/       # 보안 자동설정
-├── eraf-starter-actuator/       # Health Check/Metrics
-├── eraf-starter-swagger/        # API 문서화 (OpenAPI)
-├── eraf-starter-notification/   # 알림 (Email, SMS, Push)
-├── eraf-starter-scheduler/      # 스케줄러
-├── eraf-starter-statemachine/   # 상태머신
-├── eraf-starter-messaging/      # 메시징
-├── eraf-starter-kafka/          # Kafka 자동설정
-├── eraf-starter-rabbitmq/       # RabbitMQ 자동설정
-├── eraf-starter-batch/          # Spring Batch 자동설정
-├── eraf-starter-s3/             # S3/파일 스토리지
-├── eraf-starter-ftp/            # FTP/SFTP
-├── eraf-starter-tcp/            # TCP 클라이언트
-├── eraf-starter-elasticsearch/  # Elasticsearch 자동설정
-├── eraf-starter-service-client/ # 서비스 간 호출 클라이언트
-├── eraf-starter-minimal/        # 최소 번들
-└── eraf-starter-all/            # 전체 번들
+eraf/
+├── eraf-commons/                      # 공통 모듈
+│   ├── eraf-bom/                      # 버전 관리 BOM
+│   ├── eraf-core/                     # 핵심 기능 (암호화, 마스킹, 검증 등)
+│   ├── eraf-commons-aggregator/       # Maven Profile 기반 통합 JAR 빌더
+│   ├── eraf-starter-web/              # 웹 자동설정
+│   ├── eraf-starter-jpa/              # JPA 자동설정
+│   ├── eraf-starter-redis/            # Redis 자동설정
+│   ├── eraf-starter-kafka/            # Kafka 자동설정
+│   ├── eraf-starter-batch/            # Spring Batch 자동설정
+│   └── ... (22개 Starter 모듈)
+│
+└── eraf-api-gateway/                  # API Gateway
+    ├── eraf-gateway-common/           # 공통 필터, 예외 처리
+    ├── eraf-gateway-builder/          # 실행 가능 JAR 빌더
+    ├── eraf-gateway-store-memory/     # InMemory 스토리지
+    ├── eraf-gateway-store-jpa/        # JPA 스토리지
+    │
+    ├── eraf-gateway-feature-rate-limit/      # Rate Limiting
+    ├── eraf-gateway-feature-api-key/         # API Key 인증
+    ├── eraf-gateway-feature-ip-restriction/  # IP 제한
+    ├── eraf-gateway-feature-jwt/             # JWT 검증
+    ├── eraf-gateway-feature-circuit-breaker/ # 서킷 브레이커
+    ├── eraf-gateway-feature-analytics/       # API 분석
+    ├── eraf-gateway-feature-cache/           # 응답 캐싱
+    ├── eraf-gateway-feature-bot-detection/   # 봇 탐지
+    ├── eraf-gateway-feature-oauth2/          # OAuth2 인증
+    └── ... (Phase 2 Advanced 기능)
 ```
 
 ## 빠른 시작
 
-### Maven 의존성 추가
+### 1. eraf-commons 사용
 
 ```xml
 <!-- BOM 추가 -->
@@ -70,6 +80,38 @@ eraf-commons/
     </dependency>
 </dependencies>
 ```
+
+### 2. eraf-api-gateway 빌드 및 실행
+
+```bash
+# 전체 모듈 설치 (최초 1회)
+cd eraf-commons && mvn clean install -DskipTests
+cd ../eraf-api-gateway && mvn clean install -DskipTests
+
+# Gateway 빌드 (필요한 기능만 선택)
+cd eraf-api-gateway/eraf-gateway-builder
+
+# 전체 기능
+mvn clean package -P full -DskipTests
+
+# 보안 기능만
+mvn clean package -P security -DskipTests
+
+# 특정 기능 조합
+mvn clean package -P rate-limit,jwt,api-key -DskipTests
+
+# 실행
+java -jar target/eraf-gateway-1.0.0-SNAPSHOT.jar
+```
+
+### 3. 사용 가능한 프로파일
+
+**eraf-commons:**
+- `minimal`, `full`, `web`, `jpa`, `redis`, `kafka`, `batch` 등 22개
+
+**eraf-api-gateway:**
+- `minimal`, `full`, `security`, `performance`
+- `rate-limit`, `api-key`, `jwt`, `oauth2`, `cache`, `analytics` 등
 
 ## eraf-core 기능
 
