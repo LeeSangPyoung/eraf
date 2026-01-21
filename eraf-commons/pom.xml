@@ -75,7 +75,7 @@
         <okhttp.version>4.12.0</okhttp.version>
         <zip4j.version>2.11.5</zip4j.version>
         <flying-saucer.version>9.1.22</flying-saucer.version>
-        <querydsl.version>5.1.0</querydsl.version>
+        <querydsl.version>5.2.0</querydsl.version>
     </properties>
 
     <dependencyManagement>

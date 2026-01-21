@@ -3,12 +3,18 @@
 ## 목차
 1. [시작하기](#시작하기)
 2. [eraf-core 사용법](#eraf-core-사용법)
-3. [eraf-starter 모듈별 사용법](#eraf-starter-모듈별-사용법)
+3. [모듈별 사용법](#모듈별-사용법)
 4. [설정 예제](#설정-예제)
 
 ---
 
 ## 시작하기
+
+### 요구사항
+
+- **Java 23** 이상
+- **Spring Boot 3.2.x** 이상
+- **Maven 3.9.x** 이상
 
 ### Maven 의존성 추가
 
@@ -26,21 +32,39 @@
     </dependencies>
 </dependencyManagement>
 
-<!-- 필요한 스타터 추가 -->
+<!-- 필요한 모듈 추가 -->
 <dependencies>
-    <!-- 최소 구성 (권장) -->
+    <!-- 핵심 모듈 (필수) -->
     <dependency>
         <groupId>com.eraf</groupId>
-        <artifactId>eraf-starter-minimal</artifactId>
+        <artifactId>eraf-core</artifactId>
     </dependency>
 
-    <!-- 또는 전체 기능 -->
+    <!-- 웹 모듈 -->
     <dependency>
         <groupId>com.eraf</groupId>
-        <artifactId>eraf-starter-all</artifactId>
+        <artifactId>eraf-web</artifactId>
+    </dependency>
+
+    <!-- 데이터 모듈 (필요시 선택) -->
+    <dependency>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-data-jpa</artifactId>
     </dependency>
 </dependencies>
 ```
+
+### 모듈 카테고리
+
+| 카테고리 | 모듈 | 설명 |
+|---------|------|------|
+| **Core** | eraf-core | 핵심 유틸리티 (암호화, 마스킹, 검증 등) |
+| **Web** | eraf-web, eraf-security, eraf-session, eraf-swagger | 웹 관련 기능 |
+| **Data** | eraf-data-jpa, eraf-data-mybatis, eraf-data-redis, eraf-data-cache, eraf-data-database, eraf-data-elasticsearch | 데이터 처리 |
+| **Messaging** | eraf-messaging-kafka, eraf-messaging-rabbitmq, eraf-messaging-common | 메시징 |
+| **Integration** | eraf-integration-http, eraf-integration-ftp, eraf-integration-tcp, eraf-integration-s3 | 외부 연동 |
+| **Batch** | eraf-batch, eraf-scheduler | 배치/스케줄링 |
+| **기타** | eraf-statemachine, eraf-notification, eraf-actuator | 상태머신, 알림, 모니터링 |
 
 ---
 
@@ -229,9 +253,9 @@ String value = BarcodeReader.read(imageFile);
 
 ---
 
-## eraf-starter 모듈별 사용법
+## 모듈별 사용법
 
-### 1. eraf-starter-redis
+### 1. eraf-data-redis
 
 ```java
 @Autowired
@@ -251,7 +275,7 @@ public void processOrder(String orderId) {
 }
 ```
 
-### 2. eraf-starter-statemachine
+### 2. eraf-statemachine
 
 ```java
 // 상태 머신 정의
@@ -278,7 +302,7 @@ stateMachine.sendEvent("order", orderId, "PAY");
 String currentState = stateMachine.getCurrentState("order", orderId);
 ```
 
-### 3. eraf-starter-notification
+### 3. eraf-notification
 
 ```java
 @Autowired
@@ -304,7 +328,7 @@ notification.slack()
     .send();
 ```
 
-### 4. eraf-starter-scheduler
+### 4. eraf-scheduler
 
 ```java
 @ErafScheduled(cron = "0 0 9 * * *")  // 매일 오전 9시
@@ -318,7 +342,7 @@ public void healthCheck() {
 }
 ```
 
-### 5. eraf-starter-service-client
+### 5. eraf-integration-http
 
 ```java
 // 선언적 API 클라이언트
@@ -339,7 +363,7 @@ private UserServiceClient userClient;
 UserResponse user = userClient.getUser("123");
 ```
 
-### 6. eraf-starter-actuator
+### 6. eraf-actuator
 
 ```yaml
 eraf:
@@ -360,7 +384,7 @@ eraf:
 - Database 연결 상태 확인
 - Kafka 클러스터 상태 확인
 
-### 7. eraf-starter-swagger
+### 7. eraf-swagger
 
 ```yaml
 eraf:
@@ -376,7 +400,7 @@ eraf:
 
 **Swagger UI 접속:** `http://localhost:8080/swagger-ui.html`
 
-### 8. eraf-starter-kafka
+### 8. eraf-messaging-kafka
 
 ```java
 // Producer
@@ -397,7 +421,7 @@ consumer.subscribe("order-topic", event -> {
 });
 ```
 
-### 9. eraf-starter-batch
+### 9. eraf-batch
 
 ```java
 @Autowired
@@ -415,7 +439,7 @@ Job job = jobBuilder
     .build();
 ```
 
-### 10. 파일 업로드/다운로드
+### 10. 파일 업로드/다운로드 (eraf-web)
 
 ```java
 @Autowired
@@ -447,7 +471,7 @@ public ResponseEntity<Resource> view(@PathVariable String filePath) {
 }
 ```
 
-### 11. 요청/응답 로깅
+### 11. 요청/응답 로깅 (eraf-web)
 
 ```yaml
 eraf:
