@@ -6,55 +6,50 @@
 
     <parent>
         <groupId>com.eraf</groupId>
-        <artifactId>eraf-api-gateway</artifactId>
+        <artifactId>eraf-commons</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>eraf-gateway-starter</artifactId>
-    <name>ERAF Gateway Starter</name>
-    <description>Spring Boot Auto Configuration for API Gateway</description>
+    <artifactId>eraf-data-redis</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Data Redis</name>
+    <description>ERAF Data Redis - Redis Auto Configuration</description>
 
     <dependencies>
-        <!-- Gateway Core -->
+        <!-- ERAF Core -->
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-core</artifactId>
+            <artifactId>eraf-core</artifactId>
         </dependency>
 
-        <!-- Store implementations (optional) -->
+        <!-- Spring Data Redis -->
         <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-store-memory</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Lettuce (Redis Client) -->
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+        </dependency>
+
+        <!-- Spring Session Redis (optional) -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-store-jpa</artifactId>
-            <optional>true</optional>
-        </dependency>
 
-        <!-- ERAF Web -->
-        <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-web</artifactId>
-        </dependency>
-
-        <!-- Spring Boot Autoconfigure -->
+        <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -22,11 +22,10 @@
             <artifactId>eraf-gateway-common</artifactId>
         </dependency>
 
-        <!-- ERAF Commons (통합 JAR) -->
+        <!-- ERAF Core -->
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-commons-aggregator</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <artifactId>eraf-core</artifactId>
         </dependency>
 
         <!-- Spring Boot Starter Web -->

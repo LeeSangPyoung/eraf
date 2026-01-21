@@ -32,30 +32,30 @@
             <version>${eraf.version}</version>
         </dependency>
 
-        <!-- ERAF Starters -->
+        <!-- ERAF Web -->
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-starter-web</artifactId>
+            <artifactId>eraf-web</artifactId>
             <version>${eraf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-starter-session</artifactId>
+            <artifactId>eraf-session</artifactId>
             <version>${eraf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-starter-security</artifactId>
+            <artifactId>eraf-security</artifactId>
             <version>${eraf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-starter-swagger</artifactId>
+            <artifactId>eraf-swagger</artifactId>
             <version>${eraf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-starter-actuator</artifactId>
+            <artifactId>eraf-actuator</artifactId>
             <version>${eraf.version}</version>
         </dependency>
 

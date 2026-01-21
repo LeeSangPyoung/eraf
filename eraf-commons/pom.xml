@@ -20,34 +20,41 @@
     <description>Enterprise Reusable Asset Factory - Common Module Library</description>
 
     <modules>
+        <!-- BOM & Core -->
         <module>eraf-bom</module>
         <module>eraf-core</module>
-        <module>eraf-starter-web</module>
-        <module>eraf-starter-session</module>
-        <module>eraf-starter-redis</module>
-        <module>eraf-starter-actuator</module>
-        <module>eraf-starter-security</module>
-        <module>eraf-starter-jpa</module>
-        <module>eraf-starter-mybatis</module>
-        <module>eraf-starter-cache</module>
-        <module>eraf-starter-kafka</module>
-        <module>eraf-starter-batch</module>
-        <module>eraf-starter-service-client</module>
-        <module>eraf-starter-messaging</module>
-        <module>eraf-starter-rabbitmq</module>
-        <module>eraf-starter-s3</module>
-        <module>eraf-starter-elasticsearch</module>
-        <module>eraf-starter-ftp</module>
-        <module>eraf-starter-tcp</module>
-        <module>eraf-starter-notification</module>
-        <module>eraf-starter-scheduler</module>
-        <module>eraf-starter-statemachine</module>
-        <module>eraf-starter-database</module>
-        <module>eraf-starter-swagger</module>
-        <module>eraf-starter-all</module>
-        <module>eraf-starter-minimal</module>
-        <!-- Maven Profile 기반 통합 JAR 생성 -->
-        <module>eraf-commons-aggregator</module>
+
+        <!-- Web -->
+        <module>eraf-web</module>
+        <module>eraf-security</module>
+        <module>eraf-session</module>
+        <module>eraf-swagger</module>
+
+        <!-- Data -->
+        <module>eraf-data-jpa</module>
+        <module>eraf-data-mybatis</module>
+        <module>eraf-data-redis</module>
+        <module>eraf-data-elasticsearch</module>
+        <module>eraf-data-database</module>
+        <module>eraf-data-cache</module>
+
+        <!-- Messaging -->
+        <module>eraf-messaging-kafka</module>
+        <module>eraf-messaging-rabbitmq</module>
+        <module>eraf-messaging-common</module>
+
+        <!-- Integration -->
+        <module>eraf-integration-ftp</module>
+        <module>eraf-integration-tcp</module>
+        <module>eraf-integration-s3</module>
+        <module>eraf-integration-http</module>
+
+        <!-- Processing -->
+        <module>eraf-batch</module>
+        <module>eraf-scheduler</module>
+        <module>eraf-statemachine</module>
+        <module>eraf-notification</module>
+        <module>eraf-actuator</module>
     </modules>
 
     <properties>
@@ -82,130 +89,130 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- ERAF Modules -->
+            <!-- ERAF Core -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-core</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
+
+            <!-- ERAF Web -->
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-web</artifactId>
+                <artifactId>eraf-web</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-session</artifactId>
+                <artifactId>eraf-security</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-redis</artifactId>
+                <artifactId>eraf-session</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-actuator</artifactId>
+                <artifactId>eraf-swagger</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Data -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-data-jpa</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-security</artifactId>
+                <artifactId>eraf-data-mybatis</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-jpa</artifactId>
+                <artifactId>eraf-data-redis</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-mybatis</artifactId>
+                <artifactId>eraf-data-elasticsearch</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-cache</artifactId>
+                <artifactId>eraf-data-database</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-kafka</artifactId>
+                <artifactId>eraf-data-cache</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Messaging -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-messaging-kafka</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-batch</artifactId>
+                <artifactId>eraf-messaging-rabbitmq</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-service-client</artifactId>
+                <artifactId>eraf-messaging-common</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Integration -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-integration-ftp</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-database</artifactId>
+                <artifactId>eraf-integration-tcp</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-messaging</artifactId>
+                <artifactId>eraf-integration-s3</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-rabbitmq</artifactId>
+                <artifactId>eraf-integration-http</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Processing -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-batch</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-s3</artifactId>
+                <artifactId>eraf-scheduler</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-elasticsearch</artifactId>
+                <artifactId>eraf-statemachine</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-ftp</artifactId>
+                <artifactId>eraf-notification</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-tcp</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-notification</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-scheduler</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-statemachine</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-all</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-minimal</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-starter-swagger</artifactId>
+                <artifactId>eraf-actuator</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 

@@ -6,55 +6,53 @@
 
     <parent>
         <groupId>com.eraf</groupId>
-        <artifactId>eraf-api-gateway</artifactId>
+        <artifactId>eraf-commons</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>eraf-gateway-starter</artifactId>
-    <name>ERAF Gateway Starter</name>
-    <description>Spring Boot Auto Configuration for API Gateway</description>
+    <artifactId>eraf-messaging-common</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Messaging Common</name>
+    <description>ERAF Messaging - Unified Messaging Interface (Kafka/RabbitMQ/SQS)</description>
 
     <dependencies>
-        <!-- Gateway Core -->
+        <!-- ERAF Core -->
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-core</artifactId>
+            <artifactId>eraf-core</artifactId>
         </dependency>
 
-        <!-- Store implementations (optional) -->
+        <!-- Spring Kafka (optional) -->
         <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-store-memory</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-store-jpa</artifactId>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- ERAF Web -->
+        <!-- Spring AMQP for RabbitMQ (optional) -->
         <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-web</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+            <optional>true</optional>
         </dependency>
 
-        <!-- Spring Boot Autoconfigure -->
+        <!-- AWS SQS (optional) -->
+        <dependency>
+            <groupId>io.awspring.cloud</groupId>
+            <artifactId>spring-cloud-aws-starter-sqs</artifactId>
+            <version>3.1.0</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

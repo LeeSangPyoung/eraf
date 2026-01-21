@@ -6,55 +6,51 @@
 
     <parent>
         <groupId>com.eraf</groupId>
-        <artifactId>eraf-api-gateway</artifactId>
+        <artifactId>eraf-commons</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>eraf-gateway-starter</artifactId>
-    <name>ERAF Gateway Starter</name>
-    <description>Spring Boot Auto Configuration for API Gateway</description>
+    <artifactId>eraf-integration-ftp</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Integration FTP</name>
+    <description>ERAF FTP/SFTP - File Transfer Client with Connection Pool</description>
 
     <dependencies>
-        <!-- Gateway Core -->
+        <!-- ERAF Core -->
         <dependency>
             <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-core</artifactId>
+            <artifactId>eraf-core</artifactId>
         </dependency>
 
-        <!-- Store implementations (optional) -->
+        <!-- Apache Commons Net for FTP -->
         <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-store-memory</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-gateway-store-jpa</artifactId>
-            <optional>true</optional>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.10.0</version>
         </dependency>
 
-        <!-- ERAF Web -->
+        <!-- JSch for SFTP -->
         <dependency>
-            <groupId>com.eraf</groupId>
-            <artifactId>eraf-web</artifactId>
+            <groupId>com.github.mwiede</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.2.16</version>
         </dependency>
 
-        <!-- Spring Boot Autoconfigure -->
+        <!-- Commons Pool for Connection Pooling -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

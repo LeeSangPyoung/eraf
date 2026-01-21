@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.eraf</groupId>
+        <artifactId>eraf-commons</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>eraf-integration-s3</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ERAF Integration S3</name>
+    <description>ERAF Storage - File Storage (Local/S3/MinIO/NAS)</description>
+
+    <dependencies>
+        <!-- ERAF Core -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core</artifactId>
+        </dependency>
+
+        <!-- AWS S3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.25.0</version>
+        </dependency>
+
+        <!-- MinIO (S3 Compatible) -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.7</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Auto Configuration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>
