@@ -70,11 +70,6 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-data-database</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
                 <artifactId>eraf-data-cache</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
@@ -88,11 +83,6 @@
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-messaging-rabbitmq</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-messaging-common</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
@@ -136,12 +126,39 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
+                <artifactId>eraf-saga</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
                 <artifactId>eraf-notification</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-actuator</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Document & Media -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-excel</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-pdf</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-barcode</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-image</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
         </dependencies>

@@ -35,13 +35,11 @@
         <module>eraf-data-mybatis</module>
         <module>eraf-data-redis</module>
         <module>eraf-data-elasticsearch</module>
-        <module>eraf-data-database</module>
         <module>eraf-data-cache</module>
 
         <!-- Messaging -->
         <module>eraf-messaging-kafka</module>
         <module>eraf-messaging-rabbitmq</module>
-        <module>eraf-messaging-common</module>
 
         <!-- Integration -->
         <module>eraf-integration-ftp</module>
@@ -53,12 +51,19 @@
         <module>eraf-batch</module>
         <module>eraf-scheduler</module>
         <module>eraf-statemachine</module>
+        <module>eraf-saga</module>
         <module>eraf-notification</module>
         <module>eraf-actuator</module>
+
+        <!-- Document & Media -->
+        <module>eraf-excel</module>
+        <module>eraf-pdf</module>
+        <module>eraf-barcode</module>
+        <module>eraf-image</module>
     </modules>
 
     <properties>
-        <java.version>23</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -141,11 +146,6 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-data-database</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
                 <artifactId>eraf-data-cache</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
@@ -159,11 +159,6 @@
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-messaging-rabbitmq</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-messaging-common</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
@@ -207,12 +202,39 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
+                <artifactId>eraf-saga</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
                 <artifactId>eraf-notification</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-actuator</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ERAF Document & Media -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-excel</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-pdf</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-barcode</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-image</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
