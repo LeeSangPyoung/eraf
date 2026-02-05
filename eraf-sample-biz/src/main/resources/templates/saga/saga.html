@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Saga Pattern</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-arrow-repeat me-2"></i>Saga Pattern</h2>
+        <span class="badge bg-primary">#35 ~ #42</span>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="sagaTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#saga-def" type="button">
+                <i class="bi bi-file-code me-1"></i>#35 Definition
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#saga-execute" type="button">
+                <i class="bi bi-play me-1"></i>#36-37 Execute
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#saga-compensate" type="button">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>#38 Compensation
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#saga-history" type="button">
+                <i class="bi bi-clock-history me-1"></i>#39-40 History
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#saga-timeout" type="button">
+                <i class="bi bi-hourglass me-1"></i>#41 Timeout
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#saga-distributed" type="button">
+                <i class="bi bi-diagram-3 me-1"></i>#42 Distributed
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #35 Saga Definition -->
+        <div class="tab-pane fade show active" id="saga-def" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#35 Saga Definitions</h5>
+                </div>
+                <div class="card-body">
+                    <div id="sagaDefinitions">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #36-37 Saga Execute -->
+        <div class="tab-pane fade" id="saga-execute" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#36 Execute Saga | #37 Step Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Execute Saga</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Saga</label>
+                                <select class="form-select" id="execSaga">
+                                    <option value="order-saga">Order Saga (5 steps)</option>
+                                    <option value="payment-saga">Payment Saga (3 steps)</option>
+                                    <option value="shipping-saga">Shipping Saga (3 steps)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Order ID</label>
+                                <input type="text" class="form-control" id="execOrderId" value="ORD-001">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="execAmount" value="1000">
+                            </div>
+                            <button class="btn btn-primary" onclick="executeSaga()">
+                                <i class="bi bi-play me-1"></i>Execute
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Execution Progress</h6>
+                            <div id="executionProgress" class="mb-3">
+                                <div class="text-muted text-center py-3">Execute a saga to see progress</div>
+                            </div>
+                            <h6>Execution Result</h6>
+                            <pre id="executionResult" class="bg-dark text-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+Execute a saga to see result...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #38 Compensation Simulation -->
+        <div class="tab-pane fade" id="saga-compensate" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">#38 Compensation Transaction Simulation</h5>
+                    <button class="btn btn-sm btn-outline-danger" onclick="resetFailureRates()">
+                        <i class="bi bi-trash"></i> Reset All
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Set failure rates for each step to simulate failures and trigger compensation transactions.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Set Step Failure Rates</h6>
+                            <table class="table table-sm">
+                                <thead>
+                                <tr>
+                                    <th>Step Name</th>
+                                    <th>Failure Rate (%)</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>validateOrder</td>
+                                    <td><input type="number" class="form-control form-control-sm" id="fr_validateOrder" value="0" min="0" max="100"></td>
+                                    <td><button class="btn btn-sm btn-primary" onclick="setFailureRate('validateOrder')">Set</button></td>
+                                </tr>
+                                <tr>
+                                    <td>reserveInventory</td>
+                                    <td><input type="number" class="form-control form-control-sm" id="fr_reserveInventory" value="0" min="0" max="100"></td>
+                                    <td><button class="btn btn-sm btn-primary" onclick="setFailureRate('reserveInventory')">Set</button></td>
+                                </tr>
+                                <tr>
+                                    <td>processPayment</td>
+                                    <td><input type="number" class="form-control form-control-sm" id="fr_processPayment" value="0" min="0" max="100"></td>
+                                    <td><button class="btn btn-sm btn-primary" onclick="setFailureRate('processPayment')">Set</button></td>
+                                </tr>
+                                <tr>
+                                    <td>createShipment</td>
+                                    <td><input type="number" class="form-control form-control-sm" id="fr_createShipment" value="0" min="0" max="100"></td>
+                                    <td><button class="btn btn-sm btn-primary" onclick="setFailureRate('createShipment')">Set</button></td>
+                                </tr>
+                                <tr>
+                                    <td>sendNotification</td>
+                                    <td><input type="number" class="form-control form-control-sm" id="fr_sendNotification" value="0" min="0" max="100"></td>
+                                    <td><button class="btn btn-sm btn-primary" onclick="setFailureRate('sendNotification')">Set</button></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <button class="btn btn-warning" onclick="executeWithHighFailure()">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Execute with 80% Failure at Step 3
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Current Failure Rates</h6>
+                            <pre id="failureRatesDisplay" class="bg-dark text-light p-3 rounded">Loading...</pre>
+                            <h6>Compensation Result</h6>
+                            <pre id="compensationResult" class="bg-dark text-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+Set failure rates and execute saga...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #39-40 History & Retry -->
+        <div class="tab-pane fade" id="saga-history" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">#39 Execution History | #40 Retry Failed Sagas</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadExecutionHistory()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary active" onclick="filterHistory('ALL')">All</button>
+                            <button class="btn btn-outline-success" onclick="filterHistory('COMPLETED')">Completed</button>
+                            <button class="btn btn-outline-warning" onclick="filterHistory('COMPENSATED')">Compensated</button>
+                            <button class="btn btn-outline-danger" onclick="filterHistory('FAILED')">Failed</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Saga</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                            <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #41 Timeout -->
+        <div class="tab-pane fade" id="saga-timeout" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#41 Saga Timeout Handling</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Execute with Timeout</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Saga</label>
+                                <select class="form-select" id="timeoutSaga">
+                                    <option value="order-saga">Order Saga</option>
+                                    <option value="payment-saga">Payment Saga</option>
+                                    <option value="shipping-saga">Shipping Saga</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Timeout (ms)</label>
+                                <input type="number" class="form-control" id="timeoutMs" value="5000" min="1000">
+                                <small class="text-muted">Normal execution takes ~2-3 seconds</small>
+                            </div>
+                            <button class="btn btn-primary" onclick="executeWithTimeout()">
+                                <i class="bi bi-hourglass me-1"></i>Execute with Timeout
+                            </button>
+                            <button class="btn btn-warning" onclick="executeWithShortTimeout()">
+                                <i class="bi bi-lightning me-1"></i>Execute with 1s Timeout
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Result</h6>
+                            <pre id="timeoutResult" class="bg-dark text-light p-3 rounded" style="min-height: 200px;">
+Execute a saga with timeout...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #42 Distributed Simulation -->
+        <div class="tab-pane fade" id="saga-distributed" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#42 Distributed Environment Simulation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Concurrent Saga Execution</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Saga</label>
+                                <select class="form-select" id="distSaga">
+                                    <option value="order-saga">Order Saga</option>
+                                    <option value="payment-saga">Payment Saga</option>
+                                    <option value="shipping-saga">Shipping Saga</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Number of Concurrent Sagas</label>
+                                <input type="number" class="form-control" id="distCount" value="5" min="1" max="20">
+                            </div>
+                            <button class="btn btn-primary" onclick="executeDistributed()">
+                                <i class="bi bi-diagram-3 me-1"></i>Execute Concurrent Sagas
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Results Summary</h6>
+                            <div class="row mb-3" id="distSummary">
+                                <div class="col-3">
+                                    <div class="card bg-primary text-white text-center p-2">
+                                        <h4 id="distTotal">-</h4>
+                                        <small>Total</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="card bg-success text-white text-center p-2">
+                                        <h4 id="distCompleted">-</h4>
+                                        <small>Completed</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="card bg-warning text-dark text-center p-2">
+                                        <h4 id="distCompensated">-</h4>
+                                        <small>Compensated</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="card bg-danger text-white text-center p-2">
+                                        <h4 id="distFailed">-</h4>
+                                        <small>Failed</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <pre id="distResult" class="bg-dark text-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+Execute concurrent sagas to see results...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDefinitions();
+            loadFailureRates();
+        });
+
+        // #35 Load Definitions
+        function loadDefinitions() {
+            fetch('/saga/definitions')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('sagaDefinitions');
+                let html = '<div class="row">';
+                data.definitions.forEach(def => {
+                    html += `
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <strong>${def.name}</strong>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">${def.description || ''}</p>
+                                    <p><strong>Steps:</strong> ${def.totalSteps}</p>
+                                    <p><strong>Timeout:</strong> ${def.timeout}ms</p>
+                                    <p><strong>Max Retries:</strong> ${def.maxRetries}</p>
+                                    <h6>Step Details:</h6>
+                                    <ol class="small">
+                                        ${def.steps.map(s => `<li>${s.name} ${s.hasCompensation ? '<i class="bi bi-arrow-counterclockwise text-warning"></i>' : ''}</li>`).join('')}
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            });
+        }
+
+        // #36-37 Execute Saga
+        function executeSaga() {
+            const sagaName = document.getElementById('execSaga').value;
+            const orderId = document.getElementById('execOrderId').value;
+            const amount = parseInt(document.getElementById('execAmount').value);
+
+            document.getElementById('executionProgress').innerHTML = '<div class="text-center"><div class="spinner-border"></div> Executing...</div>';
+
+            fetch('/saga/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sagaName,
+                    input: { orderId, amount },
+                    failureRates: null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('executionResult').textContent = JSON.stringify(data, null, 2);
+
+                if (data.execution) {
+                    renderExecutionProgress(data.execution);
+                } else {
+                    document.getElementById('executionProgress').innerHTML = '<div class="alert alert-warning">No execution data</div>';
+                }
+
+                loadExecutionHistory();
+            });
+        }
+
+        function renderExecutionProgress(execution) {
+            let html = `
+                <div class="mb-2">
+                    <strong>Status:</strong>
+                    <span class="badge ${getStatusBadge(execution.status)}">${execution.status}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+            `;
+
+            execution.steps.forEach(step => {
+                html += `
+                    <div class="border rounded p-2 ${getStepBorderClass(step.status)}" style="min-width: 120px;">
+                        <small class="d-block text-muted">Step ${step.order}</small>
+                        <strong>${step.name}</strong>
+                        <span class="badge ${getStepBadge(step.status)} ms-1">${step.status}</span>
+                        ${step.errorMessage ? `<div class="text-danger small">${step.errorMessage}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            if (execution.failureReason) {
+                html += `<div class="alert alert-danger mt-2">${execution.failureReason}</div>`;
+            }
+
+            document.getElementById('executionProgress').innerHTML = html;
+        }
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'COMPLETED': return 'bg-success';
+                case 'COMPENSATED': return 'bg-warning text-dark';
+                case 'FAILED': return 'bg-danger';
+                case 'IN_PROGRESS': return 'bg-primary';
+                case 'COMPENSATING': return 'bg-warning text-dark';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getStepBadge(status) {
+            switch(status) {
+                case 'SUCCESS': return 'bg-success';
+                case 'FAILED': return 'bg-danger';
+                case 'RUNNING': return 'bg-primary';
+                case 'COMPENSATED': return 'bg-warning text-dark';
+                case 'COMPENSATING': return 'bg-warning text-dark';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getStepBorderClass(status) {
+            switch(status) {
+                case 'SUCCESS': return 'border-success';
+                case 'FAILED': return 'border-danger';
+                case 'COMPENSATED': return 'border-warning';
+                default: return '';
+            }
+        }
+
+        // #38 Compensation
+        function setFailureRate(stepName) {
+            const rate = parseInt(document.getElementById('fr_' + stepName).value);
+
+            fetch('/saga/failure-rate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stepName, failureRate: rate })
+            })
+            .then(() => loadFailureRates());
+        }
+
+        function loadFailureRates() {
+            fetch('/saga/failure-rates')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('failureRatesDisplay').textContent = JSON.stringify(data.failureRates, null, 2);
+            });
+        }
+
+        function resetFailureRates() {
+            fetch('/saga/failure-rates', { method: 'DELETE' })
+            .then(() => {
+                loadFailureRates();
+                ['validateOrder', 'reserveInventory', 'processPayment', 'createShipment', 'sendNotification'].forEach(step => {
+                    document.getElementById('fr_' + step).value = 0;
+                });
+            });
+        }
+
+        function executeWithHighFailure() {
+            // Set 80% failure at step 3
+            fetch('/saga/failure-rate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stepName: 'processPayment', failureRate: 80 })
+            })
+            .then(() => {
+                loadFailureRates();
+
+                return fetch('/saga/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sagaName: 'order-saga',
+                        input: { orderId: 'ORD-FAIL-' + Date.now(), amount: 500 }
+                    })
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('compensationResult').textContent = JSON.stringify(data, null, 2);
+                loadExecutionHistory();
+            });
+        }
+
+        // #39-40 History & Retry
+        function loadExecutionHistory() {
+            fetch('/saga/executions?limit=20')
+            .then(response => response.json())
+            .then(data => {
+                renderHistory(data.executions);
+            });
+        }
+
+        function filterHistory(status) {
+            if (status === 'ALL') {
+                loadExecutionHistory();
+            } else {
+                fetch('/saga/executions/by-status/' + status)
+                .then(response => response.json())
+                .then(data => {
+                    renderHistory(data.executions);
+                });
+            }
+        }
+
+        function renderHistory(executions) {
+            const tbody = document.getElementById('historyTableBody');
+            if (executions && executions.length > 0) {
+                tbody.innerHTML = executions.map(exec => `
+                    <tr>
+                        <td><code>${exec.id.substring(0, 8)}...</code></td>
+                        <td>${exec.sagaName}</td>
+                        <td><span class="badge ${getStatusBadge(exec.status)}">${exec.status}</span></td>
+                        <td><small>${new Date(exec.startedAt).toLocaleString()}</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewExecution('${exec.id}')">View</button>
+                            ${(exec.status === 'COMPENSATED' || exec.status === 'FAILED') ?
+                                `<button class="btn btn-sm btn-outline-warning" onclick="retrySaga('${exec.id}')">Retry</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No executions</td></tr>';
+            }
+        }
+
+        function viewExecution(executionId) {
+            fetch('/saga/execution/' + executionId)
+            .then(response => response.json())
+            .then(data => {
+                alert(JSON.stringify(data, null, 2));
+            });
+        }
+
+        function retrySaga(executionId) {
+            if (!confirm('Retry this saga?')) return;
+
+            fetch('/saga/retry/' + executionId, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                alert(JSON.stringify(data, null, 2));
+                loadExecutionHistory();
+            });
+        }
+
+        // #41 Timeout
+        function executeWithTimeout() {
+            const sagaName = document.getElementById('timeoutSaga').value;
+            const timeout = parseInt(document.getElementById('timeoutMs').value);
+
+            document.getElementById('timeoutResult').textContent = 'Executing with ' + timeout + 'ms timeout...';
+
+            fetch('/saga/execute-with-timeout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sagaName, input: { orderId: 'ORD-TO-' + Date.now() }, timeout })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('timeoutResult').textContent = JSON.stringify(data, null, 2);
+            });
+        }
+
+        function executeWithShortTimeout() {
+            document.getElementById('timeoutMs').value = 1000;
+            executeWithTimeout();
+        }
+
+        // #42 Distributed
+        function executeDistributed() {
+            const sagaName = document.getElementById('distSaga').value;
+            const count = parseInt(document.getElementById('distCount').value);
+
+            document.getElementById('distResult').textContent = 'Executing ' + count + ' concurrent sagas...';
+            document.getElementById('distTotal').textContent = count;
+            document.getElementById('distCompleted').textContent = '-';
+            document.getElementById('distCompensated').textContent = '-';
+            document.getElementById('distFailed').textContent = '-';
+
+            fetch('/saga/distributed-simulation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sagaName, count })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('distTotal').textContent = data.totalCount;
+                document.getElementById('distCompleted').textContent = data.completed;
+                document.getElementById('distCompensated').textContent = data.compensated;
+                document.getElementById('distFailed').textContent = data.failed;
+                document.getElementById('distResult').textContent = JSON.stringify(data.results, null, 2);
+                loadExecutionHistory();
+            });
+        }
+
+        // Tab handlers
+        document.querySelector('[data-bs-target="#saga-history"]').addEventListener('shown.bs.tab', loadExecutionHistory);
+        document.querySelector('[data-bs-target="#saga-compensate"]').addEventListener('shown.bs.tab', loadFailureRates);
+    </script>
+</content>
+</body>
+</html>

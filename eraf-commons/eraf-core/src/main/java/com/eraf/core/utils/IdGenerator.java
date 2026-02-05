@@ -56,7 +56,7 @@ public final class IdGenerator {
         }
 
         // 랜덤 (16자)
-        byte[] random = new byte[10];
+        byte[] random = new byte[16];
         RANDOM.nextBytes(random);
         int counter = ULID_COUNTER.incrementAndGet();
 

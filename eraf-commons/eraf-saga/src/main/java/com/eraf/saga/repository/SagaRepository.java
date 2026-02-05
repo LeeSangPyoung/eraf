@@ -37,6 +37,11 @@ public interface SagaRepository {
     List<SagaExecution> findByStatus(SagaStatus status);
 
     /**
+     * 모든 실행 조회
+     */
+    List<SagaExecution> findAll();
+
+    /**
      * 삭제
      */
     void delete(String id);

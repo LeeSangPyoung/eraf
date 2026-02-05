@@ -213,8 +213,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Circuit Breaker 레지스트리
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafCircuitBreakerRegistry")
+    @ConditionalOnMissingBean(CircuitBreakerRegistry.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.circuit-breaker.enabled", havingValue = "true", matchIfMissing = true)
     public CircuitBreakerRegistry circuitBreakerRegistry() {
         return new CircuitBreakerRegistry();
@@ -223,8 +223,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Circuit Breaker AOP Aspect
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafCircuitBreakerAspect")
+    @ConditionalOnMissingBean(CircuitBreakerAspect.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.circuit-breaker.enabled", havingValue = "true", matchIfMissing = true)
     public CircuitBreakerAspect circuitBreakerAspect(CircuitBreakerRegistry registry) {
         return new CircuitBreakerAspect(registry);
@@ -233,8 +233,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Rate Limiter 레지스트리
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafRateLimiterRegistry")
+    @ConditionalOnMissingBean(RateLimiter.Registry.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.rate-limit.enabled", havingValue = "true", matchIfMissing = true)
     public RateLimiter.Registry rateLimiterRegistry() {
         return new RateLimiter.Registry();
@@ -243,8 +243,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Rate Limit AOP Aspect
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafRateLimitAspect")
+    @ConditionalOnMissingBean(RateLimitAspect.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.rate-limit.enabled", havingValue = "true", matchIfMissing = true)
     public RateLimitAspect rateLimitAspect(RateLimiter.Registry registry) {
         return new RateLimitAspect(registry);
@@ -253,8 +253,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Timeout AOP Aspect
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafTimeoutAspect")
+    @ConditionalOnMissingBean(TimeoutAspect.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.timeout.enabled", havingValue = "true", matchIfMissing = true)
     public TimeoutAspect timeoutAspect() {
         return new TimeoutAspect();
@@ -263,8 +263,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Bulkhead AOP Aspect
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafBulkheadAspect")
+    @ConditionalOnMissingBean(BulkheadAspect.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.bulkhead.enabled", havingValue = "true", matchIfMissing = true)
     public BulkheadAspect bulkheadAspect() {
         return new BulkheadAspect();
@@ -273,8 +273,8 @@ public class ErafWebAutoConfiguration {
     /**
      * Retry AOP Aspect
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean("erafRetryAspect")
+    @ConditionalOnMissingBean(RetryAspect.class)
     @ConditionalOnProperty(name = "eraf.web.resilience.retry.enabled", havingValue = "true", matchIfMissing = true)
     public RetryAspect retryAspect() {
         return new RetryAspect();

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>State Machine</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-diagram-3 me-2"></i>State Machine</h2>
+        <span class="badge bg-primary">#29 ~ #34</span>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="smTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sm-definition" type="button">
+                <i class="bi bi-file-code me-1"></i>#29 Definition
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sm-diagram" type="button">
+                <i class="bi bi-diagram-2 me-1"></i>#30 Diagram
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sm-state" type="button">
+                <i class="bi bi-circle me-1"></i>#31 State
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sm-event" type="button">
+                <i class="bi bi-send me-1"></i>#32 Events
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sm-history" type="button">
+                <i class="bi bi-clock-history me-1"></i>#33 History
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sm-admin" type="button">
+                <i class="bi bi-gear me-1"></i>#34 Admin
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #29 State Machine Definition -->
+        <div class="tab-pane fade show active" id="sm-definition" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">#29 State Machine Definitions</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadDefinitions()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Available Machines</h6>
+                            <div id="machineList" class="list-group"></div>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Definition Details</h6>
+                            <pre id="definitionDetails" class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">
+Select a state machine to view its definition...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #30 State Transition Diagram -->
+        <div class="tab-pane fade" id="sm-diagram" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#30 State Transition Diagram</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <select class="form-select" id="diagramMachine" onchange="loadDiagram()">
+                            <option value="">-- Select Machine --</option>
+                            <option value="order">Order State Machine</option>
+                            <option value="delivery">Delivery State Machine</option>
+                            <option value="payment">Payment State Machine</option>
+                        </select>
+                    </div>
+                    <div id="diagramContainer" class="border rounded p-3 bg-light" style="min-height: 400px;">
+                        <div class="text-center text-muted py-5">Select a state machine to view its diagram</div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <span class="badge bg-success">Initial State</span>
+                            <span class="badge bg-secondary">Normal State</span>
+                            <span class="badge bg-danger">End State</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #31 Current State -->
+        <div class="tab-pane fade" id="sm-state" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#31 Current State Query</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Initialize State Machine</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Machine</label>
+                                <select class="form-select" id="initMachine">
+                                    <option value="order">Order</option>
+                                    <option value="delivery">Delivery</option>
+                                    <option value="payment">Payment</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Entity ID</label>
+                                <input type="text" class="form-control" id="initEntityId" placeholder="e.g., ORD-001">
+                            </div>
+                            <button class="btn btn-success" onclick="initializeStateMachine()">
+                                <i class="bi bi-play me-1"></i>Initialize
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="generateEntityId()">
+                                <i class="bi bi-dice-5"></i>
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Query State</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Machine</label>
+                                <select class="form-select" id="queryMachine">
+                                    <option value="order">Order</option>
+                                    <option value="delivery">Delivery</option>
+                                    <option value="payment">Payment</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Entity ID</label>
+                                <input type="text" class="form-control" id="queryEntityId" placeholder="e.g., ORD-001">
+                            </div>
+                            <button class="btn btn-primary" onclick="queryState()">
+                                <i class="bi bi-search me-1"></i>Query
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Current State</h6>
+                            <div id="currentStateDisplay" class="border rounded p-3 bg-light" style="min-height: 150px;">
+                                <div class="text-center text-muted">Query an entity to view its state</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #32 Send Events -->
+        <div class="tab-pane fade" id="sm-event" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#32 Send Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h6>Select Entity</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Machine</label>
+                                <select class="form-select" id="eventMachine" onchange="loadEntities()">
+                                    <option value="order">Order</option>
+                                    <option value="delivery">Delivery</option>
+                                    <option value="payment">Payment</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Entity</label>
+                                <select class="form-select" id="eventEntityId" onchange="loadAvailableEvents()">
+                                    <option value="">-- Select Entity --</option>
+                                </select>
+                            </div>
+                            <h6>Available Events</h6>
+                            <div id="availableEvents" class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="text-muted">Select an entity first</span>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h6>Event Result</h6>
+                            <pre id="eventResult" class="bg-dark text-light p-3 rounded" style="min-height: 200px;">
+Send an event to see the result...</pre>
+                            <div id="eventFlow" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #33 State Change History -->
+        <div class="tab-pane fade" id="sm-history" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">#33 State Change History</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadHistory()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Machine</th>
+                                <th>Entity</th>
+                                <th>Transition</th>
+                                <th>Event</th>
+                            </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                            <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #34 Admin - Force State Change -->
+        <div class="tab-pane fade" id="sm-admin" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">#34 Admin - Force State Change</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> Force changing state bypasses normal transition rules.
+                        Use with caution!
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Machine</label>
+                                <select class="form-select" id="adminMachine" onchange="loadAdminEntities(); loadAdminStates();">
+                                    <option value="order">Order</option>
+                                    <option value="delivery">Delivery</option>
+                                    <option value="payment">Payment</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Entity</label>
+                                <select class="form-select" id="adminEntityId">
+                                    <option value="">-- Select Entity --</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Target State</label>
+                                <select class="form-select" id="adminTargetState">
+                                    <option value="">-- Select State --</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-danger" onclick="forceStateChange()">
+                                <i class="bi bi-exclamation-octagon me-1"></i>Force State Change
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Result</h6>
+                            <pre id="adminResult" class="bg-dark text-light p-3 rounded" style="min-height: 150px;">
+Force state change result will appear here...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDefinitions();
+            loadHistory();
+        });
+
+        // #29 Definitions
+        function loadDefinitions() {
+            fetch('/statemachine/definitions')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('machineList');
+                list.innerHTML = data.definitions.map(def => `
+                    <a href="#" class="list-group-item list-group-item-action" onclick="showDefinition('${def.id}'); return false;">
+                        <strong>${def.id}</strong>
+                        <br><small class="text-muted">${def.description || ''}</small>
+                        <br><small>States: ${def.states.length}, Transitions: ${def.transitions.length}</small>
+                    </a>
+                `).join('');
+            });
+        }
+
+        function showDefinition(machineId) {
+            fetch(`/statemachine/definition/${machineId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('definitionDetails').textContent = JSON.stringify(data, null, 2);
+            });
+        }
+
+        // #30 Diagram
+        function loadDiagram() {
+            const machineId = document.getElementById('diagramMachine').value;
+            if (!machineId) {
+                document.getElementById('diagramContainer').innerHTML = '<div class="text-center text-muted py-5">Select a state machine</div>';
+                return;
+            }
+
+            fetch(`/statemachine/diagram/${machineId}`)
+            .then(response => response.json())
+            .then(data => {
+                renderDiagram(data);
+            });
+        }
+
+        function renderDiagram(data) {
+            const container = document.getElementById('diagramContainer');
+            let html = '<div class="d-flex flex-wrap justify-content-center gap-3">';
+
+            // Render states
+            data.nodes.forEach(node => {
+                let badgeClass = 'bg-secondary';
+                if (node.isInitial) badgeClass = 'bg-success';
+                if (node.isEnd) badgeClass = 'bg-danger';
+
+                html += `
+                    <div class="card" style="min-width: 120px;">
+                        <div class="card-body text-center p-2">
+                            <span class="badge ${badgeClass}">${node.label}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            // Render transitions as a table
+            html += '<h6 class="mt-4">Transitions</h6>';
+            html += '<table class="table table-sm">';
+            html += '<thead><tr><th>From</th><th>Event</th><th>To</th></tr></thead><tbody>';
+            data.edges.forEach(edge => {
+                html += `<tr>
+                    <td><span class="badge bg-secondary">${edge.from}</span></td>
+                    <td><i class="bi bi-arrow-right"></i> ${edge.label}</td>
+                    <td><span class="badge bg-primary">${edge.to}</span></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+
+            container.innerHTML = html;
+        }
+
+        // #31 State Management
+        function generateEntityId() {
+            const machine = document.getElementById('initMachine').value;
+            const prefix = machine === 'order' ? 'ORD' : machine === 'delivery' ? 'DLV' : 'PAY';
+            const id = `${prefix}-${Date.now().toString().slice(-6)}`;
+            document.getElementById('initEntityId').value = id;
+        }
+
+        function initializeStateMachine() {
+            const machineId = document.getElementById('initMachine').value;
+            const entityId = document.getElementById('initEntityId').value;
+
+            if (!entityId) {
+                alert('Please enter an Entity ID');
+                return;
+            }
+
+            fetch('/statemachine/initialize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ machineId, entityId, context: {} })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('queryMachine').value = machineId;
+                    document.getElementById('queryEntityId').value = entityId;
+                    queryState();
+                    loadHistory();
+                    loadEntities();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function queryState() {
+            const machineId = document.getElementById('queryMachine').value;
+            const entityId = document.getElementById('queryEntityId').value;
+
+            if (!entityId) {
+                alert('Please enter an Entity ID');
+                return;
+            }
+
+            fetch(`/statemachine/state/${machineId}/${entityId}`)
+            .then(response => response.json())
+            .then(data => {
+                const display = document.getElementById('currentStateDisplay');
+                if (data.found) {
+                    let html = `
+                        <div class="text-center mb-3">
+                            <h4><span class="badge ${data.isEndState ? 'bg-danger' : 'bg-primary'}">${data.state.currentState}</span></h4>
+                            ${data.state.previousState ? '<small class="text-muted">Previous: ' + data.state.previousState + '</small>' : ''}
+                        </div>
+                    `;
+                    if (data.availableEvents && data.availableEvents.length > 0) {
+                        html += '<p><strong>Available Events:</strong></p>';
+                        html += '<div class="d-flex flex-wrap gap-1">';
+                        data.availableEvents.forEach(evt => {
+                            html += `<span class="badge bg-info">${evt}</span>`;
+                        });
+                        html += '</div>';
+                    } else {
+                        html += '<p class="text-muted">No available events (end state)</p>';
+                    }
+                    display.innerHTML = html;
+                } else {
+                    display.innerHTML = '<div class="text-center text-danger">Entity not found</div>';
+                }
+            });
+        }
+
+        // #32 Events
+        function loadEntities() {
+            const machineId = document.getElementById('eventMachine').value;
+
+            fetch(`/statemachine/entities/${machineId}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('eventEntityId');
+                select.innerHTML = '<option value="">-- Select Entity --</option>';
+                data.entities.forEach(entity => {
+                    select.innerHTML += `<option value="${entity.entityId}">${entity.entityId} (${entity.currentState})</option>`;
+                });
+            });
+        }
+
+        function loadAvailableEvents() {
+            const machineId = document.getElementById('eventMachine').value;
+            const entityId = document.getElementById('eventEntityId').value;
+
+            if (!entityId) {
+                document.getElementById('availableEvents').innerHTML = '<span class="text-muted">Select an entity</span>';
+                return;
+            }
+
+            fetch(`/statemachine/state/${machineId}/${entityId}`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('availableEvents');
+                if (data.found && data.availableEvents.length > 0) {
+                    container.innerHTML = data.availableEvents.map(evt =>
+                        `<button class="btn btn-sm btn-outline-primary" onclick="sendEvent('${evt}')">${evt}</button>`
+                    ).join('');
+                } else {
+                    container.innerHTML = '<span class="text-muted">No available events</span>';
+                }
+            });
+        }
+
+        function sendEvent(event) {
+            const machineId = document.getElementById('eventMachine').value;
+            const entityId = document.getElementById('eventEntityId').value;
+
+            fetch('/statemachine/send-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ machineId, entityId, event, context: {} })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('eventResult').textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    // Show transition flow
+                    document.getElementById('eventFlow').innerHTML = `
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <span class="badge bg-secondary">${data.previousState}</span>
+                            <i class="bi bi-arrow-right"></i>
+                            <span class="badge bg-warning text-dark">${event}</span>
+                            <i class="bi bi-arrow-right"></i>
+                            <span class="badge bg-success">${data.currentState}</span>
+                        </div>
+                    `;
+                    loadAvailableEvents();
+                    loadHistory();
+                    loadEntities();
+                }
+            });
+        }
+
+        // #33 History
+        function loadHistory() {
+            fetch('/statemachine/history/all?limit=50')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('historyTableBody');
+                if (data.history && data.history.length > 0) {
+                    tbody.innerHTML = data.history.map(h => `
+                        <tr>
+                            <td><small>${new Date(h.timestamp).toLocaleString()}</small></td>
+                            <td><span class="badge bg-info">${h.machineId}</span></td>
+                            <td><code>${h.entityId}</code></td>
+                            <td>
+                                ${h.previousState ? `<span class="badge bg-secondary">${h.previousState}</span> → ` : ''}
+                                <span class="badge bg-primary">${h.currentState}</span>
+                            </td>
+                            <td><span class="badge bg-warning text-dark">${h.event}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No history yet</td></tr>';
+                }
+            });
+        }
+
+        // #34 Admin
+        function loadAdminEntities() {
+            const machineId = document.getElementById('adminMachine').value;
+
+            fetch(`/statemachine/entities/${machineId}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('adminEntityId');
+                select.innerHTML = '<option value="">-- Select Entity --</option>';
+                data.entities.forEach(entity => {
+                    select.innerHTML += `<option value="${entity.entityId}">${entity.entityId} (${entity.currentState})</option>`;
+                });
+            });
+        }
+
+        function loadAdminStates() {
+            const machineId = document.getElementById('adminMachine').value;
+
+            fetch(`/statemachine/definition/${machineId}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('adminTargetState');
+                select.innerHTML = '<option value="">-- Select State --</option>';
+                if (data.states) {
+                    data.states.forEach(state => {
+                        select.innerHTML += `<option value="${state}">${state}</option>`;
+                    });
+                }
+            });
+        }
+
+        function forceStateChange() {
+            const machineId = document.getElementById('adminMachine').value;
+            const entityId = document.getElementById('adminEntityId').value;
+            const targetState = document.getElementById('adminTargetState').value;
+
+            if (!entityId || !targetState) {
+                alert('Please select an entity and target state');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to force change the state?')) {
+                return;
+            }
+
+            fetch('/statemachine/force-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ machineId, entityId, targetState })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('adminResult').textContent = JSON.stringify(data, null, 2);
+                if (data.success) {
+                    loadHistory();
+                    loadAdminEntities();
+                }
+            });
+        }
+
+        // Tab change handlers
+        document.querySelector('[data-bs-target="#sm-event"]').addEventListener('shown.bs.tab', loadEntities);
+        document.querySelector('[data-bs-target="#sm-history"]').addEventListener('shown.bs.tab', loadHistory);
+        document.querySelector('[data-bs-target="#sm-admin"]').addEventListener('shown.bs.tab', function() {
+            loadAdminEntities();
+            loadAdminStates();
+        });
+    </script>
+</content>
+</body>
+</html>

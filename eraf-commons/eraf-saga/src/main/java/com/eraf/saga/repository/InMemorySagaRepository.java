@@ -50,6 +50,11 @@ public class InMemorySagaRepository implements SagaRepository {
     }
 
     @Override
+    public List<SagaExecution> findAll() {
+        return List.copyOf(store.values());
+    }
+
+    @Override
     public void delete(String id) {
         store.remove(id);
     }

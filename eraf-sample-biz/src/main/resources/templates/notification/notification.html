@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Notification & Messaging</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-bell me-2"></i>Notification & Messaging</h2>
+        <span class="badge bg-primary">#50 ~ #55</span>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#email">#50 Email</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sms">#51 SMS</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#push">#52 Push</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history">#53 History</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#kafka-publish">#54 Kafka Publish</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#kafka-messages">#55 Kafka Messages</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #50 Email -->
+        <div class="tab-pane fade show active" id="email">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#50 Email Sending (Mock)</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        This is a mock implementation. Emails will be logged to console and stored in history.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">To (comma separated)</label>
+                                <input type="text" class="form-control" id="emailTo" value="user@example.com, admin@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CC (optional)</label>
+                                <input type="text" class="form-control" id="emailCc" placeholder="cc@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="emailSubject" value="ERAF Notification Test">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Body</label>
+                                <textarea class="form-control" id="emailBody" rows="4">Hello,
+
+This is a test email from ERAF Sample Application.
+
+Best regards,
+ERAF Team</textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailHtml">
+                                <label class="form-check-label">HTML Content</label>
+                            </div>
+                            <button class="btn btn-primary" onclick="sendEmail()">
+                                <i class="bi bi-envelope me-1"></i>Send Email
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <pre id="emailResult" class="bg-dark text-light p-3 rounded" style="min-height: 300px;">Click "Send Email" to see the result...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #51 SMS -->
+        <div class="tab-pane fade" id="sms">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#51 SMS Sending (Mock)</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Mock implementation. Supports multiple providers: Twilio, Naver, NHN, AWS SNS.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="smsTo" value="010-1234-5678">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Message (max 90 chars for SMS)</label>
+                                <textarea class="form-control" id="smsMessage" rows="3" maxlength="90">[ERAF] Your verification code is 123456</textarea>
+                                <small class="text-muted"><span id="smsCharCount">0</span>/90 characters</small>
+                            </div>
+                            <button class="btn btn-primary" onclick="sendSms()">
+                                <i class="bi bi-chat-dots me-1"></i>Send SMS
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="generateVerificationCode()">
+                                <i class="bi bi-key me-1"></i>Generate Code
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <pre id="smsResult" class="bg-dark text-light p-3 rounded" style="min-height: 200px;">Click "Send SMS" to see the result...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #52 Push -->
+        <div class="tab-pane fade" id="push">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#52 Push Notification (Mock)</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Supports FCM (Firebase) and APNs (Apple). This is a mock implementation.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Device Tokens (comma separated)</label>
+                                <input type="text" class="form-control" id="pushTokens" value="device-token-abc123, device-token-xyz789">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Platform</label>
+                                <select class="form-select" id="pushPlatform">
+                                    <option value="FCM">FCM (Android)</option>
+                                    <option value="APNS">APNs (iOS)</option>
+                                    <option value="ALL">All Platforms</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" id="pushTitle" value="New Message">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Body</label>
+                                <textarea class="form-control" id="pushBody" rows="2">You have a new notification from ERAF!</textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="sendPush()">
+                                <i class="bi bi-phone me-1"></i>Send Push
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <pre id="pushResult" class="bg-dark text-light p-3 rounded" style="min-height: 250px;">Click "Send Push" to see the result...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #53 History -->
+        <div class="tab-pane fade" id="history">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#53 Notification History</h5>
+                        <button class="btn btn-sm btn-outline-danger" onclick="clearHistory()">
+                            <i class="bi bi-trash me-1"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Type</label>
+                            <select class="form-select" id="historyFilter" onchange="loadHistory()">
+                                <option value="ALL">All Types</option>
+                                <option value="EMAIL">Email Only</option>
+                                <option value="SMS">SMS Only</option>
+                                <option value="PUSH">Push Only</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Limit</label>
+                            <select class="form-select" id="historyLimit" onchange="loadHistory()">
+                                <option value="10">10 records</option>
+                                <option value="20" selected>20 records</option>
+                                <option value="50">50 records</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary" onclick="loadHistory()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="historyStats" class="row mb-3"></div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Recipient</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Sent At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTable">
+                                <tr><td colspan="6" class="text-center text-muted">No records. Send some notifications first!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #54 Kafka Publish -->
+        <div class="tab-pane fade" id="kafka-publish">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#54 Kafka Message Publishing (Mock)</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Mock implementation. Messages are stored in-memory for demonstration.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Topic</label>
+                                <select class="form-select" id="kafkaTopic">
+                                    <option value="order-events">order-events</option>
+                                    <option value="payment-events">payment-events</option>
+                                    <option value="user-events">user-events</option>
+                                    <option value="notification-events">notification-events</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Event Type</label>
+                                <input type="text" class="form-control" id="kafkaEventType" value="ORDER_CREATED">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Key (optional, for partitioning)</label>
+                                <input type="text" class="form-control" id="kafkaKey" placeholder="e.g., order-123">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Payload (JSON)</label>
+                                <textarea class="form-control" id="kafkaPayload" rows="5">{
+  "orderId": "ORD-2024-001",
+  "customerId": "CUST-100",
+  "amount": 50000,
+  "items": ["item1", "item2"]
+}</textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="publishKafkaMessage()">
+                                <i class="bi bi-send me-1"></i>Publish Message
+                            </button>
+                            <button class="btn btn-outline-info ms-2" onclick="generateSamplePayload()">
+                                <i class="bi bi-magic me-1"></i>Sample Payload
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <pre id="kafkaPublishResult" class="bg-dark text-light p-3 rounded" style="min-height: 350px;">Click "Publish Message" to see the result...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #55 Kafka Messages -->
+        <div class="tab-pane fade" id="kafka-messages">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#55 Kafka Messages</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="loadKafkaMessages()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="clearKafkaMessages()">
+                                <i class="bi bi-trash me-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Filter by Topic</label>
+                            <select class="form-select" id="kafkaFilterTopic" onchange="loadKafkaMessages()">
+                                <option value="">All Topics</option>
+                                <option value="order-events">order-events</option>
+                                <option value="payment-events">payment-events</option>
+                                <option value="user-events">user-events</option>
+                                <option value="notification-events">notification-events</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Direction</label>
+                            <select class="form-select" id="kafkaFilterDirection" onchange="loadKafkaMessages()">
+                                <option value="ALL">All</option>
+                                <option value="OUTBOUND">Outbound (Published)</option>
+                                <option value="INBOUND">Inbound (Received)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Subscribe to Topic</label>
+                            <div class="input-group">
+                                <select class="form-select" id="subscribeTopicSelect">
+                                    <option value="order-events">order-events</option>
+                                    <option value="payment-events">payment-events</option>
+                                    <option value="user-events">user-events</option>
+                                    <option value="notification-events">notification-events</option>
+                                </select>
+                                <button class="btn btn-success" onclick="subscribeToTopic()">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Active Subscriptions</label>
+                            <div id="activeSubscriptions" class="text-muted small">None</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div id="kafkaStats" class="d-flex gap-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Event ID</th>
+                                    <th>Topic</th>
+                                    <th>Type</th>
+                                    <th>Key</th>
+                                    <th>Direction</th>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kafkaMessagesTable">
+                                <tr><td colspan="7" class="text-center text-muted">No messages. Publish some messages first!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Message Detail Modal -->
+                    <div class="modal fade" id="messageDetailModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Message Detail</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <pre id="messageDetailContent" class="bg-dark text-light p-3 rounded"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Character counter for SMS
+        document.getElementById('smsMessage').addEventListener('input', function() {
+            document.getElementById('smsCharCount').textContent = this.value.length;
+        });
+        document.getElementById('smsCharCount').textContent = document.getElementById('smsMessage').value.length;
+
+        // #50 Email
+        function sendEmail() {
+            const to = document.getElementById('emailTo').value.split(',').map(s => s.trim());
+            const cc = document.getElementById('emailCc').value ? document.getElementById('emailCc').value.split(',').map(s => s.trim()) : [];
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+            const html = document.getElementById('emailHtml').checked;
+
+            fetch('/notification/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to, cc, subject, body, html })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('emailResult').textContent = JSON.stringify(data, null, 2);
+            });
+        }
+
+        // #51 SMS
+        function sendSms() {
+            const to = document.getElementById('smsTo').value;
+            const message = document.getElementById('smsMessage').value;
+
+            fetch('/notification/sms/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to, message })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('smsResult').textContent = JSON.stringify(data, null, 2);
+            });
+        }
+
+        function generateVerificationCode() {
+            const code = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('smsMessage').value = `[ERAF] Your verification code is ${code}`;
+            document.getElementById('smsCharCount').textContent = document.getElementById('smsMessage').value.length;
+        }
+
+        // #52 Push
+        function sendPush() {
+            const tokens = document.getElementById('pushTokens').value.split(',').map(s => s.trim());
+            const platform = document.getElementById('pushPlatform').value;
+            const title = document.getElementById('pushTitle').value;
+            const body = document.getElementById('pushBody').value;
+
+            fetch('/notification/push/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tokens, platform, title, body })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('pushResult').textContent = JSON.stringify(data, null, 2);
+            });
+        }
+
+        // #53 History
+        function loadHistory() {
+            const type = document.getElementById('historyFilter').value;
+            const limit = document.getElementById('historyLimit').value;
+
+            fetch(`/notification/history?type=${type}&limit=${limit}`)
+            .then(r => r.json())
+            .then(data => {
+                // Stats
+                const stats = data.stats;
+                document.getElementById('historyStats').innerHTML = `
+                    <div class="col-md-3"><div class="card bg-light"><div class="card-body text-center">
+                        <h3>${stats.total}</h3><small>Total</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-primary text-white"><div class="card-body text-center">
+                        <h3>${stats.email}</h3><small>Email</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-success text-white"><div class="card-body text-center">
+                        <h3>${stats.sms}</h3><small>SMS</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-warning"><div class="card-body text-center">
+                        <h3>${stats.push}</h3><small>Push</small>
+                    </div></div></div>
+                `;
+
+                // Table
+                const tbody = document.getElementById('historyTable');
+                if (data.records.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No records</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.records.map(r => `
+                    <tr>
+                        <td><code>${r.id}</code></td>
+                        <td><span class="badge ${getTypeBadgeClass(r.type)}">${r.type}</span></td>
+                        <td class="text-truncate" style="max-width: 150px;" title="${r.recipient}">${r.recipient}</td>
+                        <td class="text-truncate" style="max-width: 200px;" title="${r.title}">${r.title}</td>
+                        <td><span class="badge bg-success">${r.status}</span></td>
+                        <td>${r.sentAtFormatted}</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function getTypeBadgeClass(type) {
+            if (type === 'EMAIL') return 'bg-primary';
+            if (type === 'SMS') return 'bg-success';
+            if (type.startsWith('PUSH')) return 'bg-warning text-dark';
+            return 'bg-secondary';
+        }
+
+        function clearHistory() {
+            if (!confirm('Clear all notification history?')) return;
+            fetch('/notification/history/clear', { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                alert(data.message);
+                loadHistory();
+            });
+        }
+
+        // #54 Kafka Publish
+        function publishKafkaMessage() {
+            const topic = document.getElementById('kafkaTopic').value;
+            const eventType = document.getElementById('kafkaEventType').value;
+            const key = document.getElementById('kafkaKey').value;
+            let payload;
+
+            try {
+                payload = JSON.parse(document.getElementById('kafkaPayload').value);
+            } catch (e) {
+                alert('Invalid JSON payload');
+                return;
+            }
+
+            fetch('/notification/kafka/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, eventType, key, payload })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('kafkaPublishResult').textContent = JSON.stringify(data, null, 2);
+            });
+        }
+
+        function generateSamplePayload() {
+            const eventType = document.getElementById('kafkaEventType').value;
+            const samples = {
+                'ORDER_CREATED': {
+                    orderId: 'ORD-' + Date.now(),
+                    customerId: 'CUST-' + Math.floor(Math.random() * 1000),
+                    amount: Math.floor(Math.random() * 100000) + 10000,
+                    items: ['Product A', 'Product B'],
+                    status: 'PENDING'
+                },
+                'PAYMENT_COMPLETED': {
+                    paymentId: 'PAY-' + Date.now(),
+                    orderId: 'ORD-' + Date.now(),
+                    amount: Math.floor(Math.random() * 100000) + 10000,
+                    method: 'CREDIT_CARD',
+                    status: 'COMPLETED'
+                },
+                'USER_REGISTERED': {
+                    userId: 'USER-' + Date.now(),
+                    email: 'user' + Math.floor(Math.random() * 1000) + '@example.com',
+                    name: 'Test User',
+                    registeredAt: new Date().toISOString()
+                }
+            };
+
+            const payload = samples[eventType] || {
+                eventId: Date.now(),
+                message: 'Sample event data',
+                timestamp: new Date().toISOString()
+            };
+
+            document.getElementById('kafkaPayload').value = JSON.stringify(payload, null, 2);
+        }
+
+        // #55 Kafka Messages
+        function loadKafkaMessages() {
+            const topic = document.getElementById('kafkaFilterTopic').value;
+            const direction = document.getElementById('kafkaFilterDirection').value;
+
+            fetch(`/notification/kafka/messages?topic=${topic}&direction=${direction}`)
+            .then(r => r.json())
+            .then(data => {
+                // Stats
+                document.getElementById('kafkaStats').innerHTML = `
+                    <span class="badge bg-secondary">Total: ${data.totalMessages}</span>
+                    ${data.topics && data.topics.length > 0 ?
+                        `<span class="badge bg-info">Topics: ${Array.from(data.topics).join(', ')}</span>` : ''}
+                `;
+
+                // Table
+                const tbody = document.getElementById('kafkaMessagesTable');
+                if (data.messages.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No messages</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.messages.map(m => `
+                    <tr>
+                        <td><code title="${m.eventId}">${m.eventId.substring(0, 8)}...</code></td>
+                        <td><span class="badge bg-info">${m.topic}</span></td>
+                        <td>${m.eventType}</td>
+                        <td>${m.key || '-'}</td>
+                        <td><span class="badge ${m.direction === 'OUTBOUND' ? 'bg-success' : 'bg-warning text-dark'}">${m.direction}</span></td>
+                        <td>${m.timestampFormatted}</td>
+                        <td><button class="btn btn-sm btn-outline-primary" onclick='showMessageDetail(${JSON.stringify(m)})'>View</button></td>
+                    </tr>
+                `).join('');
+            });
+
+            loadSubscriptions();
+        }
+
+        function subscribeToTopic() {
+            const topic = document.getElementById('subscribeTopicSelect').value;
+            fetch('/notification/kafka/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic })
+            })
+            .then(r => r.json())
+            .then(data => {
+                loadSubscriptions();
+                alert(`Subscribed to topic: ${topic}`);
+            });
+        }
+
+        function loadSubscriptions() {
+            fetch('/notification/kafka/subscriptions')
+            .then(r => r.json())
+            .then(data => {
+                const subs = Object.entries(data.subscriptions || {});
+                if (subs.length === 0) {
+                    document.getElementById('activeSubscriptions').innerHTML = '<span class="text-muted">None</span>';
+                } else {
+                    document.getElementById('activeSubscriptions').innerHTML = subs.map(([topic, count]) =>
+                        `<span class="badge bg-success me-1">${topic} (${count})</span>`
+                    ).join('');
+                }
+            });
+        }
+
+        function showMessageDetail(message) {
+            document.getElementById('messageDetailContent').textContent = JSON.stringify(message, null, 2);
+            new bootstrap.Modal(document.getElementById('messageDetailModal')).show();
+        }
+
+        function clearKafkaMessages() {
+            if (!confirm('Clear all Kafka messages and subscriptions?')) return;
+            fetch('/notification/kafka/clear', { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                alert(data.message);
+                loadKafkaMessages();
+            });
+        }
+
+        // Auto-load on tab switch
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                if (e.target.getAttribute('data-bs-target') === '#history') {
+                    loadHistory();
+                } else if (e.target.getAttribute('data-bs-target') === '#kafka-messages') {
+                    loadKafkaMessages();
+                }
+            });
+        });
+    </script>
+</content>
+</body>
+</html>

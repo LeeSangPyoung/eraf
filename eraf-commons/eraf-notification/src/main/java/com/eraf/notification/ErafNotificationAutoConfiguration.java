@@ -47,6 +47,7 @@ public class ErafNotificationAutoConfiguration {
      */
     @Configuration
     @ConditionalOnClass(JavaMailSender.class)
+    @ConditionalOnBean(JavaMailSender.class)
     @ConditionalOnProperty(name = "eraf.notification.email.enabled", havingValue = "true", matchIfMissing = true)
     public static class SmtpEmailConfiguration {
 
@@ -178,7 +179,7 @@ public class ErafNotificationAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public NotificationService notificationService(
-            EmailSender emailSender,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) EmailSender emailSender,
             @org.springframework.beans.factory.annotation.Autowired(required = false) SmsSender smsSender,
             @org.springframework.beans.factory.annotation.Autowired(required = false) PushSender fcmPushSender,
             @org.springframework.beans.factory.annotation.Autowired(required = false) PushSender apnsPushSender) {

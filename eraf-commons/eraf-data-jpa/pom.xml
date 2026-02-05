@@ -37,6 +37,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Web for TenantFilter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -59,7 +59,7 @@ public class ErafUserDetails extends User {
     /**
      * Builder 패턴 지원
      */
-    public static Builder builder() {
+    public static Builder erafBuilder() {
         return new Builder();
     }
 

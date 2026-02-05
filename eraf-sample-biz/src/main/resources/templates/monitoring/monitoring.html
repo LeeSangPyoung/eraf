@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Monitoring & API Docs</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2 me-2"></i>Monitoring & API Docs</h2>
+        <span class="badge bg-primary">#64 ~ #67</span>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#health">#64 Health Check</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#metrics">#65 Metrics</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tracing">#66 Distributed Tracing</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#swagger">#67 Swagger UI</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #64 Health Check -->
+        <div class="tab-pane fade show active" id="health">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#64 Health Check Dashboard</h5>
+                        <div>
+                            <span id="overallStatus" class="badge me-2"></span>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadHealth()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center" id="healthSummaryCard">
+                                <div class="card-body">
+                                    <h1 id="healthStatusIcon"></h1>
+                                    <h4 id="healthStatusText"></h4>
+                                    <small class="text-muted" id="healthTimestamp"></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row" id="healthComponents">
+                                <!-- Component cards will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Click on a component to toggle its status for testing purposes.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #65 Metrics -->
+        <div class="tab-pane fade" id="metrics">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#65 Metrics Dashboard</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadMetrics()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- System Info -->
+                    <div class="row mb-4" id="systemMetrics">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 id="uptimeValue">-</h5>
+                                    <small class="text-muted">Uptime</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 id="requestCountValue">0</h5>
+                                    <small class="text-muted">Requests</small>
+                                    <button class="btn btn-sm btn-link" onclick="incrementRequest()">+1</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 id="metricsTimestamp">-</h5>
+                                    <small class="text-muted">Last Update</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="row" id="metricsGrid">
+                        <!-- Metric cards will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #66 Distributed Tracing -->
+        <div class="tab-pane fade" id="tracing">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#66 Distributed Tracing</h5>
+                        <div>
+                            <button class="btn btn-sm btn-success me-2" onclick="showGenerateTraceModal()">
+                                <i class="bi bi-plus-circle me-1"></i>Generate Trace
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger me-2" onclick="clearTraces()">
+                                <i class="bi bi-trash me-1"></i>Clear
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadTraces()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Status</label>
+                            <select class="form-select" id="traceStatusFilter" onchange="loadTraces()">
+                                <option value="">All</option>
+                                <option value="SUCCESS">Success</option>
+                                <option value="ERROR">Error</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <div id="traceStats" class="d-flex gap-3 align-items-end h-100"></div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Trace ID</th>
+                                    <th>Operation</th>
+                                    <th>Service</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tracesTable">
+                                <tr><td colspan="7" class="text-center text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Trace Detail Modal -->
+                    <div class="modal fade" id="traceDetailModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Trace Detail</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="traceDetailContent"></div>
+                                    <h6 class="mt-3">Span Timeline</h6>
+                                    <div id="spanTimeline" class="bg-light p-3 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Trace Modal -->
+                    <div class="modal fade" id="generateTraceModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Generate Sample Trace</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Operation</label>
+                                        <input type="text" class="form-control" id="generateOperation" value="GET /api/test">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Duration (ms)</label>
+                                        <input type="number" class="form-control" id="generateDuration" value="100">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" id="generateStatus">
+                                            <option value="SUCCESS">SUCCESS</option>
+                                            <option value="ERROR">ERROR</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" onclick="generateTrace()">Generate</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #67 Swagger UI -->
+        <div class="tab-pane fade" id="swagger">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#67 Swagger UI / API Documentation</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Swagger UI provides interactive API documentation. Configure in <code>application.yml</code> to customize.
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">API Info</div>
+                                <div class="card-body">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4">Title</dt>
+                                        <dd class="col-sm-8" id="apiTitle">-</dd>
+                                        <dt class="col-sm-4">Version</dt>
+                                        <dd class="col-sm-8" id="apiVersion">-</dd>
+                                        <dt class="col-sm-4">Description</dt>
+                                        <dd class="col-sm-8" id="apiDescription">-</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">Quick Links</div>
+                                <div class="card-body">
+                                    <a href="/swagger-ui.html" target="_blank" class="btn btn-primary me-2">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>Open Swagger UI
+                                    </a>
+                                    <a href="/v3/api-docs" target="_blank" class="btn btn-outline-secondary">
+                                        <i class="bi bi-filetype-json me-1"></i>OpenAPI JSON
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6>Sample API Endpoints</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Path</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="endpointsTable">
+                                <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // #64 Health Check
+        function loadHealth() {
+            fetch('/monitoring/health')
+            .then(r => r.json())
+            .then(data => {
+                const isUp = data.status === 'UP';
+
+                document.getElementById('overallStatus').textContent = data.status;
+                document.getElementById('overallStatus').className = 'badge me-2 ' + (isUp ? 'bg-success' : 'bg-danger');
+
+                document.getElementById('healthSummaryCard').className = 'card text-center ' + (isUp ? 'bg-success text-white' : 'bg-danger text-white');
+                document.getElementById('healthStatusIcon').innerHTML = isUp ? '<i class="bi bi-check-circle-fill"></i>' : '<i class="bi bi-x-circle-fill"></i>';
+                document.getElementById('healthStatusText').textContent = data.status;
+                document.getElementById('healthTimestamp').textContent = data.timestamp;
+
+                const componentsHtml = Object.values(data.components).map(c => `
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 ${c.status === 'UP' ? 'border-success' : 'border-danger'}"
+                             style="cursor: pointer;" onclick="toggleHealth('${c.name}')">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="card-title mb-0">${c.name}</h6>
+                                    <span class="badge ${c.status === 'UP' ? 'bg-success' : 'bg-danger'}">${c.status}</span>
+                                </div>
+                                <small class="text-muted">
+                                    ${Object.entries(c.details || {}).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('healthComponents').innerHTML = componentsHtml;
+            });
+        }
+
+        function toggleHealth(component) {
+            fetch(`/monitoring/health/${component}/toggle`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                loadHealth();
+            });
+        }
+
+        // #65 Metrics
+        function loadMetrics() {
+            fetch('/monitoring/metrics')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('uptimeValue').textContent = data.system.uptime;
+                document.getElementById('requestCountValue').textContent = data.system.requestCount;
+                document.getElementById('metricsTimestamp').textContent = data.timestamp;
+
+                const metricsHtml = data.metrics.map(m => `
+                    <div class="col-md-3 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h4 class="mb-0">${formatMetricValue(m.value, m.unit)}</h4>
+                                <small class="text-muted">${m.description}</small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('metricsGrid').innerHTML = metricsHtml;
+            });
+        }
+
+        function formatMetricValue(value, unit) {
+            if (unit === '%') return (value * 100).toFixed(1) + '%';
+            if (unit === 'MB') return value.toFixed(1) + ' MB';
+            if (unit === 'ms') return value.toFixed(1) + ' ms';
+            return Math.round(value).toLocaleString() + (unit ? ' ' + unit : '');
+        }
+
+        function incrementRequest() {
+            fetch('/monitoring/metrics/increment', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('requestCountValue').textContent = data.requestCount;
+            });
+        }
+
+        // #66 Distributed Tracing
+        function loadTraces() {
+            const status = document.getElementById('traceStatusFilter').value;
+
+            fetch(`/monitoring/traces?status=${status}`)
+            .then(r => r.json())
+            .then(data => {
+                const stats = data.stats;
+                document.getElementById('traceStats').innerHTML = `
+                    <span class="badge bg-secondary">Total: ${stats.total}</span>
+                    <span class="badge bg-success">Success: ${stats.success}</span>
+                    <span class="badge bg-danger">Error: ${stats.error}</span>
+                `;
+
+                const tbody = document.getElementById('tracesTable');
+                if (data.traces.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No traces found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.traces.map(t => `
+                    <tr>
+                        <td><code>${t.traceId}</code></td>
+                        <td>${t.operation}</td>
+                        <td><span class="badge bg-info">${t.service}</span></td>
+                        <td>${t.durationMs}ms</td>
+                        <td><span class="badge ${t.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'}">${t.status}</span></td>
+                        <td>${t.timestampFormatted}</td>
+                        <td><button class="btn btn-sm btn-outline-primary" onclick="showTraceDetail('${t.traceId}')">View</button></td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function showTraceDetail(traceId) {
+            fetch(`/monitoring/traces/${traceId}`)
+            .then(r => r.json())
+            .then(data => {
+                const trace = data.trace;
+
+                document.getElementById('traceDetailContent').innerHTML = `
+                    <dl class="row">
+                        <dt class="col-sm-3">Trace ID</dt>
+                        <dd class="col-sm-9"><code>${trace.traceId}</code></dd>
+                        <dt class="col-sm-3">Operation</dt>
+                        <dd class="col-sm-9">${trace.operation}</dd>
+                        <dt class="col-sm-3">Service</dt>
+                        <dd class="col-sm-9">${trace.service}</dd>
+                        <dt class="col-sm-3">Duration</dt>
+                        <dd class="col-sm-9">${trace.durationMs}ms</dd>
+                        <dt class="col-sm-3">Status</dt>
+                        <dd class="col-sm-9"><span class="badge ${trace.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'}">${trace.status}</span></dd>
+                    </dl>
+                `;
+
+                // Render span timeline
+                const maxDuration = Math.max(...trace.spans.map(s => s.offsetMs + s.durationMs));
+                const timelineHtml = trace.spans.map(s => {
+                    const left = (s.offsetMs / maxDuration) * 100;
+                    const width = (s.durationMs / maxDuration) * 100;
+                    return `
+                        <div class="position-relative mb-2" style="height: 30px;">
+                            <div class="position-absolute bg-primary text-white px-2 py-1 rounded small"
+                                 style="left: ${left}%; width: ${Math.max(width, 10)}%; white-space: nowrap; overflow: hidden;">
+                                ${s.name} (${s.durationMs}ms)
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('spanTimeline').innerHTML = timelineHtml || '<p class="text-muted">No spans</p>';
+
+                new bootstrap.Modal(document.getElementById('traceDetailModal')).show();
+            });
+        }
+
+        function showGenerateTraceModal() {
+            new bootstrap.Modal(document.getElementById('generateTraceModal')).show();
+        }
+
+        function generateTrace() {
+            const operation = document.getElementById('generateOperation').value;
+            const durationMs = parseInt(document.getElementById('generateDuration').value);
+            const status = document.getElementById('generateStatus').value;
+
+            fetch('/monitoring/traces/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operation, durationMs, status })
+            })
+            .then(r => r.json())
+            .then(data => {
+                bootstrap.Modal.getInstance(document.getElementById('generateTraceModal')).hide();
+                loadTraces();
+            });
+        }
+
+        function clearTraces() {
+            if (!confirm('Clear all traces?')) return;
+            fetch('/monitoring/traces/clear', { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => loadTraces());
+        }
+
+        // #67 Swagger
+        function loadSwaggerInfo() {
+            fetch('/monitoring/swagger/info')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('apiTitle').textContent = data.info.title;
+                document.getElementById('apiVersion').textContent = data.info.version;
+                document.getElementById('apiDescription').textContent = data.info.description;
+
+                const endpointsHtml = data.endpoints.map(e => `
+                    <tr>
+                        <td><span class="badge ${getMethodBadge(e.method)}">${e.method}</span></td>
+                        <td><code>${e.path}</code></td>
+                        <td>${e.description}</td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('endpointsTable').innerHTML = endpointsHtml;
+            });
+        }
+
+        function getMethodBadge(method) {
+            switch (method) {
+                case 'GET': return 'bg-primary';
+                case 'POST': return 'bg-success';
+                case 'PUT': return 'bg-warning text-dark';
+                case 'DELETE': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // Initial load
+        loadHealth();
+        loadMetrics();
+        loadTraces();
+        loadSwaggerInfo();
+
+        // Auto-refresh on tab switch
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                const target = e.target.getAttribute('data-bs-target');
+                if (target === '#health') loadHealth();
+                else if (target === '#metrics') loadMetrics();
+                else if (target === '#tracing') loadTraces();
+                else if (target === '#swagger') loadSwaggerInfo();
+            });
+        });
+
+        // Auto-refresh metrics every 5 seconds when on metrics tab
+        setInterval(() => {
+            if (document.querySelector('#metrics').classList.contains('active')) {
+                loadMetrics();
+            }
+        }, 5000);
+    </script>
+</content>
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Authentication & Security</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-shield-lock me-2"></i>Authentication & Security</h2>
+        <span class="badge bg-primary">#13 ~ #20</span>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="authTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#jwt-login" type="button">
+                <i class="bi bi-key me-1"></i>#13 JWT Login
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#token-refresh" type="button">
+                <i class="bi bi-arrow-repeat me-1"></i>#14 Token Refresh
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#role-menu" type="button">
+                <i class="bi bi-menu-button-wide me-1"></i>#15 Role-based Menu
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bot-detect" type="button">
+                <i class="bi bi-robot me-1"></i>#16 Bot Detection
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#session-mgmt" type="button">
+                <i class="bi bi-person-badge me-1"></i>#17~19 Session
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#audit-log" type="button">
+                <i class="bi bi-journal-text me-1"></i>#20 Audit Log
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #13 JWT Login -->
+        <div class="tab-pane fade show active" id="jwt-login" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#13 JWT Login + Access Token</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Login Form</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <select class="form-select" id="loginUsername">
+                                    <option value="admin">admin (ADMIN, USER)</option>
+                                    <option value="manager">manager (MANAGER, USER)</option>
+                                    <option value="user">user (USER)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="loginPassword" value="admin123">
+                                <small class="text-muted">admin123 / manager123 / user123</small>
+                            </div>
+                            <button class="btn btn-primary" onclick="doLogin()">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Token Response</h6>
+                            <pre id="loginResult" class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">
+Click "Login" to get tokens...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #14 Token Refresh -->
+        <div class="tab-pane fade" id="token-refresh" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#14 Refresh Token</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Current Tokens</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Access Token</label>
+                                <textarea class="form-control" id="currentAccessToken" rows="3" readonly></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Refresh Token</label>
+                                <textarea class="form-control" id="currentRefreshToken" rows="3" readonly></textarea>
+                            </div>
+                            <button class="btn btn-warning" onclick="refreshTokens()">
+                                <i class="bi bi-arrow-repeat me-1"></i>Refresh Tokens
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Refresh Result</h6>
+                            <pre id="refreshResult" class="bg-dark text-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+Login first to get tokens, then refresh...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #15 Role-based Menu -->
+        <div class="tab-pane fade" id="role-menu" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#15 Role-based Menu Control</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Token Validation</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Access Token</label>
+                                <textarea class="form-control" id="validateToken" rows="4" placeholder="Paste access token here or login first..."></textarea>
+                            </div>
+                            <button class="btn btn-info" onclick="validateToken()">
+                                <i class="bi bi-check-circle me-1"></i>Validate & Get Menus
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Available Menus for Role</h6>
+                            <div id="roleMenuResult">
+                                <div class="alert alert-secondary">Login and validate token to see available menus</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #16 Bot Detection -->
+        <div class="tab-pane fade" id="bot-detect" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#16 Bot Detection API</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Your Current User-Agent</h6>
+                            <button class="btn btn-primary mb-3" onclick="detectCurrentBot()">
+                                <i class="bi bi-search me-1"></i>Detect Current Browser
+                            </button>
+
+                            <h6 class="mt-4">Test with Custom User-Agent</h6>
+                            <div class="mb-3">
+                                <label class="form-label">User-Agent String</label>
+                                <select class="form-select mb-2" id="presetUserAgent" onchange="applyPresetUserAgent()">
+                                    <option value="">-- Select Preset --</option>
+                                    <option value="Googlebot/2.1 (+http://www.google.com/bot.html)">Googlebot (Search Engine)</option>
+                                    <option value="Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)">Bingbot (Search Engine)</option>
+                                    <option value="facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)">Facebook Bot</option>
+                                    <option value="Twitterbot/1.0">Twitter Bot</option>
+                                    <option value="curl/7.68.0">cURL (Automated Tool)</option>
+                                    <option value="python-requests/2.25.1">Python Requests</option>
+                                    <option value="Postman Runtime/7.28.4">Postman</option>
+                                    <option value="Scrapy/2.5.0 (+https://scrapy.org)">Scrapy (Scraper)</option>
+                                    <option value="sqlmap/1.5">SQLMap (Malicious)</option>
+                                    <option value="nmap scripting engine">Nmap (Malicious)</option>
+                                    <option value="UptimeRobot/2.0">UptimeRobot (Monitoring)</option>
+                                </select>
+                                <textarea class="form-control" id="customUserAgent" rows="2" placeholder="Enter custom User-Agent..."></textarea>
+                            </div>
+                            <button class="btn btn-warning" onclick="detectCustomBot()">
+                                <i class="bi bi-robot me-1"></i>Test Custom User-Agent
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Detection Result</h6>
+                            <pre id="botDetectResult" class="bg-dark text-light p-3 rounded" style="min-height: 300px;">
+Click a button to detect bot...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #17~19 Session Management -->
+        <div class="tab-pane fade" id="session-mgmt" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">#17 Session Create/Manage | #18 Concurrent Session Limit | #19 Session Clustering</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Create Session</h6>
+                            <div class="mb-3">
+                                <label class="form-label">User ID</label>
+                                <input type="text" class="form-control" id="sessionUserId" value="U001">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" id="sessionUsername" value="admin">
+                            </div>
+                            <button class="btn btn-success" onclick="createSession()">
+                                <i class="bi bi-plus-circle me-1"></i>Create Session
+                            </button>
+                            <button class="btn btn-outline-primary ms-2" onclick="listSessions()">
+                                <i class="bi bi-list me-1"></i>List Sessions
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Session List</h6>
+                            <div id="sessionListResult">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th>Session ID</th>
+                                        <th>IP Address</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="sessionTableBody">
+                                    <tr><td colspan="4" class="text-center text-muted">No sessions</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">#19 Session Cluster Info (Redis)</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-info mb-3" onclick="getClusterInfo()">
+                        <i class="bi bi-diagram-3 me-1"></i>Get Cluster Info
+                    </button>
+                    <pre id="clusterInfoResult" class="bg-dark text-light p-3 rounded">
+Click to get cluster info...</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- #20 Audit Log -->
+        <div class="tab-pane fade" id="audit-log" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">#20 Security Audit Logs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Create Test Audit Log</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <select class="form-select" id="auditEventType">
+                                        <option value="LOGIN_SUCCESS">LOGIN_SUCCESS</option>
+                                        <option value="LOGIN_FAILURE">LOGIN_FAILURE</option>
+                                        <option value="LOGOUT">LOGOUT</option>
+                                        <option value="ACCESS_DENIED">ACCESS_DENIED</option>
+                                        <option value="PASSWORD_CHANGE">PASSWORD_CHANGE</option>
+                                        <option value="TOKEN_CREATED">TOKEN_CREATED</option>
+                                        <option value="API_KEY_USED">API_KEY_USED</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="auditPrincipal" value="testuser" placeholder="Principal">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-warning w-100" onclick="createAuditLog()">
+                                        <i class="bi bi-plus"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-primary" onclick="refreshAuditLogs()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Logs
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover">
+                            <thead class="table-dark">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Event Type</th>
+                                <th>Principal</th>
+                                <th>IP Address</th>
+                                <th>Success</th>
+                                <th>Details</th>
+                            </tr>
+                            </thead>
+                            <tbody id="auditLogTableBody">
+                            <tr><td colspan="6" class="text-center text-muted">No audit logs yet. Try logging in first!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Token storage
+        let currentTokens = {
+            accessToken: null,
+            refreshToken: null
+        };
+
+        // #13 JWT Login
+        function doLogin() {
+            const username = document.getElementById('loginUsername').value;
+            let password = 'admin123';
+            if (username === 'user') password = 'user123';
+            if (username === 'manager') password = 'manager123';
+
+            document.getElementById('loginPassword').value = password;
+
+            fetch('/security/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loginResult').textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    currentTokens.accessToken = data.accessToken;
+                    currentTokens.refreshToken = data.refreshToken;
+
+                    // Update other tabs
+                    document.getElementById('currentAccessToken').value = data.accessToken;
+                    document.getElementById('currentRefreshToken').value = data.refreshToken;
+                    document.getElementById('validateToken').value = data.accessToken;
+                }
+            })
+            .catch(err => {
+                document.getElementById('loginResult').textContent = 'Error: ' + err.message;
+            });
+        }
+
+        // #14 Token Refresh
+        function refreshTokens() {
+            const refreshToken = document.getElementById('currentRefreshToken').value || currentTokens.refreshToken;
+
+            if (!refreshToken) {
+                document.getElementById('refreshResult').textContent = 'No refresh token. Please login first.';
+                return;
+            }
+
+            fetch('/security/auth/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('refreshResult').textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    currentTokens.accessToken = data.accessToken;
+                    currentTokens.refreshToken = data.refreshToken;
+                    document.getElementById('currentAccessToken').value = data.accessToken;
+                    document.getElementById('currentRefreshToken').value = data.refreshToken;
+                    document.getElementById('validateToken').value = data.accessToken;
+                }
+            })
+            .catch(err => {
+                document.getElementById('refreshResult').textContent = 'Error: ' + err.message;
+            });
+        }
+
+        // #15 Token Validation & Role-based Menu
+        function validateToken() {
+            const token = document.getElementById('validateToken').value || currentTokens.accessToken;
+
+            if (!token) {
+                document.getElementById('roleMenuResult').innerHTML = '<div class="alert alert-warning">No token. Please login first.</div>';
+                return;
+            }
+
+            fetch('/security/auth/validate-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let html = '';
+                if (data.valid) {
+                    html += '<div class="alert alert-success"><i class="bi bi-check-circle me-1"></i>Token is valid</div>';
+                    html += '<p><strong>User:</strong> ' + data.username + ' (ID: ' + data.userId + ')</p>';
+                    html += '<p><strong>Roles:</strong> ' + (data.roles || []).join(', ') + '</p>';
+                    html += '<p><strong>Expires:</strong> ' + new Date(data.expiration).toLocaleString() + '</p>';
+                    html += '<h6 class="mt-3">Available Menus:</h6>';
+                    html += '<ul class="list-group">';
+                    (data.menus || []).forEach(menu => {
+                        html += '<li class="list-group-item"><i class="bi bi-menu-button me-2"></i>' + menu + '</li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html = '<div class="alert alert-danger"><i class="bi bi-x-circle me-1"></i>Token is invalid: ' + (data.error || 'Unknown error') + '</div>';
+                }
+                document.getElementById('roleMenuResult').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('roleMenuResult').innerHTML = '<div class="alert alert-danger">Error: ' + err.message + '</div>';
+            });
+        }
+
+        // #16 Bot Detection
+        function detectCurrentBot() {
+            fetch('/security/auth/bot-detect')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('botDetectResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('botDetectResult').textContent = 'Error: ' + err.message;
+            });
+        }
+
+        function applyPresetUserAgent() {
+            const preset = document.getElementById('presetUserAgent').value;
+            document.getElementById('customUserAgent').value = preset;
+        }
+
+        function detectCustomBot() {
+            const userAgent = document.getElementById('customUserAgent').value;
+
+            if (!userAgent) {
+                document.getElementById('botDetectResult').textContent = 'Please enter a User-Agent string.';
+                return;
+            }
+
+            fetch('/security/auth/bot-detect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userAgent })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('botDetectResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('botDetectResult').textContent = 'Error: ' + err.message;
+            });
+        }
+
+        // #17-18 Session Management
+        function createSession() {
+            const userId = document.getElementById('sessionUserId').value;
+            const username = document.getElementById('sessionUsername').value;
+
+            fetch('/security/auth/session/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.kickedSession) {
+                    alert('Concurrent session limit reached! Old session kicked: ' + data.kickedSession);
+                }
+                listSessions();
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+
+        function listSessions() {
+            const userId = document.getElementById('sessionUserId').value;
+
+            fetch('/security/auth/session/list/' + userId)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('sessionTableBody');
+                if (data.sessions && data.sessions.length > 0) {
+                    tbody.innerHTML = data.sessions.map(s => `
+                        <tr>
+                            <td><code>${s.sessionId.substring(0, 8)}...</code></td>
+                            <td>${s.ipAddress}</td>
+                            <td>${new Date(s.createdAt).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="invalidateSession('${s.sessionId}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No sessions</td></tr>';
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+
+        function invalidateSession(sessionId) {
+            fetch('/security/auth/session/' + sessionId, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    listSessions();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+
+        // #19 Cluster Info
+        function getClusterInfo() {
+            fetch('/security/auth/session/cluster-info')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('clusterInfoResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('clusterInfoResult').textContent = 'Error: ' + err.message;
+            });
+        }
+
+        // #20 Audit Logs
+        function createAuditLog() {
+            const eventType = document.getElementById('auditEventType').value;
+            const principal = document.getElementById('auditPrincipal').value;
+
+            fetch('/security/auth/audit-log/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventType,
+                    principal,
+                    requestUri: '/test',
+                    method: 'POST',
+                    success: eventType.includes('SUCCESS') || eventType === 'LOGOUT' || eventType === 'TOKEN_CREATED',
+                    details: { source: 'UI Test' }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    refreshAuditLogs();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+
+        function refreshAuditLogs() {
+            fetch('/security/auth/audit-logs?limit=20')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('auditLogTableBody');
+                if (data.logs && data.logs.length > 0) {
+                    tbody.innerHTML = data.logs.map(log => `
+                        <tr>
+                            <td><small>${new Date(log.timestamp).toLocaleString()}</small></td>
+                            <td><span class="badge ${getEventBadgeClass(log.eventType)}">${log.eventType}</span></td>
+                            <td>${log.principal || '-'}</td>
+                            <td><code>${log.ipAddress || '-'}</code></td>
+                            <td>${log.success ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>'}</td>
+                            <td><small>${log.details ? JSON.stringify(log.details) : '-'}</small></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No audit logs yet</td></tr>';
+                }
+            })
+            .catch(err => {
+                document.getElementById('auditLogTableBody').innerHTML =
+                    '<tr><td colspan="6" class="text-center text-danger">Error: ' + err.message + '</td></tr>';
+            });
+        }
+
+        function getEventBadgeClass(eventType) {
+            if (eventType.includes('SUCCESS') || eventType === 'TOKEN_CREATED' || eventType === 'SESSION_CREATED') {
+                return 'bg-success';
+            }
+            if (eventType.includes('FAILURE') || eventType.includes('DENIED') || eventType.includes('INVALID')) {
+                return 'bg-danger';
+            }
+            if (eventType === 'LOGOUT') {
+                return 'bg-secondary';
+            }
+            return 'bg-info';
+        }
+
+        // Auto-refresh audit logs on tab show
+        document.querySelector('[data-bs-target="#audit-log"]').addEventListener('shown.bs.tab', refreshAuditLogs);
+    </script>
+</content>
+</body>
+</html>

@@ -62,7 +62,7 @@ public class BusinessMetrics {
      * 게이지 등록
      */
     public <T extends Number> void gauge(String name, Supplier<T> valueSupplier, String... tags) {
-        Gauge.builder(buildName(name), valueSupplier, Number::doubleValue)
+        Gauge.builder(buildName(name), valueSupplier, supplier -> supplier.get().doubleValue())
                 .tags(tags)
                 .register(meterRegistry);
     }

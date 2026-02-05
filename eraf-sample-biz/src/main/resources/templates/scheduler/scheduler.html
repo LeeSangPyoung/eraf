@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Scheduler & Batch</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clock-history me-2"></i>Scheduler & Batch</h2>
+        <span class="badge bg-primary">#56 ~ #59</span>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#scheduler-jobs">#56 Scheduler Jobs</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#scheduler-execute">#57 Manual Execute</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#batch-jobs">#58 Batch Jobs</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#batch-monitor">#59 Batch Monitor</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #56 Scheduler Jobs -->
+        <div class="tab-pane fade show active" id="scheduler-jobs">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#56 Scheduler Job List</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSchedulerJobs()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Group</label>
+                            <select class="form-select" id="schedulerGroupFilter" onchange="loadSchedulerJobs()">
+                                <option value="">All Groups</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Status</label>
+                            <select class="form-select" id="schedulerStatusFilter" onchange="loadSchedulerJobs()">
+                                <option value="">All Status</option>
+                                <option value="SCHEDULED">Scheduled</option>
+                                <option value="RUNNING">Running</option>
+                                <option value="PAUSED">Paused</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="schedulerStats" class="row mb-3"></div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Group</th>
+                                    <th>Cron</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Last Run</th>
+                                    <th>Next Run</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedulerJobsTable">
+                                <tr><td colspan="8" class="text-center text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #57 Manual Execute -->
+        <div class="tab-pane fade" id="scheduler-execute">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#57 Manual Job Execution</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Select a job and execute it manually. The job will run immediately, ignoring the cron schedule.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Select Job</label>
+                                <select class="form-select" id="executeJobSelect">
+                                    <option value="">-- Select a job --</option>
+                                </select>
+                            </div>
+                            <div id="selectedJobInfo" class="mb-3 p-3 bg-light rounded" style="display: none;">
+                                <h6 id="selectedJobName"></h6>
+                                <p class="text-muted mb-1" id="selectedJobDesc"></p>
+                                <small class="text-muted">
+                                    <span id="selectedJobCron"></span> |
+                                    <span id="selectedJobStatus"></span>
+                                </small>
+                            </div>
+                            <button class="btn btn-primary" onclick="executeSelectedJob()" id="executeBtn" disabled>
+                                <i class="bi bi-play-fill me-1"></i>Execute Now
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <pre id="executeResult" class="bg-dark text-light p-3 rounded" style="min-height: 200px;">Select a job and click "Execute Now"...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #58 Batch Jobs -->
+        <div class="tab-pane fade" id="batch-jobs">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#58 Batch Job List</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadBatchJobs()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="batchStats" class="row mb-3"></div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Steps</th>
+                                    <th>Chunk Size</th>
+                                    <th>Status</th>
+                                    <th>Last Run</th>
+                                    <th>Executions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchJobsTable">
+                                <tr><td colspan="8" class="text-center text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #59 Batch Monitor -->
+        <div class="tab-pane fade" id="batch-monitor">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#59 Batch Job Execution & Monitoring</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Select Batch Job</label>
+                                <select class="form-select" id="batchJobSelect" onchange="selectBatchJob()">
+                                    <option value="">-- Select a batch job --</option>
+                                </select>
+                            </div>
+
+                            <div id="batchJobInfo" class="mb-3 p-3 bg-light rounded" style="display: none;">
+                                <h6 id="batchJobName"></h6>
+                                <p class="text-muted mb-2" id="batchJobDesc"></p>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <strong id="batchJobSteps"></strong><br><small>Steps</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <strong id="batchJobChunk"></strong><br><small>Chunk</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <span class="badge" id="batchJobStatus"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <button class="btn btn-success" onclick="startBatchJob()" id="startBatchBtn" disabled>
+                                    <i class="bi bi-play-fill me-1"></i>Start Job
+                                </button>
+                                <button class="btn btn-danger ms-2" onclick="stopBatchJob()" id="stopBatchBtn" disabled>
+                                    <i class="bi bi-stop-fill me-1"></i>Stop
+                                </button>
+                            </div>
+
+                            <!-- Progress -->
+                            <div id="batchProgress" class="mb-3" style="display: none;">
+                                <label class="form-label">Progress</label>
+                                <div class="progress mb-2" style="height: 25px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width: 0%">0%</div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>Step: <strong id="currentStepInfo">-</strong></span>
+                                    <span>Items: <strong id="processedItemsInfo">0</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Execution History</h6>
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Job</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="executionHistoryTable">
+                                        <tr><td colspan="5" class="text-center text-muted">No executions yet</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let progressInterval = null;
+
+        // #56 Scheduler Jobs
+        function loadSchedulerJobs() {
+            const group = document.getElementById('schedulerGroupFilter').value;
+            const status = document.getElementById('schedulerStatusFilter').value;
+
+            fetch(`/scheduler/jobs?group=${group}&status=${status}`)
+            .then(r => r.json())
+            .then(data => {
+                // Stats
+                const stats = data.stats;
+                document.getElementById('schedulerStats').innerHTML = `
+                    <div class="col-md-3"><div class="card bg-light"><div class="card-body text-center">
+                        <h3>${stats.total}</h3><small>Total Jobs</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-success text-white"><div class="card-body text-center">
+                        <h3>${stats.scheduled}</h3><small>Scheduled</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-primary text-white"><div class="card-body text-center">
+                        <h3>${stats.running}</h3><small>Running</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-warning"><div class="card-body text-center">
+                        <h3>${stats.paused}</h3><small>Paused</small>
+                    </div></div></div>
+                `;
+
+                // Update group filter
+                const groupSelect = document.getElementById('schedulerGroupFilter');
+                const currentGroup = groupSelect.value;
+                groupSelect.innerHTML = '<option value="">All Groups</option>' +
+                    data.groups.map(g => `<option value="${g}" ${g === currentGroup ? 'selected' : ''}>${g}</option>`).join('');
+
+                // Update execute job select
+                const executeSelect = document.getElementById('executeJobSelect');
+                executeSelect.innerHTML = '<option value="">-- Select a job --</option>' +
+                    data.jobs.map(j => `<option value="${j.name}">${j.name} (${j.group})</option>`).join('');
+
+                // Table
+                const tbody = document.getElementById('schedulerJobsTable');
+                if (data.jobs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No jobs found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.jobs.map(j => `
+                    <tr>
+                        <td><strong>${j.name}</strong></td>
+                        <td><span class="badge bg-secondary">${j.group}</span></td>
+                        <td><code>${j.cron}</code></td>
+                        <td class="text-truncate" style="max-width: 200px;" title="${j.description}">${j.description}</td>
+                        <td><span class="badge ${getStatusBadge(j.status)}">${j.status}</span></td>
+                        <td>${j.lastExecutionFormatted || '-'}</td>
+                        <td>${j.nextExecutionFormatted || '-'}</td>
+                        <td>
+                            ${j.status === 'PAUSED' ?
+                                `<button class="btn btn-sm btn-success" onclick="resumeJob('${j.name}')"><i class="bi bi-play"></i></button>` :
+                                `<button class="btn btn-sm btn-warning" onclick="pauseJob('${j.name}')"><i class="bi bi-pause"></i></button>`
+                            }
+                            <button class="btn btn-sm btn-primary ms-1" onclick="executeJob('${j.name}')"><i class="bi bi-lightning"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'SCHEDULED': return 'bg-success';
+                case 'RUNNING': return 'bg-primary';
+                case 'PAUSED': return 'bg-warning text-dark';
+                case 'FAILED': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function pauseJob(name) {
+            fetch(`/scheduler/jobs/${name}/pause`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadSchedulerJobs();
+                }
+            });
+        }
+
+        function resumeJob(name) {
+            fetch(`/scheduler/jobs/${name}/resume`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadSchedulerJobs();
+                }
+            });
+        }
+
+        function executeJob(name) {
+            fetch(`/scheduler/jobs/${name}/execute`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Job ${name} started!`);
+                    loadSchedulerJobs();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        // #57 Manual Execute
+        document.getElementById('executeJobSelect').addEventListener('change', function() {
+            const name = this.value;
+            if (!name) {
+                document.getElementById('selectedJobInfo').style.display = 'none';
+                document.getElementById('executeBtn').disabled = true;
+                return;
+            }
+
+            fetch(`/scheduler/jobs/${name}`)
+            .then(r => r.json())
+            .then(data => {
+                const job = data.job;
+                document.getElementById('selectedJobName').textContent = job.name;
+                document.getElementById('selectedJobDesc').textContent = job.description;
+                document.getElementById('selectedJobCron').textContent = `Cron: ${job.cron}`;
+                document.getElementById('selectedJobStatus').textContent = `Status: ${job.status}`;
+                document.getElementById('selectedJobInfo').style.display = 'block';
+                document.getElementById('executeBtn').disabled = false;
+            });
+        });
+
+        function executeSelectedJob() {
+            const name = document.getElementById('executeJobSelect').value;
+            if (!name) return;
+
+            fetch(`/scheduler/jobs/${name}/execute`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('executeResult').textContent = JSON.stringify(data, null, 2);
+                loadSchedulerJobs();
+            });
+        }
+
+        // #58 Batch Jobs
+        function loadBatchJobs() {
+            fetch('/scheduler/batch/jobs')
+            .then(r => r.json())
+            .then(data => {
+                // Stats
+                const stats = data.stats;
+                document.getElementById('batchStats').innerHTML = `
+                    <div class="col-md-3"><div class="card bg-light"><div class="card-body text-center">
+                        <h3>${stats.total}</h3><small>Total Jobs</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-info text-white"><div class="card-body text-center">
+                        <h3>${stats.ready}</h3><small>Ready</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-primary text-white"><div class="card-body text-center">
+                        <h3>${stats.running}</h3><small>Running</small>
+                    </div></div></div>
+                    <div class="col-md-3"><div class="card bg-success text-white"><div class="card-body text-center">
+                        <h3>${stats.completed}</h3><small>Completed</small>
+                    </div></div></div>
+                `;
+
+                // Update batch job select
+                const batchSelect = document.getElementById('batchJobSelect');
+                batchSelect.innerHTML = '<option value="">-- Select a batch job --</option>' +
+                    data.jobs.map(j => `<option value="${j.name}">${j.name}</option>`).join('');
+
+                // Table
+                const tbody = document.getElementById('batchJobsTable');
+                if (data.jobs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No batch jobs found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.jobs.map(j => `
+                    <tr>
+                        <td><strong>${j.name}</strong></td>
+                        <td class="text-truncate" style="max-width: 200px;">${j.description}</td>
+                        <td>${j.stepCount}</td>
+                        <td>${j.chunkSize}</td>
+                        <td><span class="badge ${getBatchStatusBadge(j.status)}">${j.status}</span></td>
+                        <td>${j.lastExecutionFormatted || '-'}</td>
+                        <td>${j.executionCount}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="startBatchFromList('${j.name}')" ${j.status === 'RUNNING' ? 'disabled' : ''}>
+                                <i class="bi bi-play"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function getBatchStatusBadge(status) {
+            switch (status) {
+                case 'READY': return 'bg-info';
+                case 'RUNNING': return 'bg-primary';
+                case 'COMPLETED': return 'bg-success';
+                case 'FAILED': return 'bg-danger';
+                case 'STOPPED': return 'bg-warning text-dark';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function startBatchFromList(name) {
+            document.getElementById('batchJobSelect').value = name;
+            selectBatchJob();
+            document.querySelector('button[data-bs-target="#batch-monitor"]').click();
+            setTimeout(() => startBatchJob(), 500);
+        }
+
+        // #59 Batch Monitor
+        function selectBatchJob() {
+            const name = document.getElementById('batchJobSelect').value;
+            if (!name) {
+                document.getElementById('batchJobInfo').style.display = 'none';
+                document.getElementById('startBatchBtn').disabled = true;
+                return;
+            }
+
+            fetch(`/scheduler/batch/jobs/${name}`)
+            .then(r => r.json())
+            .then(data => {
+                const job = data.job;
+                document.getElementById('batchJobName').textContent = job.name;
+                document.getElementById('batchJobDesc').textContent = job.description;
+                document.getElementById('batchJobSteps').textContent = job.stepCount;
+                document.getElementById('batchJobChunk').textContent = job.chunkSize;
+                document.getElementById('batchJobStatus').textContent = job.status;
+                document.getElementById('batchJobStatus').className = 'badge ' + getBatchStatusBadge(job.status);
+                document.getElementById('batchJobInfo').style.display = 'block';
+                document.getElementById('startBatchBtn').disabled = job.status === 'RUNNING';
+                document.getElementById('stopBatchBtn').disabled = job.status !== 'RUNNING';
+
+                if (job.status === 'RUNNING') {
+                    showProgress(job);
+                    startProgressPolling(name);
+                }
+            });
+        }
+
+        function startBatchJob() {
+            const name = document.getElementById('batchJobSelect').value;
+            if (!name) return;
+
+            fetch(`/scheduler/batch/jobs/${name}/execute`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('startBatchBtn').disabled = true;
+                    document.getElementById('stopBatchBtn').disabled = false;
+                    document.getElementById('batchProgress').style.display = 'block';
+                    startProgressPolling(name);
+                    loadExecutionHistory();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function stopBatchJob() {
+            const name = document.getElementById('batchJobSelect').value;
+            if (!name) return;
+
+            fetch(`/scheduler/batch/jobs/${name}/stop`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    stopProgressPolling();
+                    selectBatchJob();
+                    loadBatchJobs();
+                }
+            });
+        }
+
+        function startProgressPolling(name) {
+            stopProgressPolling();
+            progressInterval = setInterval(() => {
+                fetch(`/scheduler/batch/jobs/${name}/progress`)
+                .then(r => r.json())
+                .then(data => {
+                    showProgress(data);
+                    if (data.status !== 'RUNNING') {
+                        stopProgressPolling();
+                        selectBatchJob();
+                        loadBatchJobs();
+                        loadExecutionHistory();
+                    }
+                });
+            }, 500);
+        }
+
+        function stopProgressPolling() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        function showProgress(data) {
+            document.getElementById('batchProgress').style.display = 'block';
+            const bar = document.getElementById('progressBar');
+            bar.style.width = data.progress + '%';
+            bar.textContent = data.progress + '%';
+            document.getElementById('currentStepInfo').textContent =
+                `${data.currentStep || 0}/${data.totalSteps || 0} ${data.currentStepName || ''}`;
+            document.getElementById('processedItemsInfo').textContent = data.processedItems || 0;
+        }
+
+        function loadExecutionHistory() {
+            fetch('/scheduler/executions?limit=20')
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.getElementById('executionHistoryTable');
+                if (data.executions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No executions yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.executions.map(e => `
+                    <tr>
+                        <td><code>${e.executionId}</code></td>
+                        <td>${e.jobName}</td>
+                        <td><span class="badge ${e.jobType === 'BATCH' ? 'bg-info' : 'bg-secondary'}">${e.jobType}</span></td>
+                        <td><span class="badge ${e.status === 'COMPLETED' ? 'bg-success' : 'bg-danger'}">${e.status}</span></td>
+                        <td>${e.durationMs}ms</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        // Initial load
+        loadSchedulerJobs();
+        loadBatchJobs();
+        loadExecutionHistory();
+
+        // Auto-refresh on tab switch
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                const target = e.target.getAttribute('data-bs-target');
+                if (target === '#scheduler-jobs') loadSchedulerJobs();
+                else if (target === '#batch-jobs') loadBatchJobs();
+                else if (target === '#batch-monitor') loadExecutionHistory();
+            });
+        });
+    </script>
+</content>
+</body>
+</html>

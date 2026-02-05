@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/default :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Cache & Redis</title>
+</head>
+<body>
+<content>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-database me-2"></i>Cache & Redis</h2>
+        <span class="badge bg-primary">#60 ~ #63</span>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cache-list">#60 Cache List</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cache-evict">#61 Cache Eviction</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#redis-data">#62 Redis Data</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#redis-pubsub">#63 Redis Pub/Sub</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- #60 Cache List -->
+        <div class="tab-pane fade show active" id="cache-list">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#60 Cache Data Viewer</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadCaches()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="cacheStatus" class="alert alert-info mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Available Caches</h6>
+                            <div class="list-group" id="cacheListGroup">
+                                <a class="list-group-item text-muted">Loading...</a>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h6>Cache Entries <span id="selectedCacheName" class="badge bg-secondary"></span></h6>
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Value</th>
+                                            <th>TTL</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cacheEntriesTable">
+                                        <tr><td colspan="4" class="text-center text-muted">Select a cache to view entries</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Entry Form -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>Add Cache Entry</h6>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <input type="text" class="form-control" id="newCacheName" placeholder="Cache Name" value="users">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" class="form-control" id="newCacheKey" placeholder="Key" value="user:4">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="newCacheValue" placeholder="Value (JSON)" value='{"id":4,"name":"Test"}'>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control" id="newCacheTtl" placeholder="TTL (sec)" value="3600">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" onclick="addCacheEntry()">
+                                    <i class="bi bi-plus-circle me-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #61 Cache Eviction -->
+        <div class="tab-pane fade" id="cache-evict">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">#61 Cache Eviction</h5></div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Evicting cache entries will remove them from memory. Use with caution in production.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Evict Single Entry</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Cache Name</label>
+                                <select class="form-select" id="evictCacheName" onchange="loadEvictCacheEntries()">
+                                    <option value="">-- Select Cache --</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Key to Evict</label>
+                                <select class="form-select" id="evictKeySelect">
+                                    <option value="">-- Select Key --</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-warning" onclick="evictEntry()">
+                                <i class="bi bi-trash me-1"></i>Evict Entry
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Clear Entire Cache</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Cache Name</label>
+                                <select class="form-select" id="clearCacheName">
+                                    <option value="">-- Select Cache --</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-danger" onclick="clearCache()">
+                                <i class="bi bi-trash-fill me-1"></i>Clear All Entries
+                            </button>
+                        </div>
+                    </div>
+
+                    <pre id="evictResult" class="bg-dark text-light p-3 rounded mt-4" style="min-height: 100px;">Results will appear here...</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- #62 Redis Data -->
+        <div class="tab-pane fade" id="redis-data">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#62 Redis Data Viewer</h5>
+                        <span id="redisStatusBadge" class="badge"></span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Key Pattern</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="redisKeyPattern" value="*" placeholder="e.g., config:*">
+                                <button class="btn btn-primary" onclick="searchRedisKeys()">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Quick Patterns</label>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="searchPattern('*')">All (*)</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="searchPattern('config:*')">config:*</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="searchPattern('counter:*')">counter:*</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="searchPattern('session:*')">session:*</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h6>Keys (<span id="redisKeyCount">0</span>)</h6>
+                            <div class="list-group" id="redisKeysList" style="max-height: 300px; overflow-y: auto;">
+                                <a class="list-group-item text-muted">Search for keys...</a>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h6>Value</h6>
+                            <pre id="redisValueDisplay" class="bg-dark text-light p-3 rounded" style="min-height: 200px;">Select a key to view its value...</pre>
+                        </div>
+                    </div>
+
+                    <!-- Set Value Form -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>Set Redis Value</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" id="redisSetKey" placeholder="Key" value="test:key">
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" class="form-control" id="redisSetValue" placeholder="Value" value="Hello Redis!">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control" id="redisSetTtl" placeholder="TTL (sec)" value="0">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-success w-100" onclick="setRedisValue()">
+                                    <i class="bi bi-plus-circle me-1"></i>Set
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #63 Redis Pub/Sub -->
+        <div class="tab-pane fade" id="redis-pubsub">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">#63 Redis Pub/Sub</h5>
+                        <button class="btn btn-sm btn-outline-danger" onclick="clearPubSub()">
+                            <i class="bi bi-trash me-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Subscribe -->
+                            <div class="card mb-3">
+                                <div class="card-header"><h6 class="mb-0">Subscribe to Channel</h6></div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="subscribeChannel" placeholder="Channel name" value="notifications">
+                                        <button class="btn btn-primary" onclick="subscribeChannel()">
+                                            <i class="bi bi-broadcast me-1"></i>Subscribe
+                                        </button>
+                                    </div>
+                                    <div id="activeChannels">
+                                        <small class="text-muted">Active subscriptions: <span id="channelsList">None</span></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Publish -->
+                            <div class="card">
+                                <div class="card-header"><h6 class="mb-0">Publish Message</h6></div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Channel</label>
+                                        <select class="form-select" id="publishChannel">
+                                            <option value="notifications">notifications</option>
+                                            <option value="events">events</option>
+                                            <option value="alerts">alerts</option>
+                                            <option value="chat">chat</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Message</label>
+                                        <textarea class="form-control" id="publishMessage" rows="3">{"type":"notification","message":"Hello from ERAF!"}</textarea>
+                                    </div>
+                                    <button class="btn btn-success" onclick="publishMessage()">
+                                        <i class="bi bi-send me-1"></i>Publish
+                                    </button>
+                                    <button class="btn btn-outline-secondary ms-2" onclick="generateSampleMessage()">
+                                        <i class="bi bi-magic"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Messages -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Messages</h6>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="loadPubSubMessages()">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <select class="form-select form-select-sm" id="messageFilterChannel" onchange="loadPubSubMessages()">
+                                            <option value="">All Channels</option>
+                                        </select>
+                                    </div>
+                                    <div id="pubsubMessages" style="max-height: 400px; overflow-y: auto;">
+                                        <p class="text-muted">No messages yet. Subscribe to a channel and publish messages!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // #60 Cache List
+        function loadCaches() {
+            fetch('/cache/list')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('cacheStatus').innerHTML = `
+                    <i class="bi bi-info-circle me-1"></i>
+                    Redis: <strong>${data.redisAvailable ? 'Connected' : 'Not Available (Using Mock)'}</strong> |
+                    Cache Manager: <strong>${data.cacheManagerType}</strong> |
+                    Total Caches: <strong>${data.totalCaches}</strong>
+                `;
+
+                const listGroup = document.getElementById('cacheListGroup');
+                if (data.caches.length === 0) {
+                    listGroup.innerHTML = '<a class="list-group-item text-muted">No caches found</a>';
+                    return;
+                }
+
+                listGroup.innerHTML = data.caches.map(c => `
+                    <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                       onclick="loadCacheEntries('${c.name}')">
+                        <span><i class="bi bi-archive me-2"></i>${c.name}</span>
+                        <span class="badge bg-primary">${c.entryCount}</span>
+                    </a>
+                `).join('');
+
+                // Update eviction dropdowns
+                const options = '<option value="">-- Select Cache --</option>' +
+                    data.caches.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                document.getElementById('evictCacheName').innerHTML = options;
+                document.getElementById('clearCacheName').innerHTML = options;
+            });
+        }
+
+        function loadCacheEntries(cacheName) {
+            document.getElementById('selectedCacheName').textContent = cacheName;
+
+            fetch(`/cache/${cacheName}/entries`)
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.getElementById('cacheEntriesTable');
+                if (data.entries.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No entries</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.entries.map(e => `
+                    <tr>
+                        <td><code>${e.key}</code></td>
+                        <td class="text-truncate" style="max-width: 200px;" title="${e.value}">${e.value}</td>
+                        <td>${e.ttlSeconds > 0 ? e.ttlSeconds + 's' : 'No Expiry'}</td>
+                        <td>${e.createdAtFormatted || '-'}</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        function addCacheEntry() {
+            const cacheName = document.getElementById('newCacheName').value;
+            const key = document.getElementById('newCacheKey').value;
+            const value = document.getElementById('newCacheValue').value;
+            const ttlSeconds = parseInt(document.getElementById('newCacheTtl').value) || 3600;
+
+            fetch('/cache/put', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cacheName, key, value, ttlSeconds })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadCaches();
+                    loadCacheEntries(cacheName);
+                }
+            });
+        }
+
+        // #61 Cache Eviction
+        function loadEvictCacheEntries() {
+            const cacheName = document.getElementById('evictCacheName').value;
+            if (!cacheName) return;
+
+            fetch(`/cache/${cacheName}/entries`)
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('evictKeySelect');
+                select.innerHTML = '<option value="">-- Select Key --</option>' +
+                    data.entries.map(e => `<option value="${e.key}">${e.key}</option>`).join('');
+            });
+        }
+
+        function evictEntry() {
+            const cacheName = document.getElementById('evictCacheName').value;
+            const key = document.getElementById('evictKeySelect').value;
+            if (!cacheName || !key) {
+                alert('Select cache and key');
+                return;
+            }
+
+            fetch(`/cache/${cacheName}/entries/${encodeURIComponent(key)}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('evictResult').textContent = JSON.stringify(data, null, 2);
+                loadCaches();
+                loadEvictCacheEntries();
+            });
+        }
+
+        function clearCache() {
+            const cacheName = document.getElementById('clearCacheName').value;
+            if (!cacheName) {
+                alert('Select a cache');
+                return;
+            }
+            if (!confirm(`Clear all entries in cache "${cacheName}"?`)) return;
+
+            fetch(`/cache/${cacheName}/clear`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('evictResult').textContent = JSON.stringify(data, null, 2);
+                loadCaches();
+            });
+        }
+
+        // #62 Redis Data
+        function searchRedisKeys() {
+            const pattern = document.getElementById('redisKeyPattern').value || '*';
+            searchPattern(pattern);
+        }
+
+        function searchPattern(pattern) {
+            document.getElementById('redisKeyPattern').value = pattern;
+
+            fetch(`/cache/redis/keys?pattern=${encodeURIComponent(pattern)}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('redisStatusBadge').textContent = data.redisAvailable ? 'Redis Connected' : 'Mock Mode';
+                document.getElementById('redisStatusBadge').className = 'badge ' + (data.redisAvailable ? 'bg-success' : 'bg-warning');
+                document.getElementById('redisKeyCount').textContent = data.keyCount;
+
+                const list = document.getElementById('redisKeysList');
+                if (data.keys.length === 0) {
+                    list.innerHTML = '<a class="list-group-item text-muted">No keys found</a>';
+                    return;
+                }
+
+                list.innerHTML = data.keys.map(k => `
+                    <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                       onclick="loadRedisValue('${k.key}')">
+                        <span><code>${k.key}</code> ${k.mock ? '<small class="text-muted">(mock)</small>' : ''}</span>
+                        <span class="badge ${k.ttl > 0 ? 'bg-warning' : 'bg-secondary'}">${k.ttl > 0 ? k.ttl + 's' : 'No TTL'}</span>
+                    </a>
+                `).join('');
+            });
+        }
+
+        function loadRedisValue(key) {
+            fetch(`/cache/redis/get?key=${encodeURIComponent(key)}`)
+            .then(r => r.json())
+            .then(data => {
+                let display = `Key: ${data.key}\nSource: ${data.source}\nTTL: ${data.ttl > 0 ? data.ttl + 's' : 'No Expiry'}\n\nValue:\n`;
+                try {
+                    display += JSON.stringify(JSON.parse(data.value), null, 2);
+                } catch {
+                    display += data.value;
+                }
+                document.getElementById('redisValueDisplay').textContent = display;
+            });
+        }
+
+        function setRedisValue() {
+            const key = document.getElementById('redisSetKey').value;
+            const value = document.getElementById('redisSetValue').value;
+            const ttlSeconds = parseInt(document.getElementById('redisSetTtl').value) || 0;
+
+            fetch('/cache/redis/set', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key, value, ttlSeconds })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    searchRedisKeys();
+                    loadRedisValue(key);
+                }
+            });
+        }
+
+        // #63 Redis Pub/Sub
+        function subscribeChannel() {
+            const channel = document.getElementById('subscribeChannel').value;
+            if (!channel) return;
+
+            fetch('/cache/pubsub/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channel })
+            })
+            .then(r => r.json())
+            .then(data => {
+                loadChannels();
+                alert(`Subscribed to channel: ${channel}`);
+            });
+        }
+
+        function loadChannels() {
+            fetch('/cache/pubsub/channels')
+            .then(r => r.json())
+            .then(data => {
+                const channels = Object.keys(data.channels);
+                document.getElementById('channelsList').textContent = channels.length > 0 ? channels.join(', ') : 'None';
+
+                const filterSelect = document.getElementById('messageFilterChannel');
+                filterSelect.innerHTML = '<option value="">All Channels</option>' +
+                    channels.map(c => `<option value="${c}">${c} (${data.channels[c]})</option>`).join('');
+            });
+        }
+
+        function publishMessage() {
+            const channel = document.getElementById('publishChannel').value;
+            const message = document.getElementById('publishMessage').value;
+
+            fetch('/cache/pubsub/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channel, message })
+            })
+            .then(r => r.json())
+            .then(data => {
+                loadPubSubMessages();
+                loadChannels();
+            });
+        }
+
+        function generateSampleMessage() {
+            const types = ['notification', 'event', 'alert', 'update'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const message = {
+                type: type,
+                id: Math.random().toString(36).substring(7),
+                message: `Sample ${type} message`,
+                timestamp: new Date().toISOString()
+            };
+            document.getElementById('publishMessage').value = JSON.stringify(message, null, 2);
+        }
+
+        function loadPubSubMessages() {
+            const channel = document.getElementById('messageFilterChannel').value;
+            const url = channel ? `/cache/pubsub/messages?channel=${channel}` : '/cache/pubsub/messages';
+
+            fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('pubsubMessages');
+                if (data.messages.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No messages yet</p>';
+                    return;
+                }
+
+                container.innerHTML = data.messages.map(m => `
+                    <div class="card mb-2">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-info">${m.channel}</span>
+                                <small class="text-muted">${m.timestampFormatted}</small>
+                            </div>
+                            <code class="d-block mt-1 text-truncate" title="${m.message}">${m.message}</code>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function clearPubSub() {
+            if (!confirm('Clear all Pub/Sub messages?')) return;
+            fetch('/cache/pubsub/clear', { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                loadChannels();
+                loadPubSubMessages();
+            });
+        }
+
+        // Initial load
+        loadCaches();
+        searchPattern('*');
+        loadChannels();
+        loadPubSubMessages();
+
+        // Auto-refresh on tab switch
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                const target = e.target.getAttribute('data-bs-target');
+                if (target === '#cache-list') loadCaches();
+                else if (target === '#redis-data') searchRedisKeys();
+                else if (target === '#redis-pubsub') { loadChannels(); loadPubSubMessages(); }
+            });
+        });
+    </script>
+</content>
+</body>
+</html>

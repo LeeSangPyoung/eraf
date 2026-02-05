@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/default :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:fragment="title">Image - ERAF Sample</title>
+</head>
+<body>
+<section th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-image text-info"></i> Image Processing</h2>
+            <p class="text-muted mb-0">이미지 리사이즈, 썸네일, 워터마크</p>
+        </div>
+        <span class="badge bg-info fs-6">#10 ~ #12</span>
+    </div>
+
+    <!-- 이미지 업로드 -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <i class="bi bi-upload"></i> 이미지 업로드
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="file" class="form-control" id="imageFile" accept="image/*">
+                    <small class="text-muted">지원 형식: JPG, PNG, GIF, BMP</small>
+                </div>
+                <div class="col-md-6">
+                    <div id="originalPreview" class="text-center p-3 bg-light rounded" style="min-height: 150px;">
+                        <img id="originalImage" src="" alt="Original" style="max-width: 100%; max-height: 200px; display: none;">
+                        <p class="text-muted mb-0" id="originalPlaceholder">원본 이미지 미리보기</p>
+                    </div>
+                    <div id="originalInfo" class="mt-2 small text-muted"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- #10 이미지 리사이즈 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-aspect-ratio"></i> #10 이미지 리사이즈
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Width</label>
+                            <input type="number" class="form-control" id="resizeWidth" value="400">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Height</label>
+                            <input type="number" class="form-control" id="resizeHeight" value="300">
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="keepRatio" checked>
+                        <label class="form-check-label" for="keepRatio">비율 유지</label>
+                    </div>
+                    <button onclick="processImage('resize')" class="btn btn-success">
+                        <i class="bi bi-aspect-ratio"></i> Resize
+                    </button>
+                    <div id="resizeResult" class="mt-3 text-center" style="display: none;">
+                        <img id="resizeImage" src="" alt="Resized" style="max-width: 100%; max-height: 200px;">
+                        <p class="small text-muted mt-2" id="resizeInfo"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #11 썸네일 생성 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-card-image"></i> #11 썸네일 생성
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">썸네일 크기</label>
+                        <select class="form-select" id="thumbSize">
+                            <option value="50">50px</option>
+                            <option value="100">100px</option>
+                            <option value="150" selected>150px</option>
+                            <option value="200">200px</option>
+                            <option value="300">300px</option>
+                        </select>
+                    </div>
+                    <button onclick="processImage('thumbnail')" class="btn btn-warning">
+                        <i class="bi bi-card-image"></i> Create Thumbnail
+                    </button>
+                    <div id="thumbnailResult" class="mt-3 text-center" style="display: none;">
+                        <img id="thumbnailImage" src="" alt="Thumbnail" style="max-width: 100%;">
+                        <p class="small text-muted mt-2" id="thumbnailInfo"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #12 이미지 워터마크 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-droplet"></i> #12 이미지 워터마크
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">워터마크 텍스트</label>
+                        <input type="text" class="form-control" id="watermarkText" value="ERAF Sample">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">투명도: <span id="opacityValue">0.5</span></label>
+                        <input type="range" class="form-range" id="opacity" min="0.1" max="1" step="0.1" value="0.5"
+                               oninput="document.getElementById('opacityValue').textContent = this.value">
+                    </div>
+                    <button onclick="processImage('watermark')" class="btn btn-primary">
+                        <i class="bi bi-droplet"></i> Add Watermark
+                    </button>
+                    <div id="watermarkResult" class="mt-3 text-center" style="display: none;">
+                        <img id="watermarkImage" src="" alt="Watermarked" style="max-width: 100%; max-height: 200px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 이미지 회전 (추가 기능) -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <i class="bi bi-arrow-clockwise"></i> 이미지 회전 (추가)
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">회전 각도</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="rotateAngle" id="rotate90" value="90" checked>
+                            <label class="btn btn-outline-secondary" for="rotate90">90°</label>
+                            <input type="radio" class="btn-check" name="rotateAngle" id="rotate180" value="180">
+                            <label class="btn btn-outline-secondary" for="rotate180">180°</label>
+                            <input type="radio" class="btn-check" name="rotateAngle" id="rotate270" value="270">
+                            <label class="btn btn-outline-secondary" for="rotate270">270°</label>
+                        </div>
+                    </div>
+                    <button onclick="processImage('rotate')" class="btn btn-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Rotate
+                    </button>
+                    <div id="rotateResult" class="mt-3 text-center" style="display: none;">
+                        <img id="rotateImage" src="" alt="Rotated" style="max-width: 100%; max-height: 200px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 코드 예제 -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="bi bi-code-slash"></i> Code Example
+        </div>
+        <div class="card-body">
+            <div class="code-preview">
+<pre>// 이미지 리사이즈 (비율 유지)
+ImageUtils.resize(sourcePath, targetPath, 400, 300);
+
+// 강제 리사이즈
+ImageUtils.resizeForce(sourcePath, targetPath, 400, 300);
+
+// 썸네일 생성
+ImageUtils.thumbnail(sourcePath, targetPath, 150);
+
+// 텍스트 워터마크 (투명도 0.5)
+ImageUtils.watermark(sourcePath, targetPath, "ERAF Sample", 0.5f);
+
+// 이미지 회전
+ImageUtils.rotate(sourcePath, targetPath, 90);
+
+// 이미지 정보 조회
+ImageUtils.ImageInfo info = ImageUtils.getInfo(path);
+System.out.println(info.width() + "x" + info.height());
+
+// 포맷 변환
+ImageUtils.convert(sourcePath, targetPath, "png");</pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script th:inline="javascript">
+    // 파일 선택 시 미리보기
+    document.getElementById('imageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('originalImage').src = e.target.result;
+                document.getElementById('originalImage').style.display = 'block';
+                document.getElementById('originalPlaceholder').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+
+            // 이미지 정보 조회
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/document/image/info', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('originalInfo').innerHTML =
+                        `<strong>크기:</strong> ${data.width}x${data.height} | <strong>형식:</strong> ${data.format} | <strong>파일크기:</strong> ${(data.size/1024).toFixed(1)}KB`;
+                }
+            });
+        }
+    });
+
+    async function processImage(operation) {
+        const fileInput = document.getElementById('imageFile');
+        if (!fileInput.files.length) {
+            alert('Please select an image first');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        let url = `/document/image/${operation}`;
+
+        switch (operation) {
+            case 'resize':
+                formData.append('width', document.getElementById('resizeWidth').value);
+                formData.append('height', document.getElementById('resizeHeight').value);
+                formData.append('keepRatio', document.getElementById('keepRatio').checked);
+                break;
+            case 'thumbnail':
+                formData.append('size', document.getElementById('thumbSize').value);
+                break;
+            case 'watermark':
+                formData.append('text', document.getElementById('watermarkText').value);
+                formData.append('opacity', document.getElementById('opacity').value);
+                break;
+            case 'rotate':
+                formData.append('degrees', document.querySelector('input[name="rotateAngle"]:checked').value);
+                break;
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                document.getElementById(`${operation}Image`).src = result.image;
+                document.getElementById(`${operation}Result`).style.display = 'block';
+
+                if (operation === 'resize' && result.resized) {
+                    document.getElementById('resizeInfo').textContent =
+                        `${result.original.width}x${result.original.height} → ${result.resized.width}x${result.resized.height}`;
+                }
+                if (operation === 'thumbnail' && result.thumbnail) {
+                    document.getElementById('thumbnailInfo').textContent =
+                        `${result.original.width}x${result.original.height} → ${result.thumbnail.width}x${result.thumbnail.height}`;
+                }
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+</body>
+</html>

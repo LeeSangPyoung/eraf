@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/default :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:fragment="title">PDF - ERAF Sample</title>
+</head>
+<body>
+<section th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-file-earmark-pdf text-danger"></i> PDF Features</h2>
+            <p class="text-muted mb-0">PDF 생성, 템플릿 렌더링, 워터마크</p>
+        </div>
+        <span class="badge bg-danger fs-6">#5 ~ #7</span>
+    </div>
+
+    <div class="row">
+        <!-- #5 PDF 생성 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-file-pdf"></i> #5 PDF 생성
+                </div>
+                <div class="card-body">
+                    <p>HTML을 PDF로 변환하여 생성합니다.</p>
+                    <div class="mb-3">
+                        <label class="form-label">내용 입력</label>
+                        <textarea class="form-control" id="pdfText" rows="3">Hello, ERAF PDF Generator! This is a sample document.</textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button onclick="generatePdf()" class="btn btn-danger">
+                            <i class="bi bi-download"></i> Generate PDF
+                        </button>
+                        <button onclick="previewPdf()" class="btn btn-outline-danger">
+                            <i class="bi bi-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #6 PDF 템플릿 렌더링 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-file-earmark-ruled"></i> #6 PDF 템플릿 렌더링
+                </div>
+                <div class="card-body">
+                    <p>미리 정의된 템플릿으로 PDF를 생성합니다.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/document/pdf/template?type=invoice" class="btn btn-primary">
+                            <i class="bi bi-receipt"></i> Invoice
+                        </a>
+                        <a href="/document/pdf/template?type=report" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up"></i> Report
+                        </a>
+                        <a href="/document/pdf/template?type=certificate" class="btn btn-outline-primary">
+                            <i class="bi bi-award"></i> Certificate
+                        </a>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            Flying Saucer (xhtmlrenderer)를 사용한 HTML to PDF 변환
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- #7 PDF 워터마크 -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-droplet"></i> #7 PDF 워터마크
+                </div>
+                <div class="card-body">
+                    <p>PDF에 워터마크 텍스트를 추가합니다.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">워터마크 텍스트</label>
+                                <input type="text" class="form-control" id="watermarkText" value="CONFIDENTIAL">
+                            </div>
+                            <button onclick="generateWatermark()" class="btn btn-warning">
+                                <i class="bi bi-download"></i> Generate with Watermark
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle"></i> 워터마크 옵션 예시:
+                                <ul class="mb-0 mt-2">
+                                    <li>CONFIDENTIAL</li>
+                                    <li>DRAFT</li>
+                                    <li>SAMPLE</li>
+                                    <li>DO NOT COPY</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 코드 예제 -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <i class="bi bi-code-slash"></i> Code Example
+        </div>
+        <div class="card-body">
+            <div class="code-preview">
+<pre>// HTML to PDF 변환
+String html = """
+    &lt;html&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Hello PDF&lt;/h1&gt;
+        &lt;p&gt;This is a PDF document.&lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+    """;
+
+// 파일로 저장
+PdfGenerator.fromHtml(html, Path.of("output.pdf"));
+
+// 바이트 배열로 반환
+byte[] pdfBytes = PdfGenerator.fromHtmlToBytes(html, null);
+
+// 간단한 텍스트 PDF
+PdfGenerator.createTextPdf("Simple text content", Path.of("text.pdf"));</pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script th:inline="javascript">
+    function generatePdf() {
+        const text = document.getElementById('pdfText').value;
+        window.location.href = `/document/pdf/generate?text=${encodeURIComponent(text)}`;
+    }
+
+    function previewPdf() {
+        const text = document.getElementById('pdfText').value;
+        window.open(`/document/pdf/preview?content=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function generateWatermark() {
+        const watermark = document.getElementById('watermarkText').value;
+        window.location.href = `/document/pdf/watermark?watermarkText=${encodeURIComponent(watermark)}`;
+    }
+</script>
+</body>
+</html>

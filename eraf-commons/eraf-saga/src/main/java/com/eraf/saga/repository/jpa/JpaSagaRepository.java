@@ -70,6 +70,14 @@ public class JpaSagaRepository implements SagaRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<SagaExecution> findAll() {
+        return jpaRepository.findAll().stream()
+                .map(this::toExecution)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void delete(String id) {
         jpaRepository.deleteById(id);
     }
