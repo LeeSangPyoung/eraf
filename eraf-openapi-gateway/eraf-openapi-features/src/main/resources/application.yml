@@ -1,0 +1,56 @@
+spring:
+  cloud:
+    gateway:
+      # Global CORS Configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            maxAge: 3600
+
+      # HTTP Client Configuration
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 30s
+        pool:
+          type: elastic
+          max-connections: 100
+          max-idle-time: 30s
+
+      # Load Balancer Configuration
+      loadbalancer:
+        use404: false
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 60s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 100
+        slowCallDurationThreshold: 5s
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 30s
+
+# Logging
+logging:
+  level:
+    com.eraf.openapi.features: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO

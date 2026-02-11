@@ -7,6 +7,7 @@ import com.eraf.security.bot.BotDetectionResult;
 import com.eraf.security.bot.BotDetector;
 import com.eraf.security.jwt.JwtProperties;
 import com.eraf.security.jwt.JwtTokenProvider;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,12 @@ public class AuthApiController {
             "user", new UserInfo("user", "user123", "U002", List.of("ROLE_USER")),
             "manager", new UserInfo("manager", "manager123", "U003", List.of("ROLE_MANAGER", "ROLE_USER"))
     );
+
+    @PostConstruct
+    public void init() {
+        // Register audit listener to store events in memory for demo purposes
+        securityAuditLogger.addListener(event -> auditLogs.add(event));
+    }
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {

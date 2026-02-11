@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout as AntLayout, Menu, theme, Typography } from 'antd';
+import { Layout as AntLayout, Menu, theme, Typography, Dropdown, Avatar, Space } from 'antd';
 import type { MenuProps } from 'antd';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
@@ -18,6 +18,14 @@ import {
   DatabaseOutlined,
   DashboardOutlined,
   ApiOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  HistoryOutlined,
+  KeyOutlined,
+  HeartOutlined,
+  CloudServerOutlined,
+  SafetyCertificateOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 
 const { Sider, Content, Header } = AntLayout;
@@ -30,6 +38,25 @@ const menuItems: MenuItem[] = [
     key: '/',
     icon: <HomeOutlined />,
     label: 'Dashboard',
+  },
+  {
+    key: 'gateway',
+    icon: <ApiOutlined />,
+    label: 'API Gateway Management',
+    children: [
+      { key: '/gateway/analytics', icon: <DashboardOutlined />, label: 'Analytics' },
+      { key: '/gateway/routes', icon: <ApiOutlined />, label: 'Routes' },
+      { key: '/gateway/apis', icon: <ApiOutlined />, label: 'APIs' },
+      { key: '/gateway/services', icon: <ApiOutlined />, label: 'Services' },
+      { key: '/gateway/targets', icon: <ApiOutlined />, label: 'Targets' },
+      { key: '/gateway/plugins', icon: <ApiOutlined />, label: 'Plugins' },
+      { key: '/gateway/request-logs', icon: <HistoryOutlined />, label: 'Request Logs' },
+      { key: '/gateway/consumers', icon: <KeyOutlined />, label: 'Consumers' },
+      { key: '/gateway/health-checks', icon: <HeartOutlined />, label: 'Health Checks' },
+      { key: '/gateway/upstreams', icon: <CloudServerOutlined />, label: 'Upstreams' },
+      { key: '/gateway/certificates', icon: <SafetyCertificateOutlined />, label: 'Certificates' },
+      { key: '/gateway/consumer-groups', icon: <TeamOutlined />, label: 'Consumer Groups' },
+    ],
   },
   {
     key: 'document',
@@ -108,9 +135,37 @@ const Layout: React.FC = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  // Get user info from localStorage
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
   const handleMenuClick: MenuProps['onClick'] = (e) => {
     navigate(e.key);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: 'Profile',
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Logout',
+      onClick: handleLogout,
+    },
+  ];
 
   // Find selected keys and open keys based on current path
   const getSelectedKeys = () => {
@@ -120,6 +175,7 @@ const Layout: React.FC = () => {
 
   const getOpenKeys = () => {
     const path = location.pathname;
+    if (path.startsWith('/gateway')) return ['gateway'];
     if (path.startsWith('/document')) return ['document'];
     if (path.startsWith('/security')) return ['security'];
     if (path.startsWith('/statemachine') || path.startsWith('/saga')) return ['state'];
@@ -177,9 +233,17 @@ const Layout: React.FC = () => {
           <Title level={4} style={{ margin: 0 }}>
             ERAF Framework Demo
           </Title>
-          <div style={{ color: '#888' }}>
-            Backend: http://localhost:8080
-          </div>
+          <Space size="large">
+            <div style={{ color: '#888', fontSize: '12px' }}>
+              Gateway: http://localhost:9000 | Backend: http://localhost:8080
+            </div>
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Space style={{ cursor: 'pointer' }}>
+                <Avatar size="small" icon={<UserOutlined />} />
+                <span>{user?.username || 'Guest'}</span>
+              </Space>
+            </Dropdown>
+          </Space>
         </Header>
         <Content
           style={{

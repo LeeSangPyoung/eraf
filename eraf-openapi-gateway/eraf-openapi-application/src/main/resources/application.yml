@@ -1,0 +1,163 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: eraf-openapi-gateway
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/eraf_gateway
+    username: eraf
+    password: eraf123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA Configuration
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+
+  # Cloud Gateway Configuration
+  cloud:
+    gateway:
+      # Global CORS
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders: "*"
+            maxAge: 3600
+
+      # HTTP Client
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 30s
+        pool:
+          type: elastic
+          max-connections: 100
+          max-idle-time: 30s
+
+      # Load Balancer
+      loadbalancer:
+        use404: false
+
+  # Jackson
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Seoul
+
+# ERAF Security Configuration
+eraf:
+  security:
+    jwt:
+      enabled: true
+      secret: ${JWT_SECRET:eraf-sample-secret-key-for-development-only-change-in-production}
+      issuer: eraf
+      access-token-expiration: 1h
+      refresh-token-expiration: 7d
+      skip-patterns:
+        - /actuator/**
+        - /favicon.ico
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 60s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 100
+        slowCallDurationThreshold: 5s
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 30s
+
+# Management & Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.eraf: DEBUG
+    com.eraf.openapi: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web.reactive: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/eraf-openapi-gateway.log
+    max-size: 10MB
+    max-history: 30
+
+# Application Info
+info:
+  app:
+    name: ${spring.application.name}
+    description: "🌟 World's Best API Gateway - ERAF's Pride 🌟"
+    version: "1.0.0-SNAPSHOT"
+    encoding: "@project.build.sourceEncoding@"
+    java:
+      version: "@java.version@"
