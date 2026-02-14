@@ -99,23 +99,67 @@ eraf:
   batch:
     enabled: true
 
+  # Phase 2: Request Context (eraf-web)
+  web:
+    request-context:
+      enabled: true
+      trace-id-header: X-Trace-Id
+      request-id-header: X-Request-Id
+
+  # Phase 2: JPA Enhancements (eraf-data-jpa)
+  jpa:
+    envers:
+      enabled: true
+    audit-retention:
+      enabled: true
+      retention-days: 365
+      hard-delete-enabled: true
+      hard-delete-after-days: 730
+      cron: "0 0 2 * * ?"
+      hard-delete-cron: "0 0 3 * * SUN"
+
+  # Phase 2: Actuator Enhancements (eraf-actuator)
+  actuator:
+    health:
+      liveness:
+        enabled: true
+      readiness:
+        enabled: true
+        startup-delay-seconds: 10
+
 # Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: '*'  # Phase 2: Expose all endpoints for demo/development
+      base-path: /actuator
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true  # Phase 2: Enable Kubernetes probes
   health:
+    livenessstate:
+      enabled: true  # Phase 2: Liveness probe
+    readinessstate:
+      enabled: true  # Phase 2: Readiness probe
     elasticsearch:
       enabled: false
     rabbit:
       enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}  # Phase 2: Add application tag to all metrics
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true  # Phase 2: Enable histogram for HTTP requests
 
 # Logging
 logging:
   level:
     com.eraf: DEBUG
     org.springframework.web: INFO
+  pattern:
+    # Phase 2: Include MDC (requestId, traceId, userId) in logs
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] [%X{traceId}] [%X{userId}] - %msg%n'

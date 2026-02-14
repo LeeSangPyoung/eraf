@@ -1,0 +1,597 @@
+[
+  {
+    "no": 1,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "예외 처리",
+    "priority": "P1"
+  },
+  {
+    "no": 2,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "응답 표준화",
+    "priority": "P1"
+  },
+  {
+    "no": 3,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "입력값 검증",
+    "priority": "P1"
+  },
+  {
+    "no": 4,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "유틸리티",
+    "priority": "P1"
+  },
+  {
+    "no": 5,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "데이터 변환",
+    "priority": "P1"
+  },
+  {
+    "no": 6,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "요청 컨텍스트",
+    "priority": "P1"
+  },
+  {
+    "no": 7,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "공통코드",
+    "priority": "P1"
+  },
+  {
+    "no": 8,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "이벤트",
+    "priority": "P1"
+  },
+  {
+    "no": 9,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "파일 관리",
+    "priority": "P1"
+  },
+  {
+    "no": 10,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "다국어 (i18n)",
+    "priority": "P1"
+  },
+  {
+    "no": 11,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "템플릿 엔진",
+    "priority": "P1"
+  },
+  {
+    "no": 12,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "암호화/보안",
+    "priority": "P2"
+  },
+  {
+    "no": 13,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "데이터 마스킹",
+    "priority": "P2"
+  },
+  {
+    "no": 14,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "로깅/감사",
+    "priority": "P2"
+  },
+  {
+    "no": 15,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "요청/응답 로깅",
+    "priority": "P2"
+  },
+  {
+    "no": 16,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "설정 암호화",
+    "priority": "P2"
+  },
+  {
+    "no": 17,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "HTTP 통신",
+    "priority": "P2"
+  },
+  {
+    "no": 18,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "복원력 패턴",
+    "priority": "P3"
+  },
+  {
+    "no": 19,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "비동기 처리",
+    "priority": "P3"
+  },
+  {
+    "no": 20,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "기능 토글",
+    "priority": "P3"
+  },
+  {
+    "no": 21,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "멱등성",
+    "priority": "P3"
+  },
+  {
+    "no": 22,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "분산 락",
+    "priority": "P3"
+  },
+  {
+    "no": 23,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "시퀀스",
+    "priority": "P3"
+  },
+  {
+    "no": 24,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "메시징 추상화",
+    "priority": "P3"
+  },
+  {
+    "no": 25,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "API 버전 관리",
+    "priority": "P3"
+  },
+  {
+    "no": 26,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "Virtual Thread",
+    "priority": "P4"
+  },
+  {
+    "no": 27,
+    "category": "A. Core",
+    "module": "eraf-core",
+    "item_name": "데이터 보존 정책",
+    "priority": "P5"
+  },
+  {
+    "no": 28,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "JWT 인증",
+    "priority": "P1"
+  },
+  {
+    "no": 29,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "보안 필터 체인",
+    "priority": "P1"
+  },
+  {
+    "no": 30,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "RBAC 권한 관리",
+    "priority": "P1"
+  },
+  {
+    "no": 31,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "보안 감사",
+    "priority": "P2"
+  },
+  {
+    "no": 32,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "API Key 인증",
+    "priority": "P3"
+  },
+  {
+    "no": 33,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "IP 접근 제어",
+    "priority": "P3"
+  },
+  {
+    "no": 34,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "봇 탐지",
+    "priority": "P3"
+  },
+  {
+    "no": 35,
+    "category": "B. Security",
+    "module": "eraf-security",
+    "item_name": "OAuth2/OIDC",
+    "priority": "P4"
+  },
+  {
+    "no": 36,
+    "category": "B. Security",
+    "module": "eraf-session",
+    "item_name": "분산 세션",
+    "priority": "P3"
+  },
+  {
+    "no": 37,
+    "category": "C. Web",
+    "module": "eraf-swagger",
+    "item_name": "API 문서화",
+    "priority": "P1"
+  },
+  {
+    "no": 38,
+    "category": "C. Web",
+    "module": "eraf-gateway",
+    "item_name": "API Gateway",
+    "priority": "P4"
+  },
+  {
+    "no": 39,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "기본 엔티티",
+    "priority": "P1"
+  },
+  {
+    "no": 40,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "소프트 삭제",
+    "priority": "P1"
+  },
+  {
+    "no": 41,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "동적 쿼리",
+    "priority": "P1"
+  },
+  {
+    "no": 42,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "JPA 저장소",
+    "priority": "P1"
+  },
+  {
+    "no": 43,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "DB 마이그레이션",
+    "priority": "P1"
+  },
+  {
+    "no": 44,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "민감 컬럼 암복호화",
+    "priority": "P2"
+  },
+  {
+    "no": 45,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "슬로우 쿼리 감지",
+    "priority": "P2"
+  },
+  {
+    "no": 46,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "멀티테넌시",
+    "priority": "P3"
+  },
+  {
+    "no": 47,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "엔티티 변경 이력",
+    "priority": "P3"
+  },
+  {
+    "no": 48,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "커서 기반 페이징",
+    "priority": "P3"
+  },
+  {
+    "no": 49,
+    "category": "D. Data",
+    "module": "eraf-data-jpa",
+    "item_name": "멀티 데이터소스",
+    "priority": "P4"
+  },
+  {
+    "no": 50,
+    "category": "D. Data",
+    "module": "eraf-data-redis",
+    "item_name": "Redis 구현체",
+    "priority": "P3"
+  },
+  {
+    "no": 51,
+    "category": "D. Data",
+    "module": "eraf-data-cache",
+    "item_name": "캐시 설정",
+    "priority": "P2"
+  },
+  {
+    "no": 52,
+    "category": "D. Data",
+    "module": "eraf-data-mybatis",
+    "item_name": "MyBatis 설정",
+    "priority": "P3"
+  },
+  {
+    "no": 53,
+    "category": "D. Data",
+    "module": "eraf-data-elasticsearch",
+    "item_name": "ES 연결 설정",
+    "priority": "P4"
+  },
+  {
+    "no": 54,
+    "category": "D. Data",
+    "module": "eraf-data-mongo",
+    "item_name": "MongoDB",
+    "priority": "P5"
+  },
+  {
+    "no": 55,
+    "category": "E. Messaging",
+    "module": "eraf-messaging-kafka",
+    "item_name": "Kafka 메시징",
+    "priority": "P3"
+  },
+  {
+    "no": 56,
+    "category": "E. Messaging",
+    "module": "eraf-messaging-kafka",
+    "item_name": "Outbox 패턴",
+    "priority": "P4"
+  },
+  {
+    "no": 57,
+    "category": "E. Messaging",
+    "module": "eraf-messaging-rabbitmq",
+    "item_name": "RabbitMQ 메시징",
+    "priority": "P3"
+  },
+  {
+    "no": 58,
+    "category": "F. Integration",
+    "module": "eraf-integration-http",
+    "item_name": "Feign 클라이언트",
+    "priority": "P3"
+  },
+  {
+    "no": 59,
+    "category": "F. Integration",
+    "module": "eraf-integration-s3",
+    "item_name": "객체 저장소",
+    "priority": "P3"
+  },
+  {
+    "no": 60,
+    "category": "F. Integration",
+    "module": "eraf-integration-ftp",
+    "item_name": "FTP/SFTP",
+    "priority": "P4"
+  },
+  {
+    "no": 61,
+    "category": "F. Integration",
+    "module": "eraf-integration-tcp",
+    "item_name": "TCP 통신",
+    "priority": "P5"
+  },
+  {
+    "no": 62,
+    "category": "F. Integration",
+    "module": "eraf-integration-grpc",
+    "item_name": "gRPC 통신",
+    "priority": "P5"
+  },
+  {
+    "no": 63,
+    "category": "F. Integration",
+    "module": "eraf-integration-websocket",
+    "item_name": "WebSocket",
+    "priority": "P4"
+  },
+  {
+    "no": 64,
+    "category": "G. Processing",
+    "module": "eraf-scheduler",
+    "item_name": "스케줄링",
+    "priority": "P2"
+  },
+  {
+    "no": 65,
+    "category": "G. Processing",
+    "module": "eraf-batch",
+    "item_name": "배치 처리",
+    "priority": "P3"
+  },
+  {
+    "no": 66,
+    "category": "G. Processing",
+    "module": "eraf-statemachine",
+    "item_name": "상태 머신",
+    "priority": "P4"
+  },
+  {
+    "no": 67,
+    "category": "G. Processing",
+    "module": "eraf-saga",
+    "item_name": "Saga 트랜잭션",
+    "priority": "P4"
+  },
+  {
+    "no": 68,
+    "category": "G. Processing",
+    "module": "eraf-workflow",
+    "item_name": "워크플로우 엔진",
+    "priority": "P5"
+  },
+  {
+    "no": 69,
+    "category": "H. Observability",
+    "module": "eraf-actuator",
+    "item_name": "헬스 체크",
+    "priority": "P1"
+  },
+  {
+    "no": 70,
+    "category": "H. Observability",
+    "module": "eraf-actuator",
+    "item_name": "메트릭 수집",
+    "priority": "P2"
+  },
+  {
+    "no": 71,
+    "category": "H. Observability",
+    "module": "eraf-actuator",
+    "item_name": "분산 추적",
+    "priority": "P3"
+  },
+  {
+    "no": 72,
+    "category": "H. Observability",
+    "module": "eraf-actuator",
+    "item_name": "OpenTelemetry 연동",
+    "priority": "P3"
+  },
+  {
+    "no": 73,
+    "category": "H. Observability",
+    "module": "eraf-notification",
+    "item_name": "이메일 발송",
+    "priority": "P2"
+  },
+  {
+    "no": 74,
+    "category": "H. Observability",
+    "module": "eraf-notification",
+    "item_name": "SMS 발송",
+    "priority": "P3"
+  },
+  {
+    "no": 75,
+    "category": "H. Observability",
+    "module": "eraf-notification",
+    "item_name": "푸시 알림",
+    "priority": "P4"
+  },
+  {
+    "no": 76,
+    "category": "H. Observability",
+    "module": "eraf-notification",
+    "item_name": "Slack/Teams 연동",
+    "priority": "P3"
+  },
+  {
+    "no": 77,
+    "category": "H. Observability",
+    "module": "eraf-notification",
+    "item_name": "알림 이력 관리",
+    "priority": "P3"
+  },
+  {
+    "no": 78,
+    "category": "I. Document\n& Media",
+    "module": "eraf-excel",
+    "item_name": "Excel 처리",
+    "priority": "P1"
+  },
+  {
+    "no": 79,
+    "category": "I. Document\n& Media",
+    "module": "eraf-pdf",
+    "item_name": "PDF 처리",
+    "priority": "P2"
+  },
+  {
+    "no": 80,
+    "category": "I. Document\n& Media",
+    "module": "eraf-image",
+    "item_name": "이미지 처리",
+    "priority": "P3"
+  },
+  {
+    "no": 81,
+    "category": "I. Document\n& Media",
+    "module": "eraf-barcode",
+    "item_name": "바코드/QR코드",
+    "priority": "P4"
+  },
+  {
+    "no": 82,
+    "category": "I. Document\n& Media",
+    "module": "eraf-report",
+    "item_name": "리포트 생성",
+    "priority": "P5"
+  },
+  {
+    "no": 83,
+    "category": "J. Testing\n(추가)",
+    "module": "eraf-test",
+    "item_name": "테스트 유틸리티",
+    "priority": "P2"
+  },
+  {
+    "no": 84,
+    "category": "J. Testing\n(추가)",
+    "module": "eraf-test",
+    "item_name": "통합 테스트 환경",
+    "priority": "P3"
+  },
+  {
+    "no": 85,
+    "category": "K. Config\n(추가)",
+    "module": "eraf-config",
+    "item_name": "중앙 설정 관리",
+    "priority": "P4"
+  }
+]

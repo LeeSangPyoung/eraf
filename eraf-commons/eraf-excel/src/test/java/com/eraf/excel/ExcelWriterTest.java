@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -19,65 +18,55 @@ class ExcelWriterTest {
 
     @Test
     @DisplayName("ExcelWriter 생성")
-    void testCreateExcelWriter() {
-        // Given & When
-        ExcelWriter writer = new ExcelWriter();
-
-        // Then
-        assertNotNull(writer);
+    void testCreateExcelWriter() throws Exception {
+        try (ExcelWriter writer = new ExcelWriter()) {
+            assertNotNull(writer);
+        }
     }
 
     @Test
     @DisplayName("시트 추가")
-    void testAddSheet() {
-        // Given
-        ExcelWriter writer = new ExcelWriter();
-
-        // When
-        writer.createSheet("TestSheet");
-
-        // Then
-        assertNotNull(writer);
+    void testAddSheet() throws Exception {
+        try (ExcelWriter writer = new ExcelWriter()) {
+            writer.createSheet("TestSheet");
+            assertNotNull(writer);
+        }
     }
 
     @Test
     @DisplayName("데이터 쓰기")
-    void testWriteData() {
-        // Given
-        ExcelWriter writer = new ExcelWriter();
-        writer.createSheet("Data");
+    void testWriteData() throws Exception {
+        try (ExcelWriter writer = new ExcelWriter()) {
+            List<List<Object>> data = Arrays.asList(
+                    Arrays.asList("Name", "Age", "Email"),
+                    Arrays.asList("John", 30, "john@example.com"),
+                    Arrays.asList("Jane", 25, "jane@example.com")
+            );
 
-        List<String> headers = Arrays.asList("Name", "Age", "Email");
-        List<List<Object>> data = Arrays.asList(
-                Arrays.asList("John", 30, "john@example.com"),
-                Arrays.asList("Jane", 25, "jane@example.com")
-        );
+            writer.write("Data", data, true);
 
-        // When
-        writer.writeHeaders(headers);
-        writer.writeRows(data);
-
-        // Then
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        writer.write(out);
-        assertTrue(out.size() > 0);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            writer.write(out);
+            assertTrue(out.size() > 0);
+        }
     }
 
     @Test
     @DisplayName("파일로 저장")
-    void testWriteToFile() {
-        // Given
-        ExcelWriter writer = new ExcelWriter();
-        writer.createSheet("Test");
-        writer.writeHeaders(Arrays.asList("Col1", "Col2"));
+    void testSaveToFile() throws Exception {
+        try (ExcelWriter writer = new ExcelWriter()) {
+            List<List<Object>> data = Arrays.asList(
+                    Arrays.asList("Col1", "Col2"),
+                    Arrays.asList("val1", "val2")
+            );
 
-        File file = tempDir.resolve("test.xlsx").toFile();
+            writer.write("Test", data);
 
-        // When
-        writer.writeToFile(file.getAbsolutePath());
+            Path file = tempDir.resolve("test.xlsx");
+            writer.save(file);
 
-        // Then
-        assertTrue(file.exists());
-        assertTrue(file.length() > 0);
+            assertTrue(file.toFile().exists());
+            assertTrue(file.toFile().length() > 0);
+        }
     }
 }

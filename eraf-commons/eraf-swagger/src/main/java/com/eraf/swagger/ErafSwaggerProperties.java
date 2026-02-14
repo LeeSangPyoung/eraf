@@ -2,6 +2,9 @@ package com.eraf.swagger;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * ERAF Swagger Configuration Properties
  */
@@ -24,9 +27,15 @@ public class ErafSwaggerProperties {
     private Security security = new Security();
 
     /**
-     * 그룹 설정
+     * 기본 그룹 설정
      */
     private Group group = new Group();
+
+    /**
+     * 추가 API 그룹 설정 (그룹명 -> 그룹 설정)
+     * 예: eraf.swagger.additional-groups.admin.paths-to-match=/admin/**
+     */
+    private Map<String, Group> additionalGroups = new LinkedHashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -58,6 +67,14 @@ public class ErafSwaggerProperties {
 
     public void setGroup(Group group) {
         this.group = group;
+    }
+
+    public Map<String, Group> getAdditionalGroups() {
+        return additionalGroups;
+    }
+
+    public void setAdditionalGroups(Map<String, Group> additionalGroups) {
+        this.additionalGroups = additionalGroups;
     }
 
     /**
@@ -186,6 +203,11 @@ public class ErafSwaggerProperties {
         private String scheme = "bearer";
         private String bearerFormat = "JWT";
 
+        /**
+         * API Key 보안 설정
+         */
+        private ApiKey apiKey = new ApiKey();
+
         public boolean isEnabled() {
             return enabled;
         }
@@ -216,6 +238,47 @@ public class ErafSwaggerProperties {
 
         public void setBearerFormat(String bearerFormat) {
             this.bearerFormat = bearerFormat;
+        }
+
+        public ApiKey getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(ApiKey apiKey) {
+            this.apiKey = apiKey;
+        }
+    }
+
+    /**
+     * API Key 보안 설정
+     */
+    public static class ApiKey {
+        private boolean enabled = false;
+        private String name = "X-API-KEY";
+        private String in = "header";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getIn() {
+            return in;
+        }
+
+        public void setIn(String in) {
+            this.in = in;
         }
     }
 

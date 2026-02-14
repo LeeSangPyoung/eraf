@@ -25,13 +25,14 @@ class ErafHttpPropertiesTest {
         // Given
         ErafHttpProperties properties = new ErafHttpProperties();
 
+        // Then - 기본값
+        assertEquals(Duration.ofSeconds(30), properties.getTimeout());
+
         // When
-        properties.setConnectTimeout(Duration.ofSeconds(5));
-        properties.setReadTimeout(Duration.ofSeconds(30));
+        properties.setTimeout(Duration.ofSeconds(10));
 
         // Then
-        assertEquals(Duration.ofSeconds(5), properties.getConnectTimeout());
-        assertEquals(Duration.ofSeconds(30), properties.getReadTimeout());
+        assertEquals(Duration.ofSeconds(10), properties.getTimeout());
     }
 
     @Test
@@ -40,10 +41,32 @@ class ErafHttpPropertiesTest {
         // Given
         ErafHttpProperties properties = new ErafHttpProperties();
 
+        // Then - 기본값
+        assertEquals(3, properties.getRetryCount());
+
         // When
-        properties.setMaxRetries(3);
+        properties.setRetryCount(5);
 
         // Then
-        assertEquals(3, properties.getMaxRetries());
+        assertEquals(5, properties.getRetryCount());
+    }
+
+    @Test
+    @DisplayName("Circuit Breaker 및 컨텍스트 전파 설정")
+    void testCircuitBreakerAndContextPropagation() {
+        // Given
+        ErafHttpProperties properties = new ErafHttpProperties();
+
+        // Then - 기본값
+        assertTrue(properties.isCircuitBreakerEnabled());
+        assertTrue(properties.isContextPropagationEnabled());
+
+        // When
+        properties.setCircuitBreakerEnabled(false);
+        properties.setContextPropagationEnabled(false);
+
+        // Then
+        assertFalse(properties.isCircuitBreakerEnabled());
+        assertFalse(properties.isContextPropagationEnabled());
     }
 }

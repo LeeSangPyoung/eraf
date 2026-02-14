@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * HTTP 요청/응답 로깅 필터
@@ -31,15 +32,21 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     private final boolean includePayload;
     private final int maxPayloadLength;
     private final List<String> excludePatterns;
+    private final double sampleRate;
 
     public RequestLoggingFilter() {
-        this(true, 1000, Arrays.asList("/actuator", "/health", "/favicon.ico"));
+        this(true, 1000, Arrays.asList("/actuator", "/health", "/favicon.ico"), 1.0);
     }
 
     public RequestLoggingFilter(boolean includePayload, int maxPayloadLength, List<String> excludePatterns) {
+        this(includePayload, maxPayloadLength, excludePatterns, 1.0);
+    }
+
+    public RequestLoggingFilter(boolean includePayload, int maxPayloadLength, List<String> excludePatterns, double sampleRate) {
         this.includePayload = includePayload;
         this.maxPayloadLength = maxPayloadLength;
         this.excludePatterns = excludePatterns;
+        this.sampleRate = Math.max(0.0, Math.min(1.0, sampleRate));
     }
 
     @Override
@@ -51,6 +58,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 샘플링: sampleRate 확률로만 로깅 수행
+        boolean shouldLog = (sampleRate >= 1.0) || (ThreadLocalRandom.current().nextDouble() < sampleRate);
 
         // TraceId 설정
         String traceId = request.getHeader(TRACE_ID_HEADER);
@@ -79,8 +89,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 요청 로깅
-            logRequest(wrappedRequest, traceId);
+            // 요청 로깅 (샘플링 적용)
+            if (shouldLog) {
+                logRequest(wrappedRequest, traceId);
+            }
 
             // 필터 체인 실행
             filterChain.doFilter(wrappedRequest, wrappedResponse);
@@ -88,8 +100,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         } finally {
             long duration = System.currentTimeMillis() - startTime;
 
-            // 응답 로깅
-            logResponse(wrappedRequest, wrappedResponse, duration, traceId);
+            // 응답 로깅 (샘플링 적용)
+            if (shouldLog) {
+                logResponse(wrappedRequest, wrappedResponse, duration, traceId);
+            }
 
             // 응답 본문 복사 (필수!)
             wrappedResponse.copyBodyToResponse();

@@ -278,6 +278,12 @@ public class ErafWebProperties {
          */
         private String[] excludePatterns = {"/actuator", "/health", "/favicon.ico"};
 
+        /**
+         * 로깅 샘플링 비율 (0.0 ~ 1.0)
+         * 1.0 = 모든 요청 로깅, 0.5 = 50% 샘플링, 0.0 = 로깅 안함
+         */
+        private double sampleRate = 1.0;
+
         public boolean isEnabled() {
             return enabled;
         }
@@ -308,6 +314,14 @@ public class ErafWebProperties {
 
         public void setExcludePatterns(String[] excludePatterns) {
             this.excludePatterns = excludePatterns;
+        }
+
+        public double getSampleRate() {
+            return sampleRate;
+        }
+
+        public void setSampleRate(double sampleRate) {
+            this.sampleRate = sampleRate;
         }
     }
 

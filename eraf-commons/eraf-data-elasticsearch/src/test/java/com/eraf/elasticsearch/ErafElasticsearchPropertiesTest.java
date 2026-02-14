@@ -3,6 +3,8 @@ package com.eraf.elasticsearch;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ErafElasticsearchPropertiesTest {
@@ -24,10 +26,10 @@ class ErafElasticsearchPropertiesTest {
         ErafElasticsearchProperties properties = new ErafElasticsearchProperties();
 
         // When
-        properties.setHosts(new String[]{"localhost:9200", "localhost:9201"});
+        properties.setHosts(List.of("localhost:9200", "localhost:9201"));
 
         // Then
-        assertEquals(2, properties.getHosts().length);
-        assertEquals("localhost:9200", properties.getHosts()[0]);
+        assertEquals(2, properties.getHosts().size());
+        assertEquals("localhost:9200", properties.getHosts().get(0));
     }
 }

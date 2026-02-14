@@ -71,10 +71,9 @@ public final class PdfGenerator {
             PdfWriter.getInstance(document, os);
             document.open();
             document.add(new Paragraph(text));
+            document.close();
         } catch (DocumentException e) {
             throw new IOException("PDF 생성 실패", e);
-        } finally {
-            document.close();
         }
     }
 
@@ -90,10 +89,9 @@ public final class PdfGenerator {
                 document.newPage();
                 document.add(new Paragraph(" "));
             }
+            document.close();
         } catch (DocumentException e) {
             throw new IOException("PDF 생성 실패", e);
-        } finally {
-            document.close();
         }
     }
 }

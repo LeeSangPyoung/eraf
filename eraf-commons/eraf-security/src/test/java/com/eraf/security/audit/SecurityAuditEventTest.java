@@ -21,24 +21,23 @@ class SecurityAuditEventTest {
         Map<String, Object> details = new HashMap<>();
         details.put("reason", "Invalid credentials");
 
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("AUTHENTICATION_FAILURE")
-                .username("testuser")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.AUTHENTICATION_FAILURE)
+                .principal("testuser")
                 .ipAddress("192.168.1.100")
                 .userAgent("Mozilla/5.0")
                 .requestUri("/api/login")
-                .requestMethod("POST")
+                .method("POST")
                 .timestamp(timestamp)
                 .success(false)
                 .details(details)
                 .build();
 
-        assertEquals("AUTHENTICATION_FAILURE", event.getEventType());
-        assertEquals("testuser", event.getUsername());
+        assertEquals(SecurityAuditEvent.EventType.AUTHENTICATION_FAILURE, event.getEventType());
+        assertEquals("testuser", event.getPrincipal());
         assertEquals("192.168.1.100", event.getIpAddress());
         assertEquals("Mozilla/5.0", event.getUserAgent());
         assertEquals("/api/login", event.getRequestUri());
-        assertEquals("POST", event.getRequestMethod());
+        assertEquals("POST", event.getMethod());
         assertEquals(timestamp, event.getTimestamp());
         assertFalse(event.isSuccess());
         assertEquals("Invalid credentials", event.getDetails().get("reason"));
@@ -47,39 +46,13 @@ class SecurityAuditEventTest {
     @Test
     @DisplayName("성공 이벤트 생성")
     void shouldCreateSuccessEvent() {
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("AUTHENTICATION_SUCCESS")
-                .username("admin")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.LOGIN_SUCCESS)
+                .principal("admin")
                 .success(true)
                 .build();
 
         assertTrue(event.isSuccess());
-        assertEquals("AUTHENTICATION_SUCCESS", event.getEventType());
-    }
-
-    @Test
-    @DisplayName("Setter/Getter 동작")
-    void shouldWorkWithSettersAndGetters() {
-        SecurityAuditEvent event = new SecurityAuditEvent();
-        Instant now = Instant.now();
-
-        event.setEventType("ACCESS_DENIED");
-        event.setUsername("user123");
-        event.setIpAddress("10.0.0.1");
-        event.setUserAgent("CustomAgent/1.0");
-        event.setRequestUri("/admin/users");
-        event.setRequestMethod("DELETE");
-        event.setTimestamp(now);
-        event.setSuccess(false);
-
-        assertEquals("ACCESS_DENIED", event.getEventType());
-        assertEquals("user123", event.getUsername());
-        assertEquals("10.0.0.1", event.getIpAddress());
-        assertEquals("CustomAgent/1.0", event.getUserAgent());
-        assertEquals("/admin/users", event.getRequestUri());
-        assertEquals("DELETE", event.getRequestMethod());
-        assertEquals(now, event.getTimestamp());
-        assertFalse(event.isSuccess());
+        assertEquals(SecurityAuditEvent.EventType.LOGIN_SUCCESS, event.getEventType());
     }
 
     @Test
@@ -90,8 +63,7 @@ class SecurityAuditEventTest {
         details.put("roles", new String[]{"ROLE_USER", "ROLE_ADMIN"});
         details.put("loginAttempts", 3);
 
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("LOGIN")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.LOGIN_SUCCESS)
                 .details(details)
                 .build();
 
@@ -102,14 +74,13 @@ class SecurityAuditEventTest {
     @Test
     @DisplayName("null 값 허용")
     void shouldAllowNullValues() {
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("UNKNOWN")
-                .username(null)
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.ACCESS_DENIED)
+                .principal(null)
                 .ipAddress(null)
                 .details(null)
                 .build();
 
-        assertNull(event.getUsername());
+        assertNull(event.getPrincipal());
         assertNull(event.getIpAddress());
         assertNull(event.getDetails());
     }
@@ -117,23 +88,51 @@ class SecurityAuditEventTest {
     @Test
     @DisplayName("다양한 이벤트 타입")
     void shouldSupportVariousEventTypes() {
-        String[] eventTypes = {
-                "AUTHENTICATION_SUCCESS",
-                "AUTHENTICATION_FAILURE",
-                "AUTHORIZATION_FAILURE",
-                "SESSION_CREATED",
-                "SESSION_EXPIRED",
-                "PASSWORD_CHANGED",
-                "ACCOUNT_LOCKED",
-                "API_KEY_USED"
+        SecurityAuditEvent.EventType[] eventTypes = {
+                SecurityAuditEvent.EventType.LOGIN_SUCCESS,
+                SecurityAuditEvent.EventType.LOGIN_FAILURE,
+                SecurityAuditEvent.EventType.LOGOUT,
+                SecurityAuditEvent.EventType.ACCESS_DENIED,
+                SecurityAuditEvent.EventType.SESSION_CREATED,
+                SecurityAuditEvent.EventType.SESSION_EXPIRED,
+                SecurityAuditEvent.EventType.PASSWORD_CHANGE,
+                SecurityAuditEvent.EventType.ACCOUNT_LOCKED,
+                SecurityAuditEvent.EventType.API_KEY_USED
         };
 
-        for (String eventType : eventTypes) {
-            SecurityAuditEvent event = SecurityAuditEvent.builder()
-                    .eventType(eventType)
+        for (SecurityAuditEvent.EventType eventType : eventTypes) {
+            SecurityAuditEvent event = SecurityAuditEvent.builder(eventType)
                     .build();
 
             assertEquals(eventType, event.getEventType());
         }
+    }
+
+    @Test
+    @DisplayName("기본 타임스탬프 자동 설정")
+    void shouldSetDefaultTimestamp() {
+        Instant before = Instant.now();
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.TOKEN_CREATED)
+                .principal("user")
+                .build();
+        Instant after = Instant.now();
+
+        assertNotNull(event.getTimestamp());
+        assertFalse(event.getTimestamp().isBefore(before));
+        assertFalse(event.getTimestamp().isAfter(after));
+    }
+
+    @Test
+    @DisplayName("toString 포함 정보")
+    void shouldIncludeInfoInToString() {
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.LOGIN_SUCCESS)
+                .principal("admin")
+                .ipAddress("10.0.0.1")
+                .build();
+
+        String str = event.toString();
+        assertTrue(str.contains("LOGIN_SUCCESS"));
+        assertTrue(str.contains("admin"));
+        assertTrue(str.contains("10.0.0.1"));
     }
 }

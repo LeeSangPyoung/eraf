@@ -27,7 +27,7 @@ class RedisSequenceGeneratorTest {
     @BeforeEach
     void setUp() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        sequenceGenerator = new RedisSequenceGenerator(redisTemplate, "seq:");
+        sequenceGenerator = new RedisSequenceGenerator(redisTemplate);
     }
 
     @Test
@@ -67,15 +67,15 @@ class RedisSequenceGeneratorTest {
 
     @Test
     @DisplayName("포맷된 시퀀스 생성")
-    void testNextFormattedValue() {
+    void testNextFormatted() {
         // Given
         String sequenceName = "order";
         when(valueOperations.increment(anyString())).thenReturn(42L);
 
         // When
-        String formatted = sequenceGenerator.nextFormattedValue(sequenceName, "ORD-%05d");
+        String formatted = sequenceGenerator.nextFormatted(sequenceName, 5);
 
         // Then
-        assertEquals("ORD-00042", formatted);
+        assertEquals("00042", formatted);
     }
 }

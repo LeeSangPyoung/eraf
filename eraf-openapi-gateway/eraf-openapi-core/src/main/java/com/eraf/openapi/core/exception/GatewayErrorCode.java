@@ -1,6 +1,6 @@
 package com.eraf.openapi.core.exception;
 
-import com.eraf.core.exception.ErrorCode;
+import com.eraf.exception.ErrorCode;
 
 /**
  * Gateway 전용 에러 코드

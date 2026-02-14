@@ -97,7 +97,7 @@ class SagaRecoveryServiceTest {
         SagaExecution result = recoveryService.recover(execution);
 
         // Then
-        assertEquals(SagaStatus.FAILED, result.getStatus()); // 보상 후 실패 처리
+        assertEquals(SagaStatus.COMPENSATING, result.getStatus()); // 보상 진행 중 상태
     }
 
     @Test
@@ -115,7 +115,7 @@ class SagaRecoveryServiceTest {
         SagaExecution result = recoveryService.recover(execution);
 
         // Then
-        assertEquals(SagaStatus.FAILED, result.getStatus());
+        assertEquals(SagaStatus.COMPENSATING, result.getStatus());
     }
 
     @Test
@@ -263,7 +263,7 @@ class SagaRecoveryServiceTest {
         SagaExecution result = recoveryService.cancel(execution.getId());
 
         // Then
-        assertEquals(SagaStatus.FAILED, result.getStatus());
+        assertEquals(SagaStatus.COMPENSATING, result.getStatus());
         assertEquals("Manually cancelled", result.getFailureReason());
     }
 
@@ -279,7 +279,7 @@ class SagaRecoveryServiceTest {
         SagaExecution result = recoveryService.cancel(execution.getId());
 
         // Then
-        assertEquals(SagaStatus.FAILED, result.getStatus());
+        assertEquals(SagaStatus.COMPENSATING, result.getStatus());
     }
 
     @Test

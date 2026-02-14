@@ -44,9 +44,29 @@ public class ErafJpaProperties {
     private boolean optimisticRetryEnabled = true;
 
     /**
+     * Enable Hibernate Envers for entity history
+     */
+    private boolean enversEnabled = false;
+
+    /**
      * Multi-tenancy 설정
      */
     private MultiTenancy multiTenancy = new MultiTenancy();
+
+    /**
+     * Flyway 마이그레이션 설정
+     */
+    private Flyway flyway = new Flyway();
+
+    /**
+     * Audit Retention 설정
+     */
+    private AuditRetention auditRetention = new AuditRetention();
+
+    /**
+     * DataSource 라우팅 설정
+     */
+    private DataSourceRoutingConfig datasourceRouting = new DataSourceRoutingConfig();
 
     public boolean isAuditingEnabled() {
         return auditingEnabled;
@@ -104,12 +124,218 @@ public class ErafJpaProperties {
         this.optimisticRetryEnabled = optimisticRetryEnabled;
     }
 
+    public boolean isEnversEnabled() {
+        return enversEnabled;
+    }
+
+    public void setEnversEnabled(boolean enversEnabled) {
+        this.enversEnabled = enversEnabled;
+    }
+
     public MultiTenancy getMultiTenancy() {
         return multiTenancy;
     }
 
     public void setMultiTenancy(MultiTenancy multiTenancy) {
         this.multiTenancy = multiTenancy;
+    }
+
+    public Flyway getFlyway() {
+        return flyway;
+    }
+
+    public void setFlyway(Flyway flyway) {
+        this.flyway = flyway;
+    }
+
+    public AuditRetention getAuditRetention() {
+        return auditRetention;
+    }
+
+    public void setAuditRetention(AuditRetention auditRetention) {
+        this.auditRetention = auditRetention;
+    }
+
+    public DataSourceRoutingConfig getDatasourceRouting() {
+        return datasourceRouting;
+    }
+
+    public void setDatasourceRouting(DataSourceRoutingConfig datasourceRouting) {
+        this.datasourceRouting = datasourceRouting;
+    }
+
+    /**
+     * DataSource 라우팅 설정
+     */
+    public static class DataSourceRoutingConfig {
+
+        /**
+         * DataSource 라우팅 활성화 여부
+         */
+        private boolean enabled = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    /**
+     * Audit Retention 설정
+     */
+    public static class AuditRetention {
+
+        /**
+         * Retention 정책 활성화
+         */
+        private boolean enabled = true;
+
+        /**
+         * 보관 일수 (기본: 365일 = 1년)
+         */
+        private int retentionDays = 365;
+
+        /**
+         * 영구 삭제 활성화
+         */
+        private boolean hardDeleteEnabled = true;
+
+        /**
+         * 영구 삭제 기준 일수 (Soft Delete 후, 기본: 730일 = 2년)
+         */
+        private int hardDeleteAfterDays = 730;
+
+        /**
+         * Soft Delete Cron 표현식 (기본: 매일 02:00)
+         */
+        private String cron = "0 0 2 * * ?";
+
+        /**
+         * Hard Delete Cron 표현식 (기본: 매주 일요일 03:00)
+         */
+        private String hardDeleteCron = "0 0 3 * * SUN";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getRetentionDays() {
+            return retentionDays;
+        }
+
+        public void setRetentionDays(int retentionDays) {
+            this.retentionDays = retentionDays;
+        }
+
+        public boolean isHardDeleteEnabled() {
+            return hardDeleteEnabled;
+        }
+
+        public void setHardDeleteEnabled(boolean hardDeleteEnabled) {
+            this.hardDeleteEnabled = hardDeleteEnabled;
+        }
+
+        public int getHardDeleteAfterDays() {
+            return hardDeleteAfterDays;
+        }
+
+        public void setHardDeleteAfterDays(int hardDeleteAfterDays) {
+            this.hardDeleteAfterDays = hardDeleteAfterDays;
+        }
+
+        public String getCron() {
+            return cron;
+        }
+
+        public void setCron(String cron) {
+            this.cron = cron;
+        }
+
+        public String getHardDeleteCron() {
+            return hardDeleteCron;
+        }
+
+        public void setHardDeleteCron(String hardDeleteCron) {
+            this.hardDeleteCron = hardDeleteCron;
+        }
+    }
+
+    /**
+     * Flyway 마이그레이션 설정
+     */
+    public static class Flyway {
+
+        /**
+         * Flyway 활성화
+         */
+        private boolean enabled = true;
+
+        /**
+         * 마이그레이션 스크립트 위치
+         */
+        private String location = "classpath:db/migration";
+
+        /**
+         * Baseline 버전
+         */
+        private String baselineVersion = "1.0.0";
+
+        /**
+         * Baseline on migrate 활성화
+         */
+        private boolean baselineOnMigrate = true;
+
+        /**
+         * 검증 활성화
+         */
+        private boolean validateOnMigrate = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public String getBaselineVersion() {
+            return baselineVersion;
+        }
+
+        public void setBaselineVersion(String baselineVersion) {
+            this.baselineVersion = baselineVersion;
+        }
+
+        public boolean isBaselineOnMigrate() {
+            return baselineOnMigrate;
+        }
+
+        public void setBaselineOnMigrate(boolean baselineOnMigrate) {
+            this.baselineOnMigrate = baselineOnMigrate;
+        }
+
+        public boolean isValidateOnMigrate() {
+            return validateOnMigrate;
+        }
+
+        public void setValidateOnMigrate(boolean validateOnMigrate) {
+            this.validateOnMigrate = validateOnMigrate;
+        }
     }
 
     /**

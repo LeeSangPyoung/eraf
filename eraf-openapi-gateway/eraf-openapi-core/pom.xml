@@ -28,6 +28,10 @@
             <groupId>com.eraf</groupId>
             <artifactId>eraf-data-cache</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-exception</artifactId>
+        </dependency>
 
         <!-- Spring Boot -->
         <dependency>

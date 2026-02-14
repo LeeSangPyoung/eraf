@@ -22,16 +22,15 @@ class ErafWebPropertiesTest {
     void testCorsSettings() {
         // Given
         ErafWebProperties properties = new ErafWebProperties();
-        ErafWebProperties.Cors cors = new ErafWebProperties.Cors();
 
         // When
-        cors.setAllowedOrigins(new String[]{"http://localhost:3000"});
-        cors.setAllowedMethods(new String[]{"GET", "POST"});
-        cors.setAllowCredentials(true);
+        properties.setCorsAllowedOrigins(new String[]{"http://localhost:3000"});
+        properties.setCorsAllowedMethods(new String[]{"GET", "POST"});
+        properties.setCorsEnabled(true);
 
         // Then
-        assertEquals(1, cors.getAllowedOrigins().length);
-        assertEquals("http://localhost:3000", cors.getAllowedOrigins()[0]);
-        assertTrue(cors.isAllowCredentials());
+        assertEquals(1, properties.getCorsAllowedOrigins().length);
+        assertEquals("http://localhost:3000", properties.getCorsAllowedOrigins()[0]);
+        assertTrue(properties.isCorsEnabled());
     }
 }

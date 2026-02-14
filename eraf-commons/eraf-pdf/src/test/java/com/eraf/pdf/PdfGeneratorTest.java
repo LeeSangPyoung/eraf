@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,42 +14,59 @@ class PdfGeneratorTest {
     Path tempDir;
 
     @Test
-    @DisplayName("PDF 생성기 인스턴스 생성")
-    void testCreateInstance() {
-        // Given & When
-        PdfGenerator generator = new PdfGenerator();
+    @DisplayName("텍스트 PDF 생성")
+    void testCreateTextPdf() throws Exception {
+        // Given
+        Path output = tempDir.resolve("text.pdf");
+
+        // When
+        PdfGenerator.createTextPdf("Hello World", output);
 
         // Then
-        assertNotNull(generator);
+        assertTrue(output.toFile().exists());
+        assertTrue(output.toFile().length() > 0);
     }
 
     @Test
     @DisplayName("HTML을 PDF로 변환")
-    void testGenerateFromHtml() {
+    void testFromHtml() throws Exception {
         // Given
-        PdfGenerator generator = new PdfGenerator();
-        String html = "<html><body><h1>Test PDF</h1><p>This is a test.</p></body></html>";
+        String html = "<html><body><h1>Test</h1><p>Content</p></body></html>";
+        Path output = tempDir.resolve("html.pdf");
 
         // When
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        generator.generateFromHtml(html, output);
+        PdfGenerator.fromHtml(html, output);
 
         // Then
-        assertTrue(output.size() > 0);
+        assertTrue(output.toFile().exists());
+        assertTrue(output.toFile().length() > 0);
     }
 
     @Test
-    @DisplayName("텍스트 추가")
-    void testAddText() {
+    @DisplayName("HTML을 바이트 배열로 변환")
+    void testFromHtmlToBytes() throws Exception {
         // Given
-        PdfGenerator generator = new PdfGenerator();
+        String html = "<html><body><h1>Test</h1></body></html>";
 
         // When
-        generator.addText("Hello World");
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        generator.generate(output);
+        byte[] bytes = PdfGenerator.fromHtmlToBytes(html, null);
 
         // Then
-        assertTrue(output.size() > 0);
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 0);
+    }
+
+    @Test
+    @DisplayName("빈 PDF 생성")
+    void testCreateEmpty() throws Exception {
+        // Given
+        Path output = tempDir.resolve("empty.pdf");
+
+        // When
+        PdfGenerator.createEmpty(output, 3);
+
+        // Then
+        assertTrue(output.toFile().exists());
+        assertTrue(output.toFile().length() > 0);
     }
 }

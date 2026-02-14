@@ -1,8 +1,6 @@
 package com.eraf.actuator;
 
-import com.eraf.actuator.health.DatabaseHealthIndicator;
-import com.eraf.actuator.health.KafkaHealthIndicator;
-import com.eraf.actuator.health.RedisHealthIndicator;
+import com.eraf.actuator.health.*;
 import com.eraf.actuator.metrics.*;
 import com.eraf.actuator.tracing.*;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -69,6 +67,24 @@ public class ErafActuatorAutoConfiguration {
         @ConditionalOnMissingBean
         public BusinessMetrics businessMetrics(MeterRegistry meterRegistry, ErafMetricsProperties properties) {
             return new BusinessMetrics(meterRegistry, properties.getBusinessPrefix());
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public CustomMetrics customMetrics(MeterRegistry meterRegistry) {
+            return new CustomMetrics(meterRegistry);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public CacheMetrics cacheMetrics(MeterRegistry meterRegistry) {
+            return new CacheMetrics(meterRegistry);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public ApiMetrics apiMetrics(MeterRegistry meterRegistry) {
+            return new ApiMetrics(meterRegistry);
         }
     }
 
@@ -150,5 +166,39 @@ public class ErafActuatorAutoConfiguration {
         public KafkaHealthIndicator erafKafkaHealthIndicator(KafkaAdmin kafkaAdmin) {
             return new KafkaHealthIndicator(kafkaAdmin);
         }
+    }
+
+    // ===== Advanced Health Indicators =====
+
+    /**
+     * Health Check Registry
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public HealthCheckRegistry healthCheckRegistry() {
+        return new HealthCheckRegistry();
+    }
+
+    /**
+     * Liveness Health Indicator
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public LivenessHealthIndicator livenessHealthIndicator() {
+        LivenessHealthIndicator indicator = new LivenessHealthIndicator();
+        indicator.markAsAlive();  // 기본적으로 살아있음
+        return indicator;
+    }
+
+    /**
+     * Readiness Health Indicator
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ReadinessHealthIndicator readinessHealthIndicator() {
+        ReadinessHealthIndicator indicator = new ReadinessHealthIndicator();
+        // 기본적으로 준비 안 됨 (애플리케이션이 명시적으로 준비 완료를 표시해야 함)
+        indicator.markAsNotReady();
+        return indicator;
     }
 }

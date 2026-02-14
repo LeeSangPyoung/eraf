@@ -37,6 +37,21 @@ public class ErafSessionProperties {
     private String cookiePath = "/";
 
     /**
+     * Session cookie domain (null = use server default)
+     */
+    private String cookieDomain;
+
+    /**
+     * Cookie SameSite attribute (Lax, Strict, None)
+     */
+    private String cookieSameSite = "Lax";
+
+    /**
+     * Cookie max age in seconds (-1 = session cookie, deleted on browser close)
+     */
+    private int cookieMaxAge = -1;
+
+    /**
      * JWT 설정
      */
     private Jwt jwt = new Jwt();
@@ -228,5 +243,29 @@ public class ErafSessionProperties {
 
     public void setCookiePath(String cookiePath) {
         this.cookiePath = cookiePath;
+    }
+
+    public String getCookieDomain() {
+        return cookieDomain;
+    }
+
+    public void setCookieDomain(String cookieDomain) {
+        this.cookieDomain = cookieDomain;
+    }
+
+    public String getCookieSameSite() {
+        return cookieSameSite;
+    }
+
+    public void setCookieSameSite(String cookieSameSite) {
+        this.cookieSameSite = cookieSameSite;
+    }
+
+    public int getCookieMaxAge() {
+        return cookieMaxAge;
+    }
+
+    public void setCookieMaxAge(int cookieMaxAge) {
+        this.cookieMaxAge = cookieMaxAge;
     }
 }

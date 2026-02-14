@@ -11,7 +11,7 @@ import com.eraf.openapi.core.repository.GatewayConsumerGroupRepository;
 import com.eraf.openapi.core.repository.GatewayPluginRepository;
 import com.eraf.openapi.core.repository.GatewayRouteRepository;
 import com.eraf.openapi.core.repository.GatewayServiceRepository;
-import com.eraf.core.exception.BusinessException;
+import com.eraf.exception.BusinessException;
 import com.eraf.openapi.core.exception.GatewayErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

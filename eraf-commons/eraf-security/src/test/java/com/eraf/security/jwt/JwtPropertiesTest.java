@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -21,10 +23,12 @@ class JwtPropertiesTest {
     @Test
     @DisplayName("기본값 확인")
     void shouldHaveDefaultValues() {
-        assertEquals(3600000L, properties.getAccessTokenExpiration()); // 1 hour
-        assertEquals(604800000L, properties.getRefreshTokenExpiration()); // 7 days
+        assertEquals(Duration.ofHours(1), properties.getAccessTokenExpiration());
+        assertEquals(Duration.ofDays(7), properties.getRefreshTokenExpiration());
         assertEquals("Authorization", properties.getHeaderName());
         assertEquals("Bearer ", properties.getTokenPrefix());
+        assertEquals("eraf", properties.getIssuer());
+        assertFalse(properties.isEnabled());
     }
 
     @Test
@@ -46,17 +50,17 @@ class JwtPropertiesTest {
     @Test
     @DisplayName("액세스 토큰 만료시간 설정")
     void shouldSetAccessTokenExpiration() {
-        properties.setAccessTokenExpiration(1800000L); // 30 minutes
+        properties.setAccessTokenExpiration(Duration.ofMinutes(30));
 
-        assertEquals(1800000L, properties.getAccessTokenExpiration());
+        assertEquals(Duration.ofMinutes(30), properties.getAccessTokenExpiration());
     }
 
     @Test
     @DisplayName("리프레시 토큰 만료시간 설정")
     void shouldSetRefreshTokenExpiration() {
-        properties.setRefreshTokenExpiration(2592000000L); // 30 days
+        properties.setRefreshTokenExpiration(Duration.ofDays(30));
 
-        assertEquals(2592000000L, properties.getRefreshTokenExpiration());
+        assertEquals(Duration.ofDays(30), properties.getRefreshTokenExpiration());
     }
 
     @Test
@@ -80,15 +84,15 @@ class JwtPropertiesTest {
     void shouldAllowAllConfigurationsToBeChanged() {
         properties.setSecret("newSecret123456789012345678901234567890");
         properties.setIssuer("new-issuer");
-        properties.setAccessTokenExpiration(900000L); // 15 minutes
-        properties.setRefreshTokenExpiration(86400000L); // 1 day
+        properties.setAccessTokenExpiration(Duration.ofMinutes(15));
+        properties.setRefreshTokenExpiration(Duration.ofDays(1));
         properties.setHeaderName("X-JWT");
         properties.setTokenPrefix("JWT ");
 
         assertEquals("newSecret123456789012345678901234567890", properties.getSecret());
         assertEquals("new-issuer", properties.getIssuer());
-        assertEquals(900000L, properties.getAccessTokenExpiration());
-        assertEquals(86400000L, properties.getRefreshTokenExpiration());
+        assertEquals(Duration.ofMinutes(15), properties.getAccessTokenExpiration());
+        assertEquals(Duration.ofDays(1), properties.getRefreshTokenExpiration());
         assertEquals("X-JWT", properties.getHeaderName());
         assertEquals("JWT ", properties.getTokenPrefix());
     }
@@ -99,5 +103,14 @@ class JwtPropertiesTest {
         properties.setTokenPrefix("");
 
         assertEquals("", properties.getTokenPrefix());
+    }
+
+    @Test
+    @DisplayName("스킵 패턴 설정")
+    void shouldSetSkipPatterns() {
+        String[] patterns = {"/public/**", "/health/**"};
+        properties.setSkipPatterns(patterns);
+
+        assertArrayEquals(patterns, properties.getSkipPatterns());
     }
 }

@@ -29,12 +29,11 @@ class SecurityAuditLoggerTest {
     @DisplayName("감사 이벤트 로깅 (예외 없이 실행)")
     void shouldLogAuditEventWithoutException() {
         // Given
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("AUTHENTICATION_SUCCESS")
-                .username("testuser")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.LOGIN_SUCCESS)
+                .principal("testuser")
                 .ipAddress("192.168.1.100")
                 .requestUri("/api/login")
-                .requestMethod("POST")
+                .method("POST")
                 .timestamp(Instant.now())
                 .success(true)
                 .build();
@@ -51,12 +50,11 @@ class SecurityAuditLoggerTest {
         details.put("reason", "Invalid password");
         details.put("attempts", 3);
 
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("AUTHENTICATION_FAILURE")
-                .username("hacker")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.AUTHENTICATION_FAILURE)
+                .principal("hacker")
                 .ipAddress("10.0.0.99")
                 .requestUri("/api/login")
-                .requestMethod("POST")
+                .method("POST")
                 .timestamp(Instant.now())
                 .success(false)
                 .details(details)
@@ -70,8 +68,7 @@ class SecurityAuditLoggerTest {
     @DisplayName("null 필드가 있는 이벤트 로깅")
     void shouldLogEventWithNullFields() {
         // Given
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("SESSION_EXPIRED")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.SESSION_EXPIRED)
                 .timestamp(Instant.now())
                 .success(false)
                 .build();
@@ -90,13 +87,12 @@ class SecurityAuditLoggerTest {
         details.put("loginTime", Instant.now().toString());
         details.put("nestedObject", Map.of("key", "value"));
 
-        SecurityAuditEvent event = SecurityAuditEvent.builder()
-                .eventType("USER_LOGIN")
-                .username("admin")
+        SecurityAuditEvent event = SecurityAuditEvent.builder(SecurityAuditEvent.EventType.LOGIN_SUCCESS)
+                .principal("admin")
                 .ipAddress("127.0.0.1")
                 .userAgent("Mozilla/5.0")
                 .requestUri("/api/auth/login")
-                .requestMethod("POST")
+                .method("POST")
                 .timestamp(Instant.now())
                 .success(true)
                 .details(details)
@@ -110,21 +106,20 @@ class SecurityAuditLoggerTest {
     @DisplayName("다양한 이벤트 타입 로깅")
     void shouldLogVariousEventTypes() {
         // Given
-        String[] eventTypes = {
-                "AUTHENTICATION_SUCCESS",
-                "AUTHENTICATION_FAILURE",
-                "AUTHORIZATION_FAILURE",
-                "SESSION_CREATED",
-                "SESSION_DESTROYED",
-                "PASSWORD_CHANGED",
-                "ACCOUNT_LOCKED",
-                "API_KEY_USED"
+        SecurityAuditEvent.EventType[] eventTypes = {
+                SecurityAuditEvent.EventType.LOGIN_SUCCESS,
+                SecurityAuditEvent.EventType.LOGIN_FAILURE,
+                SecurityAuditEvent.EventType.ACCESS_DENIED,
+                SecurityAuditEvent.EventType.SESSION_CREATED,
+                SecurityAuditEvent.EventType.SESSION_EXPIRED,
+                SecurityAuditEvent.EventType.PASSWORD_CHANGE,
+                SecurityAuditEvent.EventType.ACCOUNT_LOCKED,
+                SecurityAuditEvent.EventType.API_KEY_USED
         };
 
         // When & Then
-        for (String eventType : eventTypes) {
-            SecurityAuditEvent event = SecurityAuditEvent.builder()
-                    .eventType(eventType)
+        for (SecurityAuditEvent.EventType eventType : eventTypes) {
+            SecurityAuditEvent event = SecurityAuditEvent.builder(eventType)
                     .timestamp(Instant.now())
                     .success(true)
                     .build();

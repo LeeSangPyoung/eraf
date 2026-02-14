@@ -23,15 +23,15 @@ class BusinessMetricsTest {
     @BeforeEach
     void setUp() {
         meterRegistry = new SimpleMeterRegistry();
-        businessMetrics = new BusinessMetrics(meterRegistry);
+        businessMetrics = new BusinessMetrics(meterRegistry, "");
     }
 
     @Test
     @DisplayName("카운터 증가")
     void shouldIncrementCounter() {
-        businessMetrics.incrementCounter("orders.created", "channel", "web");
-        businessMetrics.incrementCounter("orders.created", "channel", "web");
-        businessMetrics.incrementCounter("orders.created", "channel", "mobile");
+        businessMetrics.increment("orders.created", "channel", "web");
+        businessMetrics.increment("orders.created", "channel", "web");
+        businessMetrics.increment("orders.created", "channel", "mobile");
 
         Counter webCounter = meterRegistry.counter("orders.created", "channel", "web");
         Counter mobileCounter = meterRegistry.counter("orders.created", "channel", "mobile");
@@ -43,8 +43,8 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("지정된 양만큼 카운터 증가")
     void shouldIncrementCounterByAmount() {
-        businessMetrics.incrementCounter("items.sold", 5, "category", "electronics");
-        businessMetrics.incrementCounter("items.sold", 3, "category", "electronics");
+        businessMetrics.increment("items.sold", 5, "category", "electronics");
+        businessMetrics.increment("items.sold", 3, "category", "electronics");
 
         Counter counter = meterRegistry.counter("items.sold", "category", "electronics");
 
@@ -54,8 +54,8 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("타이머 기록")
     void shouldRecordTimer() {
-        businessMetrics.recordTimer("api.latency", 150, TimeUnit.MILLISECONDS, "endpoint", "/users");
-        businessMetrics.recordTimer("api.latency", 200, TimeUnit.MILLISECONDS, "endpoint", "/users");
+        businessMetrics.recordTime("api.latency", 150, TimeUnit.MILLISECONDS, "endpoint", "/users");
+        businessMetrics.recordTime("api.latency", 200, TimeUnit.MILLISECONDS, "endpoint", "/users");
 
         Timer timer = meterRegistry.timer("api.latency", "endpoint", "/users");
 
@@ -66,9 +66,9 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("게이지 설정")
     void shouldSetGauge() {
-        businessMetrics.gauge("queue.size", 100, "queue", "orders");
+        var gaugeValue = businessMetrics.gauge("queue.size", "queue", "orders");
+        gaugeValue.set(100);
 
-        // SimpleMeterRegistry에서 게이지 조회
         var gauge = meterRegistry.find("queue.size").tags("queue", "orders").gauge();
         assertNotNull(gauge);
         assertEquals(100.0, gauge.value());
@@ -77,8 +77,9 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("게이지 업데이트")
     void shouldUpdateGauge() {
-        businessMetrics.gauge("active.connections", 10, "pool", "db");
-        businessMetrics.gauge("active.connections", 15, "pool", "db");
+        var gaugeValue = businessMetrics.gauge("active.connections", "pool", "db");
+        gaugeValue.set(10);
+        gaugeValue.set(15);
 
         var gauge = meterRegistry.find("active.connections").tags("pool", "db").gauge();
         assertNotNull(gauge);
@@ -88,8 +89,8 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("태그 없이 카운터 증가")
     void shouldIncrementCounterWithoutTags() {
-        businessMetrics.incrementCounter("global.events");
-        businessMetrics.incrementCounter("global.events");
+        businessMetrics.increment("global.events");
+        businessMetrics.increment("global.events");
 
         Counter counter = meterRegistry.counter("global.events");
         assertEquals(2.0, counter.count());
@@ -98,9 +99,9 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("여러 태그로 메트릭 구분")
     void shouldDistinguishMetricsByTags() {
-        businessMetrics.incrementCounter("http.requests", "method", "GET", "status", "200");
-        businessMetrics.incrementCounter("http.requests", "method", "POST", "status", "201");
-        businessMetrics.incrementCounter("http.requests", "method", "GET", "status", "404");
+        businessMetrics.increment("http.requests", "method", "GET", "status", "200");
+        businessMetrics.increment("http.requests", "method", "POST", "status", "201");
+        businessMetrics.increment("http.requests", "method", "GET", "status", "404");
 
         Counter get200 = meterRegistry.counter("http.requests", "method", "GET", "status", "200");
         Counter post201 = meterRegistry.counter("http.requests", "method", "POST", "status", "201");
@@ -114,9 +115,9 @@ class BusinessMetricsTest {
     @Test
     @DisplayName("타이머 통계 조회")
     void shouldProvideTimerStatistics() {
-        businessMetrics.recordTimer("db.query", 100, TimeUnit.MILLISECONDS, "operation", "select");
-        businessMetrics.recordTimer("db.query", 200, TimeUnit.MILLISECONDS, "operation", "select");
-        businessMetrics.recordTimer("db.query", 150, TimeUnit.MILLISECONDS, "operation", "select");
+        businessMetrics.recordTime("db.query", 100, TimeUnit.MILLISECONDS, "operation", "select");
+        businessMetrics.recordTime("db.query", 200, TimeUnit.MILLISECONDS, "operation", "select");
+        businessMetrics.recordTime("db.query", 150, TimeUnit.MILLISECONDS, "operation", "select");
 
         Timer timer = meterRegistry.timer("db.query", "operation", "select");
 

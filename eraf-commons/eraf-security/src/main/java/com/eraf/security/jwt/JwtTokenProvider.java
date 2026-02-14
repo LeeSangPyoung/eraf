@@ -164,7 +164,7 @@ public class JwtTokenProvider {
             log.warn("JWT token unsupported: {}", e.getMessage());
         } catch (MalformedJwtException e) {
             log.warn("JWT token malformed: {}", e.getMessage());
-        } catch (SecurityException e) {
+        } catch (SecurityException | io.jsonwebtoken.security.SecurityException e) {
             log.warn("JWT signature validation failed: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             log.warn("JWT token compact of handler are invalid: {}", e.getMessage());

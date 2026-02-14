@@ -41,7 +41,7 @@ class TenantFilterTest {
         multiTenancy.setHeaderName("X-Tenant-ID");
         properties.setMultiTenancy(multiTenancy);
 
-        filter = new TenantFilter(properties);
+        filter = new TenantFilter("X-Tenant-ID", null, false);
 
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
@@ -76,8 +76,7 @@ class TenantFilterTest {
     @DisplayName("테넌트 ID 없이 요청 시 기본값")
     void shouldUseDefaultWhenNoTenantId() throws ServletException, IOException {
         // Given - 헤더 없음
-        ErafJpaProperties.MultiTenancy multiTenancy = properties.getMultiTenancy();
-        multiTenancy.setDefaultTenant("default-tenant");
+        filter = new TenantFilter("X-Tenant-ID", "default-tenant", false);
 
         doAnswer(inv -> {
             assertEquals("default-tenant", TenantContext.getTenantId());
@@ -122,8 +121,7 @@ class TenantFilterTest {
     @DisplayName("커스텀 헤더명 지원")
     void shouldSupportCustomHeaderName() throws ServletException, IOException {
         // Given
-        properties.getMultiTenancy().setHeaderName("X-Organization-ID");
-        filter = new TenantFilter(properties);
+        filter = new TenantFilter("X-Organization-ID", null, false);
 
         request.addHeader("X-Organization-ID", "org-456");
 
@@ -143,8 +141,8 @@ class TenantFilterTest {
     @DisplayName("빈 테넌트 ID는 무시")
     void shouldIgnoreEmptyTenantId() throws ServletException, IOException {
         // Given
+        filter = new TenantFilter("X-Tenant-ID", "default", false);
         request.addHeader("X-Tenant-ID", "");
-        properties.getMultiTenancy().setDefaultTenant("default");
 
         doAnswer(inv -> {
             assertEquals("default", TenantContext.getTenantId());
@@ -162,8 +160,8 @@ class TenantFilterTest {
     @DisplayName("공백만 있는 테넌트 ID는 무시")
     void shouldIgnoreWhitespaceTenantId() throws ServletException, IOException {
         // Given
+        filter = new TenantFilter("X-Tenant-ID", "default", false);
         request.addHeader("X-Tenant-ID", "   ");
-        properties.getMultiTenancy().setDefaultTenant("default");
 
         doAnswer(inv -> {
             assertEquals("default", TenantContext.getTenantId());

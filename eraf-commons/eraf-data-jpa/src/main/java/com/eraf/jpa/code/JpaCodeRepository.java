@@ -1,7 +1,7 @@
 package com.eraf.jpa.code;
 
-import com.eraf.core.code.CodeItem;
-import com.eraf.core.code.CodeRepository;
+import com.eraf.code.CodeItem;
+import com.eraf.code.CodeRepository;
 
 import java.util.List;
 import java.util.Optional;

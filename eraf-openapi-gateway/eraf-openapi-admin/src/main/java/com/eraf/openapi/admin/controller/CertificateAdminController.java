@@ -1,6 +1,6 @@
 package com.eraf.openapi.admin.controller;
 
-import com.eraf.core.response.ApiResponse;
+import com.eraf.response.ApiResponse;
 import com.eraf.openapi.admin.dto.CertificateRequest;
 import com.eraf.openapi.admin.dto.CertificateResponse;
 import com.eraf.openapi.admin.service.CertificateAdminService;

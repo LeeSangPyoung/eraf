@@ -61,7 +61,7 @@ class SpecificationBuilderTest {
     @DisplayName("equals 조건 추가")
     void shouldAddEqualsCondition() {
         Specification<TestEntity> spec = SpecificationBuilder.<TestEntity>builder()
-                .equals("name", "John")
+                .equal("name", "John")
                 .build();
 
         assertNotNull(spec);
@@ -75,7 +75,7 @@ class SpecificationBuilderTest {
     @DisplayName("null 값은 조건에서 제외")
     void shouldSkipNullValues() {
         Specification<TestEntity> spec = SpecificationBuilder.<TestEntity>builder()
-                .equals("name", null)
+                .equal("name", null)
                 .build();
 
         assertNotNull(spec);
@@ -167,10 +167,10 @@ class SpecificationBuilderTest {
         when(criteriaBuilder.lessThanOrEqualTo(any(), any(Comparable.class))).thenReturn(predicate);
 
         Specification<TestEntity> spec = SpecificationBuilder.<TestEntity>builder()
-                .equals("status", "ACTIVE")
+                .equal("status", "ACTIVE")
                 .like("name", "John")
-                .greaterThanOrEqualTo("age", 18)
-                .lessThanOrEqualTo("age", 65)
+                .greaterThanOrEqual("age", 18)
+                .lessThanOrEqual("age", 65)
                 .build();
 
         assertNotNull(spec);

@@ -22,6 +22,18 @@
             <groupId>com.eraf</groupId>
             <artifactId>eraf-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-i18n</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-system</artifactId>
+        </dependency>
 
         <!-- Spring Boot Web -->
         <dependency>
@@ -56,6 +68,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

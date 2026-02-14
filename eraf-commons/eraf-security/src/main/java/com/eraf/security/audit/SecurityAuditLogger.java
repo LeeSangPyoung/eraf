@@ -136,6 +136,19 @@ public class SecurityAuditLogger {
     }
 
     /**
+     * IP 접근 거부 기록
+     */
+    public void logIpAccessDenied(String ipAddress, String requestUri, String method) {
+        log(SecurityAuditEvent.builder(SecurityAuditEvent.EventType.ACCESS_DENIED)
+                .ipAddress(ipAddress)
+                .requestUri(requestUri)
+                .method(method)
+                .success(false)
+                .details(java.util.Map.of("reason", "IP access control"))
+                .build());
+    }
+
+    /**
      * 리스너 등록
      */
     public void addListener(Consumer<SecurityAuditEvent> listener) {

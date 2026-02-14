@@ -1,17 +1,19 @@
 package com.eraf.jpa;
 
-import com.eraf.core.code.CodeRepository;
-import com.eraf.core.lock.OptimisticRetryAspect;
+import com.eraf.code.CodeRepository;
+import com.eraf.lock.OptimisticRetryAspect;
 import com.eraf.core.logging.AuditLogStore;
 import com.eraf.core.logging.AuditLogger;
-import com.eraf.jpa.audit.AuditLogJpaRepository;
-import com.eraf.jpa.audit.ErafAuditorAware;
-import com.eraf.jpa.audit.JpaAuditLogStore;
+import com.eraf.jpa.audit.*;
+import com.eraf.jpa.envers.EntityRevisionService;
 import com.eraf.jpa.code.CommonCodeJpaRepository;
 import com.eraf.jpa.code.JpaCodeRepository;
+import com.eraf.jpa.datasource.DataSourceRoutingAspect;
 import com.eraf.jpa.multitenancy.TenantAspect;
 import com.eraf.jpa.multitenancy.TenantFilter;
 import jakarta.persistence.EntityManager;
+import org.flywaydb.core.Flyway;
+import javax.sql.DataSource;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -26,6 +28,8 @@ import org.springframework.core.Ordered;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * ERAF JPA Auto Configuration
@@ -34,6 +38,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @ConditionalOnClass(JpaRepository.class)
 @EnableConfigurationProperties(ErafJpaProperties.class)
 @EnableJpaAuditing(auditorAwareRef = "erafAuditorAware")
+@EnableAsync
+@EnableScheduling
 public class ErafJpaAutoConfiguration {
 
     /**
@@ -87,6 +93,40 @@ public class ErafJpaAutoConfiguration {
     }
 
     /**
+     * 비동기 감사 로거
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(AuditLogJpaRepository.class)
+    @ConditionalOnProperty(name = "eraf.jpa.audit-log-enabled", havingValue = "true", matchIfMissing = true)
+    public AsyncAuditLogger asyncAuditLogger(AuditLogJpaRepository auditLogRepository) {
+        return new AsyncAuditLogger(auditLogRepository);
+    }
+
+    /**
+     * 감사 로그 조회 서비스
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(AuditLogJpaRepository.class)
+    @ConditionalOnProperty(name = "eraf.jpa.audit-log-enabled", havingValue = "true", matchIfMissing = true)
+    public AuditLogQueryService auditLogQueryService(AuditLogJpaRepository auditLogRepository) {
+        return new AuditLogQueryService(auditLogRepository);
+    }
+
+    /**
+     * 감사 로그 보관 정책
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(AuditLogJpaRepository.class)
+    @ConditionalOnProperty(name = "eraf.jpa.audit-retention.enabled", havingValue = "true", matchIfMissing = true)
+    public AuditLogRetentionPolicy auditLogRetentionPolicy(AuditLogJpaRepository auditLogRepository,
+                                                           ErafJpaProperties properties) {
+        return new AuditLogRetentionPolicy(auditLogRepository, properties.getAuditRetention());
+    }
+
+    /**
      * 낙관적 락 재시도 AOP Aspect
      */
     @Bean
@@ -94,6 +134,25 @@ public class ErafJpaAutoConfiguration {
     @ConditionalOnProperty(name = "eraf.jpa.optimistic-retry-enabled", havingValue = "true", matchIfMissing = true)
     public OptimisticRetryAspect optimisticRetryAspect() {
         return new OptimisticRetryAspect();
+    }
+
+    /**
+     * Flyway Database Migration
+     */
+    @Bean(initMethod = "migrate")
+    @ConditionalOnClass(Flyway.class)
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.jpa.flyway.enabled", havingValue = "true", matchIfMissing = true)
+    public Flyway flyway(DataSource dataSource, ErafJpaProperties properties) {
+        ErafJpaProperties.Flyway flywayProps = properties.getFlyway();
+
+        return Flyway.configure()
+                .dataSource(dataSource)
+                .locations(flywayProps.getLocation())
+                .baselineVersion(flywayProps.getBaselineVersion())
+                .baselineOnMigrate(flywayProps.isBaselineOnMigrate())
+                .validateOnMigrate(flywayProps.isValidateOnMigrate())
+                .load();
     }
 
     /**
@@ -131,6 +190,37 @@ public class ErafJpaAutoConfiguration {
         @ConditionalOnBean(EntityManager.class)
         public TenantAspect tenantAspect(EntityManager entityManager) {
             return new TenantAspect(entityManager);
+        }
+    }
+
+    /**
+     * DataSource 라우팅 AOP Aspect
+     * @DataSourceRouting 어노테이션 기반으로 DataSource를 동적 전환
+     */
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnProperty(name = "eraf.jpa.datasource-routing.enabled", havingValue = "true")
+    static class DataSourceRoutingConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public DataSourceRoutingAspect dataSourceRoutingAspect() {
+            return new DataSourceRoutingAspect();
+        }
+    }
+
+    /**
+     * Hibernate Envers 설정
+     */
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(name = "org.hibernate.envers.AuditReader")
+    @ConditionalOnProperty(name = "eraf.jpa.envers.enabled", havingValue = "true")
+    static class EnversConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        @ConditionalOnBean(EntityManager.class)
+        public EntityRevisionService entityRevisionService(EntityManager entityManager) {
+            return new EntityRevisionService(entityManager);
         }
     }
 }

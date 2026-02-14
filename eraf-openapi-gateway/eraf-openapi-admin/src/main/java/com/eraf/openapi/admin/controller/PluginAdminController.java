@@ -1,6 +1,6 @@
 package com.eraf.openapi.admin.controller;
 
-import com.eraf.core.response.ApiResponse;
+import com.eraf.response.ApiResponse;
 import com.eraf.openapi.admin.dto.PluginRequest;
 import com.eraf.openapi.admin.dto.PluginResponse;
 import com.eraf.openapi.admin.service.PluginAdminService;

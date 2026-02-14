@@ -55,33 +55,86 @@ public class ErafBatchJobBuilder {
 
     /**
      * 청크 기반 스텝 생성 (청크 크기 지정)
+     * Retry/Skip/Parallel 설정이 properties에 따라 자동 적용됨
      */
     public <I, O> Step createChunkStep(String stepName,
                                         ItemReader<I> reader,
                                         ItemProcessor<I, O> processor,
                                         ItemWriter<O> writer,
                                         int chunkSize) {
-        return new StepBuilder(stepName, jobRepository)
+        var stepBuilder = new StepBuilder(stepName, jobRepository)
                 .<I, O>chunk(chunkSize, transactionManager)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
-                .listener(new ErafStepListener())
-                .build();
+                .listener(new ErafStepListener());
+
+        // Fault Tolerance: Retry 설정
+        if (properties.getRetry().isEnabled()) {
+            stepBuilder = stepBuilder.faultTolerant()
+                    .retry(Exception.class)
+                    .retryLimit(properties.getRetry().getMaxAttempts());
+        }
+
+        // Fault Tolerance: Skip 설정
+        if (properties.getSkip().isEnabled()) {
+            stepBuilder = stepBuilder.faultTolerant()
+                    .skip(Exception.class)
+                    .skipLimit(properties.getSkip().getMaxSkips());
+        }
+
+        // 병렬 처리: TaskExecutor 설정
+        if (properties.getThreadPool().isEnabled()) {
+            org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor executor =
+                    new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
+            executor.setCorePoolSize(properties.getThreadPool().getCorePoolSize());
+            executor.setMaxPoolSize(properties.getThreadPool().getMaxPoolSize());
+            executor.setQueueCapacity(properties.getThreadPool().getQueueCapacity());
+            executor.setThreadNamePrefix("eraf-batch-");
+            executor.initialize();
+            stepBuilder = stepBuilder.taskExecutor(executor);
+        }
+
+        return stepBuilder.build();
     }
 
     /**
      * 간단한 청크 스텝 생성 (프로세서 없음)
+     * Retry/Skip/Parallel 설정이 properties에 따라 자동 적용됨
      */
     public <T> Step createSimpleChunkStep(String stepName,
                                            ItemReader<T> reader,
                                            ItemWriter<T> writer) {
-        return new StepBuilder(stepName, jobRepository)
+        var stepBuilder = new StepBuilder(stepName, jobRepository)
                 .<T, T>chunk(properties.getChunkSize(), transactionManager)
                 .reader(reader)
                 .writer(writer)
-                .listener(new ErafStepListener())
-                .build();
+                .listener(new ErafStepListener());
+
+        if (properties.getRetry().isEnabled()) {
+            stepBuilder = stepBuilder.faultTolerant()
+                    .retry(Exception.class)
+                    .retryLimit(properties.getRetry().getMaxAttempts());
+        }
+
+        if (properties.getSkip().isEnabled()) {
+            stepBuilder = stepBuilder.faultTolerant()
+                    .skip(Exception.class)
+                    .skipLimit(properties.getSkip().getMaxSkips());
+        }
+
+        if (properties.getThreadPool().isEnabled()) {
+            org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor executor =
+                    new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
+            executor.setCorePoolSize(properties.getThreadPool().getCorePoolSize());
+            executor.setMaxPoolSize(properties.getThreadPool().getMaxPoolSize());
+            executor.setQueueCapacity(properties.getThreadPool().getQueueCapacity());
+            executor.setThreadNamePrefix("eraf-batch-");
+            executor.initialize();
+            stepBuilder = stepBuilder.taskExecutor(executor);
+        }
+
+        return stepBuilder.build();
     }
 
     /**

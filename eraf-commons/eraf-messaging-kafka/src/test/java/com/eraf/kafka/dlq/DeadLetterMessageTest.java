@@ -3,7 +3,6 @@ package com.eraf.kafka.dlq;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +16,6 @@ class DeadLetterMessageTest {
     @Test
     @DisplayName("Builder를 통한 메시지 생성")
     void shouldCreateMessageUsingBuilder() {
-        Instant timestamp = Instant.now();
         Map<String, String> headers = new HashMap<>();
         headers.put("correlationId", "corr-123");
 
@@ -25,25 +23,23 @@ class DeadLetterMessageTest {
                 .originalTopic("orders-topic")
                 .originalPartition(2)
                 .originalOffset(1000L)
-                .key("order-123")
-                .payload("{\"orderId\":\"123\"}")
-                .errorMessage("Deserialization failed")
-                .errorClass("com.fasterxml.jackson.core.JsonParseException")
-                .timestamp(timestamp)
+                .originalKey("order-123")
+                .originalMessage("{\"orderId\":\"123\"}")
+                .error(new RuntimeException("Deserialization failed"))
                 .retryCount(3)
-                .headers(headers)
+                .originalHeaders(headers)
                 .build();
 
         assertEquals("orders-topic", message.getOriginalTopic());
         assertEquals(2, message.getOriginalPartition());
         assertEquals(1000L, message.getOriginalOffset());
-        assertEquals("order-123", message.getKey());
-        assertEquals("{\"orderId\":\"123\"}", message.getPayload());
+        assertEquals("order-123", message.getOriginalKey());
+        assertEquals("{\"orderId\":\"123\"}", message.getOriginalMessage());
         assertEquals("Deserialization failed", message.getErrorMessage());
-        assertEquals("com.fasterxml.jackson.core.JsonParseException", message.getErrorClass());
-        assertEquals(timestamp, message.getTimestamp());
+        assertEquals("java.lang.RuntimeException", message.getErrorClass());
+        assertNotNull(message.getErrorTimestamp());
         assertEquals(3, message.getRetryCount());
-        assertEquals("corr-123", message.getHeaders().get("correlationId"));
+        assertEquals("corr-123", message.getOriginalHeaders().get("correlationId"));
     }
 
     @Test
@@ -51,14 +47,14 @@ class DeadLetterMessageTest {
     void shouldHaveDefaultValues() {
         DeadLetterMessage message = DeadLetterMessage.builder()
                 .originalTopic("test-topic")
-                .payload("{}")
+                .originalMessage("{}")
                 .build();
 
         assertEquals(0, message.getOriginalPartition());
         assertEquals(0L, message.getOriginalOffset());
         assertEquals(0, message.getRetryCount());
-        assertNull(message.getKey());
-        assertNull(message.getHeaders());
+        assertNull(message.getOriginalKey());
+        assertNull(message.getOriginalHeaders());
     }
 
     @Test
@@ -69,8 +65,8 @@ class DeadLetterMessageTest {
         message.setOriginalTopic("users-topic");
         message.setOriginalPartition(5);
         message.setOriginalOffset(500L);
-        message.setKey("user-456");
-        message.setPayload("{\"userId\":\"456\"}");
+        message.setOriginalKey("user-456");
+        message.setOriginalMessage("{\"userId\":\"456\"}");
         message.setErrorMessage("Validation error");
         message.setErrorClass("IllegalArgumentException");
         message.setRetryCount(2);
@@ -78,8 +74,8 @@ class DeadLetterMessageTest {
         assertEquals("users-topic", message.getOriginalTopic());
         assertEquals(5, message.getOriginalPartition());
         assertEquals(500L, message.getOriginalOffset());
-        assertEquals("user-456", message.getKey());
-        assertEquals("{\"userId\":\"456\"}", message.getPayload());
+        assertEquals("user-456", message.getOriginalKey());
+        assertEquals("{\"userId\":\"456\"}", message.getOriginalMessage());
         assertEquals("Validation error", message.getErrorMessage());
         assertEquals("IllegalArgumentException", message.getErrorClass());
         assertEquals(2, message.getRetryCount());
@@ -90,11 +86,11 @@ class DeadLetterMessageTest {
     void shouldAllowNullHeaders() {
         DeadLetterMessage message = DeadLetterMessage.builder()
                 .originalTopic("test-topic")
-                .payload("{}")
-                .headers(null)
+                .originalMessage("{}")
+                .originalHeaders(null)
                 .build();
 
-        assertNull(message.getHeaders());
+        assertNull(message.getOriginalHeaders());
     }
 
     @Test
@@ -102,12 +98,12 @@ class DeadLetterMessageTest {
     void shouldAllowEmptyHeaders() {
         DeadLetterMessage message = DeadLetterMessage.builder()
                 .originalTopic("test-topic")
-                .payload("{}")
-                .headers(new HashMap<>())
+                .originalMessage("{}")
+                .originalHeaders(new HashMap<>())
                 .build();
 
-        assertNotNull(message.getHeaders());
-        assertTrue(message.getHeaders().isEmpty());
+        assertNotNull(message.getOriginalHeaders());
+        assertTrue(message.getOriginalHeaders().isEmpty());
     }
 
     @Test
@@ -117,26 +113,37 @@ class DeadLetterMessageTest {
 
         DeadLetterMessage message = DeadLetterMessage.builder()
                 .originalTopic("test-topic")
-                .payload("{}")
-                .errorMessage(longError)
+                .originalMessage("{}")
+                .error(new RuntimeException(longError))
                 .build();
 
         assertEquals(5000, message.getErrorMessage().length());
     }
 
     @Test
-    @DisplayName("Timestamp 설정")
-    void shouldSetTimestamp() {
-        Instant before = Instant.now();
+    @DisplayName("error() 빌더가 타임스탬프 자동 설정")
+    void shouldSetTimestampViaError() {
         DeadLetterMessage message = DeadLetterMessage.builder()
                 .originalTopic("test-topic")
-                .payload("{}")
-                .timestamp(Instant.now())
+                .originalMessage("{}")
+                .error(new RuntimeException("test error"))
                 .build();
-        Instant after = Instant.now();
 
-        assertNotNull(message.getTimestamp());
-        assertTrue(!message.getTimestamp().isBefore(before));
-        assertTrue(!message.getTimestamp().isAfter(after));
+        assertNotNull(message.getErrorTimestamp());
+        assertNotNull(message.getStackTrace());
+    }
+
+    @Test
+    @DisplayName("consumerGroup과 traceId 설정")
+    void shouldSetConsumerGroupAndTraceId() {
+        DeadLetterMessage message = DeadLetterMessage.builder()
+                .originalTopic("test-topic")
+                .originalMessage("{}")
+                .consumerGroup("my-group")
+                .traceId("trace-abc-123")
+                .build();
+
+        assertEquals("my-group", message.getConsumerGroup());
+        assertEquals("trace-abc-123", message.getTraceId());
     }
 }

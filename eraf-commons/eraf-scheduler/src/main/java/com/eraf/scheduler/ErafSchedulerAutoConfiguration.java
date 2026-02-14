@@ -58,13 +58,16 @@ public class ErafSchedulerAutoConfiguration {
     }
 
     /**
-     * @ErafScheduled 어노테이션 처리
+     * @ErafScheduled 어노테이션 처리 (TaskScheduler + LockProvider 통합)
      */
     @Bean
     @ConditionalOnMissingBean
     public ErafScheduledBeanPostProcessor erafScheduledBeanPostProcessor(
-            ErafJobRegistry jobRegistry, ErafJobHistory jobHistory) {
-        return new ErafScheduledBeanPostProcessor(jobRegistry, jobHistory);
+            ErafJobRegistry jobRegistry, ErafJobHistory jobHistory,
+            ThreadPoolTaskScheduler taskScheduler,
+            org.springframework.beans.factory.ObjectProvider<LockProvider> lockProviderProvider) {
+        LockProvider lockProvider = lockProviderProvider.getIfAvailable();
+        return new ErafScheduledBeanPostProcessor(jobRegistry, jobHistory, taskScheduler, lockProvider);
     }
 
     /**

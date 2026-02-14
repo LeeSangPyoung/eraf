@@ -1,6 +1,6 @@
 package com.eraf.openapi.features.loadbalancer;
 
-import com.eraf.core.crypto.Hash;
+import com.eraf.crypto.Hash;
 import com.eraf.openapi.core.domain.GatewayTarget;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

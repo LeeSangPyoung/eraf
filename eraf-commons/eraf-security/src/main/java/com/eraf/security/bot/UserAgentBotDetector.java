@@ -100,6 +100,41 @@ public class UserAgentBotDetector implements BotDetector {
         addBot("(?i)sqlmap", "SQLMap", BotType.MALICIOUS_BOT);
         addBot("(?i)zgrab", "ZGrab", BotType.MALICIOUS_BOT);
         addBot("(?i)gobuster", "Gobuster", BotType.MALICIOUS_BOT);
+
+        // CDN / 클라우드 봇
+        addBot("(?i)cloudflare", "Cloudflare", BotType.MONITORING_BOT);
+        addBot("(?i)akamai", "Akamai", BotType.MONITORING_BOT);
+        addBot("(?i)cloudfront", "CloudFront", BotType.MONITORING_BOT);
+
+        // 추가 모니터링 봇
+        addBot("(?i)datadog", "Datadog", BotType.MONITORING_BOT);
+        addBot("(?i)zabbix", "Zabbix", BotType.MONITORING_BOT);
+        addBot("(?i)nagios", "Nagios", BotType.MONITORING_BOT);
+        addBot("(?i)grafana", "Grafana", BotType.MONITORING_BOT);
+        addBot("(?i)prometheus", "Prometheus", BotType.MONITORING_BOT);
+
+        // 추가 검색 엔진
+        addBot("(?i)applebot", "Applebot", BotType.SEARCH_ENGINE_CRAWLER);
+        addBot("(?i)semrushbot", "SEMrush", BotType.SEARCH_ENGINE_CRAWLER);
+        addBot("(?i)ahrefsbot", "Ahrefs", BotType.SEARCH_ENGINE_CRAWLER);
+        addBot("(?i)mj12bot", "Majestic", BotType.SEARCH_ENGINE_CRAWLER);
+        addBot("(?i)dotbot", "DotBot", BotType.SEARCH_ENGINE_CRAWLER);
+
+        // 추가 소셜/메시징 봇
+        addBot("(?i)whatsapp", "WhatsApp", BotType.SOCIAL_MEDIA_BOT);
+        addBot("(?i)viber", "Viber", BotType.SOCIAL_MEDIA_BOT);
+        addBot("(?i)line/", "LINE", BotType.SOCIAL_MEDIA_BOT);
+
+        // 부하 테스트 도구
+        addBot("(?i)jmeter", "JMeter", BotType.AUTOMATED_TOOL);
+        addBot("(?i)locust", "Locust", BotType.AUTOMATED_TOOL);
+        addBot("(?i)gatling", "Gatling", BotType.AUTOMATED_TOOL);
+        addBot("(?i)k6/", "k6", BotType.AUTOMATED_TOOL);
+
+        // 추가 악성/취약점 봇
+        addBot("(?i)dirbuster", "DirBuster", BotType.MALICIOUS_BOT);
+        addBot("(?i)wfuzz", "WFuzz", BotType.MALICIOUS_BOT);
+        addBot("(?i)hydra", "Hydra", BotType.MALICIOUS_BOT);
     }
 
     // 일반적인 Bot 식별 패턴

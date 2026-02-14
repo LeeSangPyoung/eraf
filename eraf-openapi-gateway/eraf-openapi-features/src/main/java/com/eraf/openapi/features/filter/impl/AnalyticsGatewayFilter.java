@@ -1,6 +1,6 @@
 package com.eraf.openapi.features.filter.impl;
 
-import com.eraf.core.converter.JsonConverter;
+import com.eraf.converter.JsonConverter;
 import com.eraf.openapi.core.domain.GatewayPlugin;
 import com.eraf.openapi.features.filter.PluginGatewayFilter;
 import lombok.RequiredArgsConstructor;

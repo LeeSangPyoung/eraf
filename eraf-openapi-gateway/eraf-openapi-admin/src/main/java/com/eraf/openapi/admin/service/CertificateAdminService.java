@@ -5,7 +5,7 @@ import com.eraf.openapi.admin.dto.CertificateResponse;
 import com.eraf.openapi.admin.mapper.CertificateMapper;
 import com.eraf.openapi.core.domain.GatewayCertificate;
 import com.eraf.openapi.core.repository.GatewayCertificateRepository;
-import com.eraf.core.exception.BusinessException;
+import com.eraf.exception.BusinessException;
 import com.eraf.openapi.core.exception.GatewayErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

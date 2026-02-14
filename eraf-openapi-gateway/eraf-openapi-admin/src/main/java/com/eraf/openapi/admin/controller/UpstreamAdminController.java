@@ -1,6 +1,6 @@
 package com.eraf.openapi.admin.controller;
 
-import com.eraf.core.response.ApiResponse;
+import com.eraf.response.ApiResponse;
 import com.eraf.openapi.admin.dto.UpstreamRequest;
 import com.eraf.openapi.admin.dto.UpstreamResponse;
 import com.eraf.openapi.admin.service.UpstreamAdminService;

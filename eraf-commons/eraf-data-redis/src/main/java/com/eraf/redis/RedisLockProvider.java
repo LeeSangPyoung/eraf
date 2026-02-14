@@ -1,12 +1,13 @@
 package com.eraf.redis;
 
-import com.eraf.core.lock.LockProvider;
+import com.eraf.lock.LockProvider;
+import com.eraf.redis.lock.LockStatistics;
+import com.eraf.redis.lock.LockWatchdog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -61,6 +62,10 @@ public class RedisLockProvider implements LockProvider {
     private final DefaultRedisScript<Long> acquireScript;
     private final DefaultRedisScript<Long> releaseScript;
 
+    private LockWatchdog watchdog;
+    private LockStatistics statistics;
+    private boolean watchdogEnabled = false;
+
     public RedisLockProvider(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
         this.instanceId = UUID.randomUUID().toString();
@@ -74,6 +79,39 @@ public class RedisLockProvider implements LockProvider {
         this.releaseScript.setResultType(Long.class);
     }
 
+    /**
+     * Watchdog 활성화 (자동 TTL 갱신)
+     */
+    public void enableWatchdog() {
+        if (this.watchdog == null) {
+            this.watchdog = new LockWatchdog(redisTemplate);
+        }
+        this.watchdogEnabled = true;
+        log.info("[RedisLockProvider] Watchdog enabled");
+    }
+
+    /**
+     * 통계 수집 활성화
+     */
+    public void enableStatistics(LockStatistics statistics) {
+        this.statistics = statistics;
+        log.info("[RedisLockProvider] Statistics enabled");
+    }
+
+    /**
+     * Watchdog 반환
+     */
+    public LockWatchdog getWatchdog() {
+        return watchdog;
+    }
+
+    /**
+     * 통계 반환
+     */
+    public LockStatistics getStatistics() {
+        return statistics;
+    }
+
     @Override
     public boolean tryLock(String key, long waitTime, long leaseTime, TimeUnit unit) {
         String lockKey = LOCK_PREFIX + key;
@@ -81,6 +119,7 @@ public class RedisLockProvider implements LockProvider {
         long leaseMillis = unit.toMillis(leaseTime);
         long waitMillis = unit.toMillis(waitTime);
         long deadline = System.currentTimeMillis() + waitMillis;
+        long startTime = System.currentTimeMillis();
 
         while (System.currentTimeMillis() < deadline) {
             Long result = redisTemplate.execute(
@@ -92,6 +131,17 @@ public class RedisLockProvider implements LockProvider {
             if (result != null && result == 1L) {
                 threadLockOwners.put(key, owner);
                 log.debug("락 획득 성공: key={}, owner={}", key, owner);
+
+                // Watchdog 등록
+                if (watchdogEnabled && watchdog != null) {
+                    watchdog.watch(lockKey, owner, leaseMillis);
+                }
+
+                // 통계 기록
+                if (statistics != null) {
+                    statistics.recordAcquire(key, owner, System.currentTimeMillis() - startTime);
+                }
+
                 return true;
             }
 
@@ -102,6 +152,11 @@ public class RedisLockProvider implements LockProvider {
                 Thread.currentThread().interrupt();
                 return false;
             }
+        }
+
+        // 타임아웃 통계 기록
+        if (statistics != null) {
+            statistics.recordTimeout(key);
         }
 
         log.debug("락 획득 실패 (타임아웃): key={}", key);
@@ -123,6 +178,11 @@ public class RedisLockProvider implements LockProvider {
             return;
         }
 
+        // Watchdog 해제
+        if (watchdogEnabled && watchdog != null) {
+            watchdog.unwatch(lockKey, owner);
+        }
+
         Long result = redisTemplate.execute(
                 releaseScript,
                 Collections.singletonList(lockKey),
@@ -131,6 +191,12 @@ public class RedisLockProvider implements LockProvider {
 
         if (result != null && result == 1L) {
             threadLockOwners.remove(key);
+
+            // 통계 기록
+            if (statistics != null) {
+                statistics.recordRelease(key);
+            }
+
             log.debug("락 해제 성공: key={}, owner={}", key, owner);
         } else {
             log.warn("락 해제 실패: key={}, owner={}", key, owner);

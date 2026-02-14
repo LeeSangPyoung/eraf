@@ -5,13 +5,17 @@ import java.time.Instant;
 
 /**
  * 감사 로그 JPA 엔티티
+ * 로그 테이블이므로 BaseEntity를 상속받지 않음 (생성/수정 감사 불필요)
  */
 @Entity
 @Table(name = "audit_log", indexes = {
         @Index(name = "idx_audit_log_user_id", columnList = "user_id"),
         @Index(name = "idx_audit_log_resource", columnList = "resource, resource_id"),
         @Index(name = "idx_audit_log_action", columnList = "action"),
-        @Index(name = "idx_audit_log_timestamp", columnList = "timestamp")
+        @Index(name = "idx_audit_log_timestamp", columnList = "timestamp"),
+        @Index(name = "idx_audit_log_trace_id", columnList = "trace_id"),
+        @Index(name = "idx_audit_log_deleted", columnList = "deleted"),
+        @Index(name = "idx_audit_log_tenant_id", columnList = "tenant_id")
 })
 public class AuditLogEntity {
 
@@ -22,7 +26,7 @@ public class AuditLogEntity {
     @Column(name = "timestamp", nullable = false)
     private Instant timestamp;
 
-    @Column(name = "trace_id", length = 64)
+    @Column(name = "trace_id", length = 100)
     private String traceId;
 
     @Column(name = "user_id", length = 100)
@@ -31,23 +35,35 @@ public class AuditLogEntity {
     @Column(name = "username", length = 100)
     private String username;
 
-    @Column(name = "client_ip", length = 50)
+    @Column(name = "client_ip", length = 45)
     private String clientIp;
 
     @Column(name = "action", nullable = false, length = 100)
     private String action;
 
-    @Column(name = "resource", length = 200)
+    @Column(name = "resource", nullable = false, length = 255)
     private String resource;
 
-    @Column(name = "resource_id", length = 100)
+    @Column(name = "resource_id", length = 255)
     private String resourceId;
 
-    @Column(name = "result", length = 20)
+    @Column(name = "result", nullable = false, length = 50)
     private String result;
 
     @Column(name = "details", columnDefinition = "TEXT")
     private String details;
+
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    @Column(name = "deleted_by", length = 100)
+    private String deletedBy;
+
+    @Column(name = "tenant_id", length = 100)
+    private String tenantId;
 
     public AuditLogEntity() {
     }
@@ -85,4 +101,16 @@ public class AuditLogEntity {
 
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
+
+    public String getDeletedBy() { return deletedBy; }
+    public void setDeletedBy(String deletedBy) { this.deletedBy = deletedBy; }
+
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
 }

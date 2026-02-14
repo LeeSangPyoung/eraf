@@ -1,6 +1,6 @@
 package com.eraf.openapi.admin.controller;
 
-import com.eraf.core.response.ApiResponse;
+import com.eraf.response.ApiResponse;
 import com.eraf.openapi.admin.dto.ConsumerRequest;
 import com.eraf.openapi.admin.dto.ConsumerResponse;
 import com.eraf.openapi.admin.service.ConsumerAdminService;
@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -107,5 +108,100 @@ public class ConsumerAdminController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getStats() {
         Map<String, Object> stats = consumerAdminService.getStats();
         return ResponseEntity.ok(ApiResponse.success(stats));
+    }
+
+    // ===== 고급 기능: API Key 만료 관리 =====
+
+    /**
+     * API Key 만료 기한 설정
+     * POST /admin/consumers/{id}/expiration
+     * Body: {"expiresAt": "2024-12-31T23:59:59"}
+     */
+    @PostMapping("/{id}/expiration")
+    public ResponseEntity<ApiResponse<ConsumerResponse>> setExpiration(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        LocalDateTime expiresAt = LocalDateTime.parse(request.get("expiresAt"));
+        ConsumerResponse updated = consumerAdminService.setExpiration(id, expiresAt);
+        return ResponseEntity.ok(ApiResponse.success(updated));
+    }
+
+    /**
+     * 만료된 Consumer 조회
+     * GET /admin/consumers/expired
+     */
+    @GetMapping("/expired")
+    public ResponseEntity<ApiResponse<List<ConsumerResponse>>> getExpiredConsumers() {
+        List<ConsumerResponse> expired = consumerAdminService.findExpired();
+        return ResponseEntity.ok(ApiResponse.success(expired));
+    }
+
+    /**
+     * 곧 만료될 Consumer 조회
+     * GET /admin/consumers/expiring-soon?days=7
+     */
+    @GetMapping("/expiring-soon")
+    public ResponseEntity<ApiResponse<List<ConsumerResponse>>> getExpiringSoonConsumers(
+            @RequestParam(defaultValue = "7") int days) {
+        List<ConsumerResponse> expiring = consumerAdminService.findExpiringSoon(days);
+        return ResponseEntity.ok(ApiResponse.success(expiring));
+    }
+
+    // ===== 고급 기능: IP 화이트리스트 =====
+
+    /**
+     * IP 화이트리스트 설정
+     * POST /admin/consumers/{id}/ip-whitelist
+     * Body: {"ipRanges": ["192.168.1.0/24", "10.0.0.1"]}
+     */
+    @PostMapping("/{id}/ip-whitelist")
+    public ResponseEntity<ApiResponse<ConsumerResponse>> setIpWhitelist(
+            @PathVariable Long id,
+            @RequestBody Map<String, List<String>> request) {
+        List<String> ipRanges = request.get("ipRanges");
+        ConsumerResponse updated = consumerAdminService.setIpWhitelist(id, ipRanges);
+        return ResponseEntity.ok(ApiResponse.success(updated));
+    }
+
+    // ===== 고급 기능: 스코프/권한 =====
+
+    /**
+     * 스코프 설정
+     * POST /admin/consumers/{id}/scopes
+     * Body: {"scopes": ["read:api", "write:api", "admin:*"]}
+     */
+    @PostMapping("/{id}/scopes")
+    public ResponseEntity<ApiResponse<ConsumerResponse>> setScopes(
+            @PathVariable Long id,
+            @RequestBody Map<String, List<String>> request) {
+        List<String> scopes = request.get("scopes");
+        ConsumerResponse updated = consumerAdminService.setScopes(id, scopes);
+        return ResponseEntity.ok(ApiResponse.success(updated));
+    }
+
+    // ===== 고급 기능: 사용 통계 =====
+
+    /**
+     * API Key 사용 통계 조회
+     * GET /admin/consumers/{id}/usage-stats
+     */
+    @GetMapping("/{id}/usage-stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUsageStats(@PathVariable Long id) {
+        Map<String, Object> stats = consumerAdminService.getUsageStats(id);
+        return ResponseEntity.ok(ApiResponse.success(stats));
+    }
+
+    /**
+     * API Key 유효성 검증
+     * POST /admin/consumers/validate
+     * Body: {"apiKey": "ck_xxx", "requestIp": "192.168.1.1"}
+     */
+    @PostMapping("/validate")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> validateApiKey(
+            @RequestBody Map<String, String> request) {
+        String apiKey = request.get("apiKey");
+        String requestIp = request.get("requestIp");
+        Map<String, Object> result = consumerAdminService.validateApiKey(apiKey, requestIp);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

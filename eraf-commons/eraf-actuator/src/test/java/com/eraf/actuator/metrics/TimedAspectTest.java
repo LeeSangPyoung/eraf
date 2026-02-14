@@ -68,7 +68,7 @@ class TimedAspectTest {
         when(joinPoint.proceed()).thenReturn("result");
 
         Timed annotation = createAnnotation("api.latency", "API Latency",
-                new String[]{"endpoint", "/users", "method", "GET"});
+                new String[]{"endpoint=/users", "method=GET"});
 
         // When
         aspect.around(joinPoint, annotation);
@@ -125,7 +125,7 @@ class TimedAspectTest {
         // Given
         setupMocks("specificMethod");
         when(joinPoint.proceed()).thenReturn("result");
-        when(methodSignature.toShortString()).thenReturn("TestService.specificMethod()");
+        when(methodSignature.getDeclaringType()).thenReturn((Class) TestService.class);
 
         Timed annotation = createAnnotation("", "", new String[]{});
 
@@ -133,7 +133,7 @@ class TimedAspectTest {
         aspect.around(joinPoint, annotation);
 
         // Then
-        Timer timer = meterRegistry.find("TestService.specificMethod()").timer();
+        Timer timer = meterRegistry.find("TestService.specificMethod").timer();
         assertNotNull(timer);
     }
 
@@ -141,6 +141,7 @@ class TimedAspectTest {
         when(joinPoint.getSignature()).thenReturn(methodSignature);
         lenient().when(methodSignature.getMethod()).thenReturn(
                 TestService.class.getMethod(methodName));
+        lenient().when(methodSignature.getDeclaringType()).thenReturn((Class) TestService.class);
         lenient().when(methodSignature.toShortString()).thenReturn("TestService." + methodName + "()");
     }
 
@@ -164,6 +165,21 @@ class TimedAspectTest {
             @Override
             public String[] extraTags() {
                 return extraTags;
+            }
+
+            @Override
+            public boolean histogram() {
+                return false;
+            }
+
+            @Override
+            public double[] percentiles() {
+                return new double[0];
+            }
+
+            @Override
+            public boolean recordOnException() {
+                return true;
             }
         };
     }

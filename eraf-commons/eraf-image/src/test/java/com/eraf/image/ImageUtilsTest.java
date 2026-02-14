@@ -1,11 +1,12 @@
 package com.eraf.image;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,61 +16,115 @@ class ImageUtilsTest {
     @TempDir
     Path tempDir;
 
-    @Test
-    @DisplayName("이미지 리사이즈")
-    void testResize() {
-        // Given
-        BufferedImage original = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+    private Path sourceImage;
 
-        // When
-        BufferedImage resized = ImageUtils.resize(original, 400, 300);
-
-        // Then
-        assertNotNull(resized);
-        assertEquals(400, resized.getWidth());
-        assertEquals(300, resized.getHeight());
+    @BeforeEach
+    void setUp() throws Exception {
+        // Create a test source image (800x600 PNG)
+        sourceImage = tempDir.resolve("source.png");
+        BufferedImage img = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+        ImageIO.write(img, "png", sourceImage.toFile());
     }
 
     @Test
-    @DisplayName("비율 유지 리사이즈")
-    void testResizeKeepAspectRatio() {
+    @DisplayName("이미지 리사이즈 (비율 유지)")
+    void testResize() throws Exception {
         // Given
-        BufferedImage original = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+        Path target = tempDir.resolve("resized.png");
 
         // When
-        BufferedImage resized = ImageUtils.resizeKeepAspectRatio(original, 400);
+        ImageUtils.resize(sourceImage, target, 400, 300);
 
         // Then
-        assertNotNull(resized);
-        assertEquals(400, resized.getWidth());
-        assertEquals(300, resized.getHeight());
+        assertTrue(target.toFile().exists());
+        assertTrue(target.toFile().length() > 0);
     }
 
     @Test
-    @DisplayName("이미지 크롭")
-    void testCrop() {
+    @DisplayName("이미지 리사이즈 (비율 강제)")
+    void testResizeForce() throws Exception {
         // Given
-        BufferedImage original = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+        Path target = tempDir.resolve("force-resized.png");
 
         // When
-        BufferedImage cropped = ImageUtils.crop(original, 100, 100, 200, 200);
+        ImageUtils.resizeForce(sourceImage, target, 400, 200);
 
         // Then
-        assertNotNull(cropped);
-        assertEquals(200, cropped.getWidth());
-        assertEquals(200, cropped.getHeight());
+        assertTrue(target.toFile().exists());
+        assertTrue(target.toFile().length() > 0);
+    }
+
+    @Test
+    @DisplayName("이미지 크롭 (좌표 지정)")
+    void testCrop() throws Exception {
+        // Given
+        Path target = tempDir.resolve("cropped.png");
+
+        // When
+        ImageUtils.crop(sourceImage, target, 100, 100, 200, 200);
+
+        // Then
+        assertTrue(target.toFile().exists());
+        ImageUtils.ImageInfo info = ImageUtils.getInfo(target);
+        assertEquals(200, info.width());
+        assertEquals(200, info.height());
     }
 
     @Test
     @DisplayName("이미지 회전")
-    void testRotate() {
+    void testRotate() throws Exception {
         // Given
-        BufferedImage original = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+        Path target = tempDir.resolve("rotated.png");
 
         // When
-        BufferedImage rotated = ImageUtils.rotate(original, 90);
+        ImageUtils.rotate(sourceImage, target, 90);
 
         // Then
-        assertNotNull(rotated);
+        assertTrue(target.toFile().exists());
+        assertTrue(target.toFile().length() > 0);
+    }
+
+    @Test
+    @DisplayName("이미지 정보 조회")
+    void testGetInfo() throws Exception {
+        // When
+        ImageUtils.ImageInfo info = ImageUtils.getInfo(sourceImage);
+
+        // Then
+        assertEquals(800, info.width());
+        assertEquals(600, info.height());
+        assertEquals("png", info.format());
+    }
+
+    @Test
+    @DisplayName("BufferedImage ↔ byte[] 변환")
+    void testBytesConversion() throws Exception {
+        // Given
+        BufferedImage img = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+
+        // When
+        byte[] bytes = ImageUtils.toBytes(img, "png");
+        BufferedImage restored = ImageUtils.toBufferedImage(bytes);
+
+        // Then
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 0);
+        assertNotNull(restored);
+        assertEquals(100, restored.getWidth());
+        assertEquals(100, restored.getHeight());
+    }
+
+    @Test
+    @DisplayName("썸네일 생성")
+    void testThumbnail() throws Exception {
+        // Given
+        Path target = tempDir.resolve("thumb.png");
+
+        // When
+        ImageUtils.thumbnail(sourceImage, target, 100);
+
+        // Then
+        assertTrue(target.toFile().exists());
+        assertTrue(target.toFile().length() > 0);
     }
 }

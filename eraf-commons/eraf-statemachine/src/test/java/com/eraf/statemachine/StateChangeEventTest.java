@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,13 +14,11 @@ class StateChangeEventTest {
     @DisplayName("상태 변경 이벤트 생성")
     void testCreate() {
         // Given & When
-        StateChangeEvent event = StateChangeEvent.builder()
-                .machineId("order")
-                .entityId("ORDER-001")
-                .fromState("CREATED")
-                .toState("CONFIRMED")
-                .event("confirm")
-                .build();
+        StateChangeEvent event = new StateChangeEvent(
+                this, "order", "ORDER-001",
+                "CREATED", "CONFIRMED", "confirm",
+                Map.of()
+        );
 
         // Then
         assertNotNull(event);
@@ -37,19 +36,17 @@ class StateChangeEventTest {
         Instant before = Instant.now();
 
         // When
-        StateChangeEvent event = StateChangeEvent.builder()
-                .machineId("order")
-                .entityId("ORDER-001")
-                .fromState("CREATED")
-                .toState("CONFIRMED")
-                .event("confirm")
-                .build();
+        StateChangeEvent event = new StateChangeEvent(
+                this, "order", "ORDER-001",
+                "CREATED", "CONFIRMED", "confirm",
+                Map.of()
+        );
 
         Instant after = Instant.now();
 
         // Then
-        assertNotNull(event.getTimestamp());
-        assertTrue(event.getTimestamp().isAfter(before) || event.getTimestamp().equals(before));
-        assertTrue(event.getTimestamp().isBefore(after) || event.getTimestamp().equals(after));
+        assertNotNull(event.getEventTime());
+        assertTrue(event.getEventTime().isAfter(before) || event.getEventTime().equals(before));
+        assertTrue(event.getEventTime().isBefore(after) || event.getEventTime().equals(after));
     }
 }

@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +43,8 @@ class RequestLoggingFilterTest {
 
         // When & Then - 예외 없이 실행되어야 함
         assertDoesNotThrow(() -> filter.doFilter(request, response, filterChain));
-        verify(filterChain, times(1)).doFilter(request, response);
+        // Filter wraps request/response with ContentCaching wrappers
+        verify(filterChain, times(1)).doFilter(any(), any());
     }
 
     @Test
@@ -55,6 +57,6 @@ class RequestLoggingFilterTest {
         filter.doFilter(request, response, filterChain);
 
         // Then
-        verify(filterChain, times(1)).doFilter(request, response);
+        verify(filterChain, times(1)).doFilter(any(), any());
     }
 }

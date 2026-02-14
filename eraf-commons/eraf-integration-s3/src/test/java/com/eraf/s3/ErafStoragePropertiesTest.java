@@ -15,7 +15,7 @@ class ErafStoragePropertiesTest {
 
         // Then
         assertNotNull(properties);
-        assertEquals("local", properties.getType());
+        assertEquals(ErafStorageProperties.StorageType.LOCAL, properties.getType());
     }
 
     @Test
@@ -26,12 +26,12 @@ class ErafStoragePropertiesTest {
         ErafStorageProperties.S3 s3 = properties.getS3();
 
         // When
-        properties.setType("s3");
+        properties.setType(ErafStorageProperties.StorageType.S3);
         s3.setBucket("my-bucket");
         s3.setRegion("ap-northeast-2");
 
         // Then
-        assertEquals("s3", properties.getType());
+        assertEquals(ErafStorageProperties.StorageType.S3, properties.getType());
         assertEquals("my-bucket", s3.getBucket());
         assertEquals("ap-northeast-2", s3.getRegion());
     }

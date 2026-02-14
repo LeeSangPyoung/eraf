@@ -13,10 +13,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -41,13 +40,13 @@ class ApiKeyAuthenticationFilterTest {
         properties = new ApiKeyProperties();
         properties.setHeaderName("X-API-KEY");
 
-        Map<String, ApiKeyProperties.ApiKeyEntry> keys = new HashMap<>();
+        List<ApiKeyProperties.ApiKeyEntry> keys = new ArrayList<>();
 
         ApiKeyProperties.ApiKeyEntry serviceA = new ApiKeyProperties.ApiKeyEntry();
         serviceA.setKey("api-key-123");
         serviceA.setName("Service A");
         serviceA.setRoles(Arrays.asList("ROLE_API", "ROLE_READ"));
-        keys.put("service-a", serviceA);
+        keys.add(serviceA);
 
         ApiKeyProperties.ApiKeyEntry restrictedService = new ApiKeyProperties.ApiKeyEntry();
         restrictedService.setKey("restricted-key");
@@ -55,13 +54,14 @@ class ApiKeyAuthenticationFilterTest {
         restrictedService.setRoles(List.of("ROLE_API"));
         restrictedService.setAllowedIps(List.of("10.0.0.1", "10.0.0.2"));
         restrictedService.setAllowedPatterns(List.of("/api/restricted/**"));
-        keys.put("restricted", restrictedService);
+        keys.add(restrictedService);
 
         properties.setKeys(keys);
 
         filter = new ApiKeyAuthenticationFilter(properties);
 
         request = new MockHttpServletRequest();
+        request.setRequestURI("/api/data");
         response = new MockHttpServletResponse();
 
         SecurityContextHolder.clearContext();
@@ -165,6 +165,15 @@ class ApiKeyAuthenticationFilterTest {
     void shouldSupportCustomHeaderName() throws ServletException, IOException {
         // Given
         properties.setHeaderName("Authorization");
+
+        List<ApiKeyProperties.ApiKeyEntry> keys = new ArrayList<>();
+        ApiKeyProperties.ApiKeyEntry entry = new ApiKeyProperties.ApiKeyEntry();
+        entry.setKey("api-key-123");
+        entry.setName("Service A");
+        entry.setRoles(Arrays.asList("ROLE_API", "ROLE_READ"));
+        keys.add(entry);
+        properties.setKeys(keys);
+
         filter = new ApiKeyAuthenticationFilter(properties);
         request.addHeader("Authorization", "api-key-123");
 

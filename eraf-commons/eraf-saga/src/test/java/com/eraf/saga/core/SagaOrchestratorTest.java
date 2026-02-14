@@ -84,7 +84,7 @@ class SagaOrchestratorTest {
 
     @Test
     @DisplayName("Saga 실행 상태 조회")
-    void testGetExecution() {
+    void testGetExecution() throws Exception {
         // Given
         TestSaga testSaga = new TestSaga();
         SagaDefinition definition = createTestSagaDefinition(testSaga);

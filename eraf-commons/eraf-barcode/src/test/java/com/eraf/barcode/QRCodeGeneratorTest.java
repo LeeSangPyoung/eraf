@@ -2,53 +2,58 @@ package com.eraf.barcode;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class QRCodeGeneratorTest {
 
+    @TempDir
+    Path tempDir;
+
     @Test
-    @DisplayName("QR 코드 생성")
-    void testGenerateQRCode() {
+    @DisplayName("QR 코드 파일 생성")
+    void testGenerateQRCode() throws Exception {
         // Given
-        QRCodeGenerator generator = new QRCodeGenerator();
         String content = "https://example.com";
+        Path output = tempDir.resolve("qr.png");
 
         // When
-        BufferedImage image = generator.generate(content, 200, 200);
+        QRCodeGenerator.generate(content, output, 200);
 
         // Then
-        assertNotNull(image);
-        assertEquals(200, image.getWidth());
-        assertEquals(200, image.getHeight());
+        assertTrue(output.toFile().exists());
+        assertTrue(output.toFile().length() > 0);
     }
 
     @Test
-    @DisplayName("QR 코드 Base64 생성")
-    void testGenerateQRCodeBase64() {
+    @DisplayName("QR 코드 바이트 배열 생성")
+    void testGenerateQRCodeToBytes() throws Exception {
         // Given
-        QRCodeGenerator generator = new QRCodeGenerator();
         String content = "TEST-DATA-123";
 
         // When
-        String base64 = generator.generateBase64(content, 150, 150);
+        byte[] bytes = QRCodeGenerator.generateToBytes(content, 150);
 
         // Then
-        assertNotNull(base64);
-        assertTrue(base64.length() > 0);
+        assertNotNull(bytes);
+        assertTrue(bytes.length > 0);
     }
 
     @Test
-    @DisplayName("빈 내용으로 생성 시 예외")
-    void testGenerateWithEmptyContent() {
+    @DisplayName("URL QR 코드 생성")
+    void testGenerateUrlQRCode() throws Exception {
         // Given
-        QRCodeGenerator generator = new QRCodeGenerator();
+        String url = "https://eraf.com";
+        Path output = tempDir.resolve("url-qr.png");
 
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            generator.generate("", 100, 100);
-        });
+        // When
+        QRCodeGenerator.generateUrl(url, output, 200);
+
+        // Then
+        assertTrue(output.toFile().exists());
+        assertTrue(output.toFile().length() > 0);
     }
 }

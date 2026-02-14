@@ -1,6 +1,6 @@
 package com.eraf.openapi.controller;
 
-import com.eraf.core.response.ApiResponse;
+import com.eraf.response.ApiResponse;
 import com.eraf.openapi.filter.RequestLoggingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

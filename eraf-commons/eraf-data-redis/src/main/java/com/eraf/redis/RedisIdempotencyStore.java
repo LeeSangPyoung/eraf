@@ -1,6 +1,6 @@
 package com.eraf.redis;
 
-import com.eraf.core.idempotent.IdempotencyStore;
+import com.eraf.idempotent.IdempotencyStore;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.Duration;

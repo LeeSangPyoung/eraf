@@ -3,30 +3,46 @@ package com.eraf.statemachine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ErafStateMachineServiceTest {
 
     private ErafStateMachineService service;
     private ErafStateMachineRegistry registry;
     private StateStore stateStore;
+    private ApplicationEventPublisher eventPublisher;
+
+    private TransitionInfo createTransition(String source, String target, String event) {
+        TransitionInfo t = new TransitionInfo();
+        t.setSource(source);
+        t.setTarget(target);
+        t.setEvent(event);
+        return t;
+    }
 
     @BeforeEach
     void setUp() {
         stateStore = new InMemoryStateStore();
         registry = new ErafStateMachineRegistry();
-        service = new ErafStateMachineService(registry, stateStore);
+        eventPublisher = mock(ApplicationEventPublisher.class);
+        service = new ErafStateMachineService(registry, eventPublisher, stateStore);
 
         // 주문 상태머신 등록
-        StateMachineDefinition orderDef = StateMachineDefinition.builder()
-                .name("order")
-                .initialState("CREATED")
-                .build();
-        orderDef.addTransition("CREATED", "CONFIRMED", "confirm");
-        orderDef.addTransition("CONFIRMED", "SHIPPED", "ship");
-        orderDef.addTransition("SHIPPED", "DELIVERED", "deliver");
-        orderDef.addTransition("CREATED", "CANCELLED", "cancel");
+        StateMachineDefinition orderDef = new StateMachineDefinition();
+        orderDef.setId("order");
+        orderDef.setInitialState("CREATED");
+        orderDef.setStates(Set.of("CREATED", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"));
+        orderDef.setEndStates(Set.of("DELIVERED", "CANCELLED"));
+        orderDef.addTransition(createTransition("CREATED", "CONFIRMED", "confirm"));
+        orderDef.addTransition(createTransition("CONFIRMED", "SHIPPED", "ship"));
+        orderDef.addTransition(createTransition("SHIPPED", "DELIVERED", "deliver"));
+        orderDef.addTransition(createTransition("CREATED", "CANCELLED", "cancel"));
         registry.register(orderDef);
     }
 
@@ -34,11 +50,11 @@ class ErafStateMachineServiceTest {
     @DisplayName("초기 상태 생성")
     void testInitialize() {
         // When
-        String state = service.initialize("order", "ORDER-001");
+        StateInfo stateInfo = service.initialize("order", "ORDER-001");
 
         // Then
-        assertEquals("CREATED", state);
-        assertEquals("CREATED", service.getState("order", "ORDER-001"));
+        assertEquals("CREATED", stateInfo.getCurrentState());
+        assertEquals("CREATED", service.getCurrentState("order", "ORDER-001").orElse(null));
     }
 
     @Test
@@ -48,11 +64,11 @@ class ErafStateMachineServiceTest {
         service.initialize("order", "ORDER-001");
 
         // When
-        String newState = service.transition("order", "ORDER-001", "confirm");
+        StateInfo stateInfo = service.sendEvent("order", "ORDER-001", "confirm");
 
         // Then
-        assertEquals("CONFIRMED", newState);
-        assertEquals("CONFIRMED", service.getState("order", "ORDER-001"));
+        assertEquals("CONFIRMED", stateInfo.getCurrentState());
+        assertEquals("CONFIRMED", service.getCurrentState("order", "ORDER-001").orElse(null));
     }
 
     @Test
@@ -62,12 +78,12 @@ class ErafStateMachineServiceTest {
         service.initialize("order", "ORDER-001");
 
         // When
-        service.transition("order", "ORDER-001", "confirm");
-        service.transition("order", "ORDER-001", "ship");
-        String finalState = service.transition("order", "ORDER-001", "deliver");
+        service.sendEvent("order", "ORDER-001", "confirm");
+        service.sendEvent("order", "ORDER-001", "ship");
+        StateInfo finalState = service.sendEvent("order", "ORDER-001", "deliver");
 
         // Then
-        assertEquals("DELIVERED", finalState);
+        assertEquals("DELIVERED", finalState.getCurrentState());
     }
 
     @Test
@@ -78,30 +94,30 @@ class ErafStateMachineServiceTest {
 
         // When & Then
         assertThrows(StateMachineException.class, () -> {
-            service.transition("order", "ORDER-001", "ship"); // CREATED -> SHIPPED 불가
+            service.sendEvent("order", "ORDER-001", "ship"); // CREATED -> SHIPPED 불가
         });
     }
 
     @Test
     @DisplayName("전이 가능 여부 확인")
-    void testCanTransition() {
+    void testCanSendEvent() {
         // Given
         service.initialize("order", "ORDER-001");
 
         // Then
-        assertTrue(service.canTransition("order", "ORDER-001", "confirm"));
-        assertTrue(service.canTransition("order", "ORDER-001", "cancel"));
-        assertFalse(service.canTransition("order", "ORDER-001", "ship"));
+        assertTrue(service.canSendEvent("order", "ORDER-001", "confirm"));
+        assertTrue(service.canSendEvent("order", "ORDER-001", "cancel"));
+        assertFalse(service.canSendEvent("order", "ORDER-001", "ship"));
     }
 
     @Test
     @DisplayName("허용된 이벤트 목록")
-    void testGetAllowedEvents() {
+    void testGetAvailableEvents() {
         // Given
         service.initialize("order", "ORDER-001");
 
         // When
-        var events = service.getAllowedEvents("order", "ORDER-001");
+        List<String> events = service.getAvailableEvents("order", "ORDER-001");
 
         // Then
         assertEquals(2, events.size());

@@ -1,6 +1,6 @@
 package com.eraf.session;
 
-import com.eraf.core.crypto.Jwt;
+import com.eraf.crypto.Jwt;
 import io.jsonwebtoken.Claims;
 
 import java.time.Instant;

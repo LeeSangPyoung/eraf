@@ -1,6 +1,6 @@
 package com.eraf.redis;
 
-import com.eraf.core.sequence.Reset;
+import com.eraf.sequence.Reset;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.LocalDate;

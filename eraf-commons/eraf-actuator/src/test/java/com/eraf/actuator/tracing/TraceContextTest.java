@@ -13,7 +13,11 @@ class TraceContextTest {
     @Test
     @DisplayName("TraceContext 생성")
     void shouldCreateTraceContext() {
-        TraceContext context = new TraceContext("trace-123", "span-456", "parent-789");
+        TraceContext context = TraceContext.builder()
+                .traceId("trace-123")
+                .spanId("span-456")
+                .parentSpanId("parent-789")
+                .build();
 
         assertEquals("trace-123", context.getTraceId());
         assertEquals("span-456", context.getSpanId());
@@ -23,7 +27,10 @@ class TraceContextTest {
     @Test
     @DisplayName("ParentSpanId null 허용")
     void shouldAllowNullParentSpanId() {
-        TraceContext context = new TraceContext("trace-123", "span-456", null);
+        TraceContext context = TraceContext.builder()
+                .traceId("trace-123")
+                .spanId("span-456")
+                .build();
 
         assertEquals("trace-123", context.getTraceId());
         assertEquals("span-456", context.getSpanId());
@@ -33,9 +40,12 @@ class TraceContextTest {
     @Test
     @DisplayName("child span 생성")
     void shouldCreateChildSpan() {
-        TraceContext parent = new TraceContext("trace-123", "span-456", null);
+        TraceContext parent = TraceContext.builder()
+                .traceId("trace-123")
+                .spanId("span-456")
+                .build();
 
-        TraceContext child = parent.createChild();
+        TraceContext child = TraceContext.createChild(parent);
 
         assertEquals("trace-123", child.getTraceId()); // 동일한 traceId
         assertNotEquals("span-456", child.getSpanId()); // 새로운 spanId
@@ -45,9 +55,12 @@ class TraceContextTest {
     @Test
     @DisplayName("손자 span 생성")
     void shouldCreateGrandchildSpan() {
-        TraceContext grandparent = new TraceContext("trace-123", "span-1", null);
-        TraceContext parent = grandparent.createChild();
-        TraceContext child = parent.createChild();
+        TraceContext grandparent = TraceContext.builder()
+                .traceId("trace-123")
+                .spanId("span-1")
+                .build();
+        TraceContext parent = TraceContext.createChild(grandparent);
+        TraceContext child = TraceContext.createChild(parent);
 
         assertEquals("trace-123", child.getTraceId());
         assertEquals(parent.getSpanId(), child.getParentSpanId());
@@ -55,9 +68,9 @@ class TraceContextTest {
     }
 
     @Test
-    @DisplayName("createRoot로 새 트레이스 시작")
+    @DisplayName("create로 새 트레이스 시작")
     void shouldCreateRootContext() {
-        TraceContext root = TraceContext.createRoot();
+        TraceContext root = TraceContext.create();
 
         assertNotNull(root.getTraceId());
         assertNotNull(root.getSpanId());
@@ -65,10 +78,10 @@ class TraceContextTest {
     }
 
     @Test
-    @DisplayName("createRoot는 매번 다른 ID 생성")
+    @DisplayName("create는 매번 다른 ID 생성")
     void shouldCreateUniqueRootContexts() {
-        TraceContext root1 = TraceContext.createRoot();
-        TraceContext root2 = TraceContext.createRoot();
+        TraceContext root1 = TraceContext.create();
+        TraceContext root2 = TraceContext.create();
 
         assertNotEquals(root1.getTraceId(), root2.getTraceId());
         assertNotEquals(root1.getSpanId(), root2.getSpanId());
@@ -77,10 +90,10 @@ class TraceContextTest {
     @Test
     @DisplayName("createChild는 매번 다른 spanId 생성")
     void shouldCreateUniqueChildSpanIds() {
-        TraceContext parent = TraceContext.createRoot();
+        TraceContext parent = TraceContext.create();
 
-        TraceContext child1 = parent.createChild();
-        TraceContext child2 = parent.createChild();
+        TraceContext child1 = TraceContext.createChild(parent);
+        TraceContext child2 = TraceContext.createChild(parent);
 
         assertEquals(child1.getTraceId(), child2.getTraceId());
         assertNotEquals(child1.getSpanId(), child2.getSpanId());

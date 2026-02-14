@@ -74,6 +74,11 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-exception</artifactId>
+                <version>${eraf-commons.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
                 <artifactId>eraf-data-redis</artifactId>
                 <version>${eraf-commons.version}</version>
             </dependency>

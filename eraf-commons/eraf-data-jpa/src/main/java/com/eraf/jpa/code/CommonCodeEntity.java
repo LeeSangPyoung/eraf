@@ -1,6 +1,6 @@
 package com.eraf.jpa.code;
 
-import com.eraf.jpa.entity.BaseEntity;
+import com.eraf.jpa.softdelete.SoftDeleteEntity;
 import jakarta.persistence.*;
 
 /**
@@ -9,24 +9,27 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "common_code", indexes = {
         @Index(name = "idx_common_code_group", columnList = "code_group"),
-        @Index(name = "idx_common_code_group_code", columnList = "code_group, code", unique = true)
+        @Index(name = "idx_common_code_group_code", columnList = "code_group, code", unique = true),
+        @Index(name = "idx_common_code_enabled", columnList = "enabled"),
+        @Index(name = "idx_common_code_deleted", columnList = "deleted"),
+        @Index(name = "idx_common_code_tenant_id", columnList = "tenant_id")
 })
-public class CommonCodeEntity extends BaseEntity {
+public class CommonCodeEntity extends SoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "code_group", nullable = false, length = 50)
+    @Column(name = "code_group", nullable = false, length = 100)
     private String codeGroup;
 
-    @Column(name = "code", nullable = false, length = 50)
+    @Column(name = "code", nullable = false, length = 100)
     private String code;
 
-    @Column(name = "name", nullable = false, length = 200)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "description", length = 500)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "sort_order")
@@ -43,6 +46,9 @@ public class CommonCodeEntity extends BaseEntity {
 
     @Column(name = "extra_value3", length = 500)
     private String extraValue3;
+
+    @Column(name = "tenant_id", length = 100)
+    private String tenantId;
 
     public CommonCodeEntity() {
     }
@@ -132,5 +138,13 @@ public class CommonCodeEntity extends BaseEntity {
 
     public void setExtraValue3(String extraValue3) {
         this.extraValue3 = extraValue3;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 }

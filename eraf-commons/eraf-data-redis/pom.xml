@@ -22,6 +22,10 @@
             <groupId>com.eraf</groupId>
             <artifactId>eraf-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-system</artifactId>
+        </dependency>
 
         <!-- Spring Data Redis -->
         <dependency>
@@ -51,6 +55,27 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Web (optional, for admin controllers) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Cache (for CacheManager) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

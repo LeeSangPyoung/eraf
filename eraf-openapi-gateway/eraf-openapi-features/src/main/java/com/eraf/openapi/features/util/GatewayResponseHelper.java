@@ -1,8 +1,8 @@
 package com.eraf.openapi.features.util;
 
-import com.eraf.core.converter.JsonConverter;
-import com.eraf.core.exception.ErrorCode;
-import com.eraf.core.response.ApiResponse;
+import com.eraf.converter.JsonConverter;
+import com.eraf.exception.ErrorCode;
+import com.eraf.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.server.ServerWebExchange;

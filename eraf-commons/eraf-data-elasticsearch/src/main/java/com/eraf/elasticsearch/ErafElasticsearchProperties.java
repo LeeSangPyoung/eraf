@@ -74,4 +74,55 @@ public class ErafElasticsearchProperties {
     public void setSocketTimeout(int socketTimeout) {
         this.socketTimeout = socketTimeout;
     }
+
+    /**
+     * SSL/TLS 설정
+     */
+    private Ssl ssl = new Ssl();
+
+    public Ssl getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(Ssl ssl) {
+        this.ssl = ssl;
+    }
+
+    public static class Ssl {
+        /**
+         * SSL 활성화 여부
+         */
+        private boolean enabled = false;
+
+        /**
+         * TrustStore 경로
+         */
+        private String trustStorePath;
+
+        /**
+         * TrustStore 비밀번호
+         */
+        private String trustStorePassword;
+
+        /**
+         * TrustStore 타입 (JKS, PKCS12)
+         */
+        private String trustStoreType = "PKCS12";
+
+        /**
+         * 호스트명 검증 여부
+         */
+        private boolean verifyHostname = true;
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public String getTrustStorePath() { return trustStorePath; }
+        public void setTrustStorePath(String trustStorePath) { this.trustStorePath = trustStorePath; }
+        public String getTrustStorePassword() { return trustStorePassword; }
+        public void setTrustStorePassword(String trustStorePassword) { this.trustStorePassword = trustStorePassword; }
+        public String getTrustStoreType() { return trustStoreType; }
+        public void setTrustStoreType(String trustStoreType) { this.trustStoreType = trustStoreType; }
+        public boolean isVerifyHostname() { return verifyHostname; }
+        public void setVerifyHostname(boolean verifyHostname) { this.verifyHostname = verifyHostname; }
+    }
 }

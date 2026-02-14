@@ -17,7 +17,15 @@ import org.springframework.context.annotation.Bean;
 public class ErafHttpAutoConfiguration {
 
     @Bean
-    public ErafHttpRequestInterceptor erafHttpRequestInterceptor() {
-        return new ErafHttpRequestInterceptor();
+    public ErafHttpRequestInterceptor erafHttpRequestInterceptor(ErafHttpProperties properties) {
+        return new ErafHttpRequestInterceptor(properties.isContextPropagationEnabled());
+    }
+
+    /**
+     * @ErafClient 어노테이션 속성 처리기
+     */
+    @Bean
+    public ErafClientBeanPostProcessor erafClientBeanPostProcessor(ErafHttpProperties properties) {
+        return new ErafClientBeanPostProcessor(properties);
     }
 }

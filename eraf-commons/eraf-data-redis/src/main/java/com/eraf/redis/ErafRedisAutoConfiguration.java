@@ -1,7 +1,12 @@
 package com.eraf.redis;
 
-import com.eraf.core.idempotent.IdempotencyStore;
-import com.eraf.core.lock.LockProvider;
+import com.eraf.idempotent.IdempotencyStore;
+import com.eraf.lock.LockProvider;
+import com.eraf.redis.invalidation.RedisCacheInvalidator;
+import com.eraf.redis.lock.LockStatistics;
+import com.eraf.redis.lock.RedisReadWriteLock;
+import com.eraf.redis.statistics.RedisCacheStatistics;
+import com.eraf.redis.warming.CacheWarmer;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -11,10 +16,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -30,7 +37,8 @@ public class ErafRedisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "redisTemplate")
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory,
+                                                        ErafRedisProperties properties) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
@@ -53,6 +61,11 @@ public class ErafRedisAutoConfiguration {
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 
+        // Apply transaction support from properties
+        if (properties.isEnableTransactions()) {
+            template.setEnableTransactionSupport(true);
+        }
+
         template.afterPropertiesSet();
         return template;
     }
@@ -64,13 +77,41 @@ public class ErafRedisAutoConfiguration {
     }
 
     /**
+     * 분산 락 통계
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.lock.enabled", havingValue = "true", matchIfMissing = true)
+    public LockStatistics lockStatistics() {
+        return new LockStatistics();
+    }
+
+    /**
      * Redis 기반 분산 락 제공자
      */
     @Bean
     @ConditionalOnMissingBean(LockProvider.class)
     @ConditionalOnProperty(name = "eraf.redis.lock.enabled", havingValue = "true", matchIfMissing = true)
-    public LockProvider redisLockProvider(StringRedisTemplate stringRedisTemplate) {
-        return new RedisLockProvider(stringRedisTemplate);
+    public RedisLockProvider redisLockProvider(
+            StringRedisTemplate stringRedisTemplate,
+            LockStatistics lockStatistics,
+            ErafRedisProperties properties) {
+        RedisLockProvider provider = new RedisLockProvider(stringRedisTemplate);
+        provider.enableStatistics(lockStatistics);
+        if (properties.getLock().isWatchdogEnabled()) {
+            provider.enableWatchdog();
+        }
+        return provider;
+    }
+
+    /**
+     * Redis ReadWrite Lock
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.lock.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisReadWriteLock redisReadWriteLock(StringRedisTemplate stringRedisTemplate) {
+        return new RedisReadWriteLock(stringRedisTemplate);
     }
 
     /**
@@ -94,5 +135,53 @@ public class ErafRedisAutoConfiguration {
             ErafRedisProperties properties) {
         Duration ttl = properties.getIdempotent().getTtl();
         return new RedisIdempotencyStore(redisTemplate, ttl);
+    }
+
+    /**
+     * Redis 메시지 리스너 컨테이너
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.invalidation.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisMessageListenerContainer redisMessageListenerContainer(
+            RedisConnectionFactory connectionFactory) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        return container;
+    }
+
+    /**
+     * Redis 캐시 통계
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.statistics.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisCacheStatistics redisCacheStatistics(StringRedisTemplate stringRedisTemplate) {
+        return new RedisCacheStatistics(stringRedisTemplate);
+    }
+
+    /**
+     * 캐시 워머
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.warming.enabled", havingValue = "true", matchIfMissing = true)
+    public CacheWarmer cacheWarmer(RedisTemplate<String, Object> redisTemplate,
+                                    ErafRedisProperties properties) {
+        return new CacheWarmer(redisTemplate, properties.getWarming().getParallelThreads());
+    }
+
+    /**
+     * Redis Pub/Sub 캐시 무효화
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.invalidation.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnClass(CacheManager.class)
+    public RedisCacheInvalidator redisCacheInvalidator(
+            RedisTemplate<String, Object> redisTemplate,
+            RedisMessageListenerContainer listenerContainer,
+            CacheManager cacheManager) {
+        return new RedisCacheInvalidator(redisTemplate, listenerContainer, cacheManager);
     }
 }

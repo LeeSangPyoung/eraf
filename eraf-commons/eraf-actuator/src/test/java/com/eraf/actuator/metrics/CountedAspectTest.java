@@ -64,7 +64,7 @@ class CountedAspectTest {
         when(joinPoint.proceed()).thenReturn("result");
 
         Counted annotation = createAnnotation("api.calls", "",
-                new String[]{"endpoint", "/orders", "status", "success"});
+                new String[]{"endpoint=/orders", "status=success"});
 
         // When
         aspect.around(joinPoint, annotation);
@@ -100,13 +100,13 @@ class CountedAspectTest {
     }
 
     @Test
-    @DisplayName("예외 발생해도 카운트")
+    @DisplayName("예외 발생해도 카운트 (recordOnException=true)")
     void shouldCountEvenOnException() throws Throwable {
         // Given
         setupMocks("countedMethod");
         when(joinPoint.proceed()).thenThrow(new RuntimeException("error"));
 
-        Counted annotation = createAnnotation("error.count", "", new String[]{});
+        Counted annotation = createAnnotationWithRecordOnException("error.count", "", new String[]{});
 
         // When & Then
         assertThrows(RuntimeException.class, () ->
@@ -124,8 +124,8 @@ class CountedAspectTest {
         setupMocks("countedMethod");
         when(joinPoint.proceed()).thenReturn("result");
 
-        Counted annotation1 = createAnnotation("http.requests", "", new String[]{"status", "200"});
-        Counted annotation2 = createAnnotation("http.requests", "", new String[]{"status", "404"});
+        Counted annotation1 = createAnnotation("http.requests", "", new String[]{"status=200"});
+        Counted annotation2 = createAnnotation("http.requests", "", new String[]{"status=404"});
 
         // When
         aspect.around(joinPoint, annotation1);
@@ -146,7 +146,7 @@ class CountedAspectTest {
         // Given
         setupMocks("specificMethod");
         when(joinPoint.proceed()).thenReturn("result");
-        when(methodSignature.toShortString()).thenReturn("TestService.specificMethod()");
+        when(methodSignature.getDeclaringType()).thenReturn((Class) TestService.class);
 
         Counted annotation = createAnnotation("", "", new String[]{});
 
@@ -154,7 +154,7 @@ class CountedAspectTest {
         aspect.around(joinPoint, annotation);
 
         // Then
-        Counter counter = meterRegistry.find("TestService.specificMethod()").counter();
+        Counter counter = meterRegistry.find("TestService.specificMethod.count").counter();
         assertNotNull(counter);
     }
 
@@ -162,10 +162,19 @@ class CountedAspectTest {
         when(joinPoint.getSignature()).thenReturn(methodSignature);
         lenient().when(methodSignature.getMethod()).thenReturn(
                 TestService.class.getMethod(methodName));
+        lenient().when(methodSignature.getDeclaringType()).thenReturn((Class) TestService.class);
         lenient().when(methodSignature.toShortString()).thenReturn("TestService." + methodName + "()");
     }
 
     private Counted createAnnotation(String value, String description, String[] extraTags) {
+        return createAnnotation(value, description, extraTags, false);
+    }
+
+    private Counted createAnnotationWithRecordOnException(String value, String description, String[] extraTags) {
+        return createAnnotation(value, description, extraTags, true);
+    }
+
+    private Counted createAnnotation(String value, String description, String[] extraTags, boolean recordOnException) {
         return new Counted() {
             @Override
             public Class<? extends java.lang.annotation.Annotation> annotationType() {
@@ -185,6 +194,11 @@ class CountedAspectTest {
             @Override
             public String[] extraTags() {
                 return extraTags;
+            }
+
+            @Override
+            public boolean recordOnException() {
+                return recordOnException;
             }
         };
     }

@@ -79,14 +79,16 @@ class TracingFilterTest {
     @Test
     @DisplayName("기존 트레이스 ID 전파")
     void shouldPropagateExistingTraceId() throws ServletException, IOException {
-        // Given
+        // Given - X-Span-ID는 spanId로 사용되고, X-Parent-Span-ID가 parentSpanId로 사용됨
         request.addHeader("X-Trace-ID", "existing-trace-123");
         request.addHeader("X-Span-ID", "existing-span-456");
+        request.addHeader("X-Parent-Span-ID", "parent-span-789");
 
         doAnswer(inv -> {
             TraceContext context = TraceContextHolder.getContext();
             assertEquals("existing-trace-123", context.getTraceId());
-            assertEquals("existing-span-456", context.getParentSpanId());
+            assertEquals("existing-span-456", context.getSpanId());
+            assertEquals("parent-span-789", context.getParentSpanId());
             return null;
         }).when(filterChain).doFilter(request, response);
 
@@ -138,16 +140,18 @@ class TracingFilterTest {
     }
 
     @Test
-    @DisplayName("새로운 span ID 생성")
+    @DisplayName("기존 span ID 유지 및 parent span ID 전파")
     void shouldCreateNewSpanId() throws ServletException, IOException {
-        // Given
+        // Given - X-Span-ID 헤더가 있으면 그대로 spanId로 사용
+        // X-Parent-Span-ID 헤더가 parentSpanId로 사용됨
         request.addHeader("X-Trace-ID", "trace-123");
-        request.addHeader("X-Span-ID", "parent-span");
+        request.addHeader("X-Span-ID", "incoming-span");
+        request.addHeader("X-Parent-Span-ID", "parent-span");
 
         doAnswer(inv -> {
             TraceContext context = TraceContextHolder.getContext();
-            assertNotEquals("parent-span", context.getSpanId()); // 새로운 span ID
-            assertEquals("parent-span", context.getParentSpanId()); // parent로 설정
+            assertEquals("incoming-span", context.getSpanId()); // X-Span-ID 그대로 사용
+            assertEquals("parent-span", context.getParentSpanId()); // X-Parent-Span-ID 사용
             return null;
         }).when(filterChain).doFilter(request, response);
 

@@ -1,6 +1,7 @@
 package com.eraf.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ class ErafKafkaProducerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         properties = new ErafKafkaProperties();
         properties.setTopicPrefix("test-");
         producer = new ErafKafkaProducer(kafkaTemplate, objectMapper, properties);

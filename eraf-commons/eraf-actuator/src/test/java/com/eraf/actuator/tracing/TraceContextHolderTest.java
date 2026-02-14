@@ -19,7 +19,10 @@ class TraceContextHolderTest {
     @Test
     @DisplayName("TraceContext 설정 및 조회")
     void shouldSetAndGetContext() {
-        TraceContext context = new TraceContext("trace-123", "span-456", null);
+        TraceContext context = TraceContext.builder()
+                .traceId("trace-123")
+                .spanId("span-456")
+                .build();
         TraceContextHolder.setContext(context);
 
         TraceContext retrieved = TraceContextHolder.getContext();
@@ -40,7 +43,10 @@ class TraceContextHolderTest {
     @Test
     @DisplayName("clear 후 null 반환")
     void shouldReturnNullAfterClear() {
-        TraceContext context = new TraceContext("trace-123", "span-456", null);
+        TraceContext context = TraceContext.builder()
+                .traceId("trace-123")
+                .spanId("span-456")
+                .build();
         TraceContextHolder.setContext(context);
 
         TraceContextHolder.clear();
@@ -51,13 +57,19 @@ class TraceContextHolderTest {
     @Test
     @DisplayName("다른 스레드는 독립적인 컨텍스트")
     void shouldHaveIndependentContextPerThread() throws InterruptedException {
-        TraceContext mainContext = new TraceContext("main-trace", "main-span", null);
+        TraceContext mainContext = TraceContext.builder()
+                .traceId("main-trace")
+                .spanId("main-span")
+                .build();
         TraceContextHolder.setContext(mainContext);
 
         final TraceContext[] otherThreadContext = new TraceContext[1];
 
         Thread otherThread = new Thread(() -> {
-            TraceContext threadContext = new TraceContext("other-trace", "other-span", null);
+            TraceContext threadContext = TraceContext.builder()
+                    .traceId("other-trace")
+                    .spanId("other-span")
+                    .build();
             TraceContextHolder.setContext(threadContext);
             otherThreadContext[0] = TraceContextHolder.getContext();
         });

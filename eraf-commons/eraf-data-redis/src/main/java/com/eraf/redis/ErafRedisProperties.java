@@ -45,6 +45,21 @@ public class ErafRedisProperties {
      */
     private Idempotent idempotent = new Idempotent();
 
+    /**
+     * 캐시 통계 설정
+     */
+    private Statistics statistics = new Statistics();
+
+    /**
+     * 캐시 워밍 설정
+     */
+    private Warming warming = new Warming();
+
+    /**
+     * 캐시 무효화 설정
+     */
+    private Invalidation invalidation = new Invalidation();
+
     public Duration getDefaultTtl() {
         return defaultTtl;
     }
@@ -101,11 +116,36 @@ public class ErafRedisProperties {
         this.idempotent = idempotent;
     }
 
+    public Statistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
+    }
+
+    public Warming getWarming() {
+        return warming;
+    }
+
+    public void setWarming(Warming warming) {
+        this.warming = warming;
+    }
+
+    public Invalidation getInvalidation() {
+        return invalidation;
+    }
+
+    public void setInvalidation(Invalidation invalidation) {
+        this.invalidation = invalidation;
+    }
+
     /**
      * 분산 락 설정
      */
     public static class Lock {
         private boolean enabled = true;
+        private boolean watchdogEnabled = true;
         private Duration defaultLeaseTime = Duration.ofSeconds(30);
         private Duration defaultWaitTime = Duration.ofSeconds(5);
 
@@ -115,6 +155,14 @@ public class ErafRedisProperties {
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+
+        public boolean isWatchdogEnabled() {
+            return watchdogEnabled;
+        }
+
+        public void setWatchdogEnabled(boolean watchdogEnabled) {
+            this.watchdogEnabled = watchdogEnabled;
         }
 
         public Duration getDefaultLeaseTime() {
@@ -170,6 +218,87 @@ public class ErafRedisProperties {
 
         public void setTtl(Duration ttl) {
             this.ttl = ttl;
+        }
+    }
+
+    /**
+     * 캐시 통계 설정
+     */
+    public static class Statistics {
+        private boolean enabled = true;
+        private boolean async = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isAsync() {
+            return async;
+        }
+
+        public void setAsync(boolean async) {
+            this.async = async;
+        }
+    }
+
+    /**
+     * 캐시 워밍 설정
+     */
+    public static class Warming {
+        private boolean enabled = true;
+        private boolean autoWarmOnStartup = true;
+        private int parallelThreads = 4;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isAutoWarmOnStartup() {
+            return autoWarmOnStartup;
+        }
+
+        public void setAutoWarmOnStartup(boolean autoWarmOnStartup) {
+            this.autoWarmOnStartup = autoWarmOnStartup;
+        }
+
+        public int getParallelThreads() {
+            return parallelThreads;
+        }
+
+        public void setParallelThreads(int parallelThreads) {
+            this.parallelThreads = parallelThreads;
+        }
+    }
+
+    /**
+     * 캐시 무효화 설정
+     */
+    public static class Invalidation {
+        private boolean enabled = true;
+        private String channelPrefix = "cache:invalidation:";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getChannelPrefix() {
+            return channelPrefix;
+        }
+
+        public void setChannelPrefix(String channelPrefix) {
+            this.channelPrefix = channelPrefix;
         }
     }
 }

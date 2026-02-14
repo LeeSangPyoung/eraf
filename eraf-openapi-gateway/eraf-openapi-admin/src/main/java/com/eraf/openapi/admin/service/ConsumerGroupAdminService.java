@@ -7,7 +7,7 @@ import com.eraf.openapi.core.domain.GatewayConsumer;
 import com.eraf.openapi.core.domain.GatewayConsumerGroup;
 import com.eraf.openapi.core.repository.GatewayConsumerGroupRepository;
 import com.eraf.openapi.core.repository.GatewayConsumerRepository;
-import com.eraf.core.exception.BusinessException;
+import com.eraf.exception.BusinessException;
 import com.eraf.openapi.core.exception.GatewayErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

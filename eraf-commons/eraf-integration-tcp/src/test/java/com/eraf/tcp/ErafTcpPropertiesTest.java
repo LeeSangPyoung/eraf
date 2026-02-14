@@ -33,17 +33,49 @@ class ErafTcpPropertiesTest {
     }
 
     @Test
-    @DisplayName("연결 풀 설정")
-    void testConnectionPoolSettings() {
+    @DisplayName("연결 설정")
+    void testConnectionSettings() {
         // Given
         ErafTcpProperties properties = new ErafTcpProperties();
 
+        // Then - 기본값 확인
+        assertEquals(10000, properties.getConnectionTimeout());
+        assertEquals(30000, properties.getReadTimeout());
+        assertTrue(properties.isKeepAlive());
+        assertTrue(properties.isTcpNoDelay());
+
         // When
-        properties.setMaxConnections(10);
         properties.setConnectionTimeout(5000);
+        properties.setReadTimeout(15000);
+        properties.setKeepAlive(false);
+        properties.setTcpNoDelay(false);
 
         // Then
-        assertEquals(10, properties.getMaxConnections());
         assertEquals(5000, properties.getConnectionTimeout());
+        assertEquals(15000, properties.getReadTimeout());
+        assertFalse(properties.isKeepAlive());
+        assertFalse(properties.isTcpNoDelay());
+    }
+
+    @Test
+    @DisplayName("재연결 설정")
+    void testReconnectSettings() {
+        // Given
+        ErafTcpProperties properties = new ErafTcpProperties();
+
+        // Then - 기본값
+        assertTrue(properties.isAutoReconnect());
+        assertEquals(5000, properties.getReconnectInterval());
+        assertEquals(10, properties.getMaxReconnectAttempts());
+
+        // When
+        properties.setAutoReconnect(false);
+        properties.setReconnectInterval(10000);
+        properties.setMaxReconnectAttempts(5);
+
+        // Then
+        assertFalse(properties.isAutoReconnect());
+        assertEquals(10000, properties.getReconnectInterval());
+        assertEquals(5, properties.getMaxReconnectAttempts());
     }
 }

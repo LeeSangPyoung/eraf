@@ -1,1 +1,2 @@
 com.eraf.jpa.ErafJpaAutoConfiguration
+com.eraf.jpa.slowquery.SlowQueryAutoConfiguration

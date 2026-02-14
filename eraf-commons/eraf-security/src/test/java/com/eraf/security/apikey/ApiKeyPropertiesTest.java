@@ -5,9 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,9 +22,9 @@ class ApiKeyPropertiesTest {
     }
 
     @Test
-    @DisplayName("기본 헤더명은 X-API-KEY")
+    @DisplayName("기본 헤더명은 X-API-Key")
     void shouldHaveDefaultHeaderName() {
-        assertEquals("X-API-KEY", properties.getHeaderName());
+        assertEquals("X-API-Key", properties.getHeaderName());
     }
 
     @Test
@@ -40,18 +38,16 @@ class ApiKeyPropertiesTest {
     @Test
     @DisplayName("API Key 엔트리 추가")
     void shouldAddApiKeyEntries() {
-        Map<String, ApiKeyProperties.ApiKeyEntry> keys = new HashMap<>();
-
         ApiKeyProperties.ApiKeyEntry entry1 = new ApiKeyProperties.ApiKeyEntry();
         entry1.setKey("api-key-123");
         entry1.setName("Service A");
         entry1.setRoles(Arrays.asList("ROLE_API", "ROLE_READ"));
 
-        keys.put("service-a", entry1);
-        properties.setKeys(keys);
+        properties.setKeys(List.of(entry1));
 
         assertEquals(1, properties.getKeys().size());
-        assertEquals("api-key-123", properties.getKeys().get("service-a").getKey());
+        assertEquals("api-key-123", properties.getKeys().get(0).getKey());
+        assertEquals("Service A", properties.getKeys().get(0).getName());
     }
 
     @Test
@@ -75,8 +71,6 @@ class ApiKeyPropertiesTest {
     @Test
     @DisplayName("여러 API Key 설정")
     void shouldSupportMultipleApiKeys() {
-        Map<String, ApiKeyProperties.ApiKeyEntry> keys = new HashMap<>();
-
         ApiKeyProperties.ApiKeyEntry entry1 = new ApiKeyProperties.ApiKeyEntry();
         entry1.setKey("key-1");
         entry1.setName("Service 1");
@@ -89,16 +83,12 @@ class ApiKeyPropertiesTest {
         entry3.setKey("key-3");
         entry3.setName("Service 3");
 
-        keys.put("svc1", entry1);
-        keys.put("svc2", entry2);
-        keys.put("svc3", entry3);
-
-        properties.setKeys(keys);
+        properties.setKeys(List.of(entry1, entry2, entry3));
 
         assertEquals(3, properties.getKeys().size());
-        assertEquals("Service 1", properties.getKeys().get("svc1").getName());
-        assertEquals("Service 2", properties.getKeys().get("svc2").getName());
-        assertEquals("Service 3", properties.getKeys().get("svc3").getName());
+        assertEquals("Service 1", properties.getKeys().get(0).getName());
+        assertEquals("Service 2", properties.getKeys().get(1).getName());
+        assertEquals("Service 3", properties.getKeys().get(2).getName());
     }
 
     @Test

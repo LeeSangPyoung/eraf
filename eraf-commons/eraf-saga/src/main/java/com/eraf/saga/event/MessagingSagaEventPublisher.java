@@ -1,6 +1,6 @@
 package com.eraf.saga.event;
 
-import com.eraf.core.messaging.MessagePublisher;
+import com.eraf.messaging.MessagePublisher;
 import com.eraf.saga.ErafSagaProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

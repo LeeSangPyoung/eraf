@@ -4,8 +4,16 @@ import com.eraf.security.apikey.ApiKeyAuthenticationFilter;
 import com.eraf.security.apikey.ApiKeyProperties;
 import com.eraf.security.audit.SecurityAuditLogger;
 import com.eraf.security.audit.SecurityEventListener;
+import com.eraf.security.bot.BotDetector;
+import com.eraf.security.bot.UserAgentBotDetector;
 import com.eraf.security.cors.CorsProperties;
+import com.eraf.security.ip.IpAccessControlFilter;
+import com.eraf.security.ip.IpAccessControlProperties;
 import com.eraf.security.jwt.*;
+import com.eraf.security.rbac.ErafMethodSecurityConfiguration;
+import com.eraf.security.rbac.ErafPermissionEvaluator;
+import com.eraf.security.rbac.RbacAspect;
+import com.eraf.security.rbac.RolePermissionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -13,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,9 +43,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
         ErafSecurityProperties.class,
         JwtProperties.class,
         ApiKeyProperties.class,
-        CorsProperties.class
+        CorsProperties.class,
+        IpAccessControlProperties.class
 })
 @EnableWebSecurity
+@Import(ErafMethodSecurityConfiguration.class)
 public class ErafSecurityAutoConfiguration {
 
     @Bean
@@ -84,6 +95,29 @@ public class ErafSecurityAutoConfiguration {
         return new ApiKeyAuthenticationFilter(properties);
     }
 
+    // ===== RBAC =====
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.security.rbac.enabled", havingValue = "true", matchIfMissing = true)
+    public RolePermissionRegistry rolePermissionRegistry() {
+        return new RolePermissionRegistry();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.security.rbac.enabled", havingValue = "true", matchIfMissing = true)
+    public ErafPermissionEvaluator erafPermissionEvaluator(RolePermissionRegistry rolePermissionRegistry) {
+        return new ErafPermissionEvaluator(rolePermissionRegistry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.security.rbac.enabled", havingValue = "true", matchIfMissing = true)
+    public RbacAspect rbacAspect(ErafPermissionEvaluator permissionEvaluator) {
+        return new RbacAspect(permissionEvaluator);
+    }
+
     // ===== Audit =====
 
     @Bean
@@ -98,6 +132,26 @@ public class ErafSecurityAutoConfiguration {
     @ConditionalOnProperty(name = "eraf.security.audit.enabled", havingValue = "true", matchIfMissing = true)
     public SecurityEventListener securityEventListener(SecurityAuditLogger auditLogger) {
         return new SecurityEventListener(auditLogger);
+    }
+
+    // ===== Bot Detection =====
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.security.bot-detection.enabled", havingValue = "true", matchIfMissing = true)
+    public BotDetector botDetector() {
+        return new UserAgentBotDetector();
+    }
+
+    // ===== IP Access Control =====
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.security.ip-access-control.enabled", havingValue = "true")
+    public IpAccessControlFilter ipAccessControlFilter(
+            IpAccessControlProperties properties,
+            SecurityAuditLogger auditLogger) {
+        return new IpAccessControlFilter(properties, auditLogger);
     }
 
     // ===== CORS =====
@@ -137,7 +191,9 @@ public class ErafSecurityAutoConfiguration {
             JwtAuthenticationFilter jwtFilter,
             JwtAuthenticationEntryPoint entryPoint,
             JwtAccessDeniedHandler accessDeniedHandler,
-            CorsConfigurationSource corsSource) throws Exception {
+            CorsConfigurationSource corsSource,
+            IpAccessControlProperties ipProperties,
+            SecurityAuditLogger auditLogger) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsSource))
@@ -151,8 +207,14 @@ public class ErafSecurityAutoConfiguration {
                         .requestMatchers(properties.getPermitAllPatterns()).permitAll()
                         .requestMatchers(jwtProperties.getSkipPatterns()).permitAll()
                         .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                );
+
+        // IP Access Control Filter (if enabled)
+        if (ipProperties.isEnabled()) {
+            http.addFilterBefore(new IpAccessControlFilter(ipProperties, auditLogger), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         if (properties.isDisableFrameOptions()) {
             http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
@@ -170,7 +232,9 @@ public class ErafSecurityAutoConfiguration {
             HttpSecurity http,
             ErafSecurityProperties properties,
             ApiKeyAuthenticationFilter apiKeyFilter,
-            CorsConfigurationSource corsSource) throws Exception {
+            CorsConfigurationSource corsSource,
+            IpAccessControlProperties ipProperties,
+            SecurityAuditLogger auditLogger) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsSource))
@@ -179,8 +243,14 @@ public class ErafSecurityAutoConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(properties.getPermitAllPatterns()).permitAll()
                         .anyRequest().authenticated()
-                )
-                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class);
+                );
+
+        // IP Access Control Filter (if enabled)
+        if (ipProperties.isEnabled()) {
+            http.addFilterBefore(new IpAccessControlFilter(ipProperties, auditLogger), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        http.addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class);
 
         if (properties.isDisableFrameOptions()) {
             http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
@@ -196,7 +266,9 @@ public class ErafSecurityAutoConfiguration {
     public SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
             ErafSecurityProperties properties,
-            CorsConfigurationSource corsSource) throws Exception {
+            CorsConfigurationSource corsSource,
+            IpAccessControlProperties ipProperties,
+            SecurityAuditLogger auditLogger) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsSource));
@@ -213,6 +285,11 @@ public class ErafSecurityAutoConfiguration {
                 .requestMatchers(properties.getPermitAllPatterns()).permitAll()
                 .anyRequest().authenticated()
         );
+
+        // IP Access Control Filter (if enabled)
+        if (ipProperties.isEnabled()) {
+            http.addFilterBefore(new IpAccessControlFilter(ipProperties, auditLogger), UsernamePasswordAuthenticationFilter.class);
+        }
 
         if (properties.isFormLoginEnabled()) {
             http.formLogin(form -> form

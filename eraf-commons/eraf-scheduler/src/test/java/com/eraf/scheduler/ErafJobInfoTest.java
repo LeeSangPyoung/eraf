@@ -16,19 +16,22 @@ class ErafJobInfoTest {
         ErafJobInfo jobInfo = new ErafJobInfo();
 
         // When
-        jobInfo.setJobName("testJob");
-        jobInfo.setCronExpression("0 0 * * * ?");
+        jobInfo.setName("testJob");
+        jobInfo.setGroup("default");
+        jobInfo.setCron("0 0 * * * ?");
         jobInfo.setDescription("Test Job");
-        jobInfo.setEnabled(true);
+        jobInfo.setStatus(ErafJobInfo.JobStatus.SCHEDULED);
 
         // Then
-        assertEquals("testJob", jobInfo.getJobName());
-        assertEquals("0 0 * * * ?", jobInfo.getCronExpression());
-        assertTrue(jobInfo.isEnabled());
+        assertEquals("testJob", jobInfo.getName());
+        assertEquals("default", jobInfo.getGroup());
+        assertEquals("0 0 * * * ?", jobInfo.getCron());
+        assertEquals("Test Job", jobInfo.getDescription());
+        assertEquals(ErafJobInfo.JobStatus.SCHEDULED, jobInfo.getStatus());
     }
 
     @Test
-    @DisplayName("마지막 실행 시간 기록")
+    @DisplayName("마지막 실행 시간 및 결과 기록")
     void testLastExecution() {
         // Given
         ErafJobInfo jobInfo = new ErafJobInfo();
@@ -36,10 +39,56 @@ class ErafJobInfoTest {
 
         // When
         jobInfo.setLastExecutionTime(now);
-        jobInfo.setLastExecutionStatus("SUCCESS");
+        jobInfo.setLastExecutionResult("SUCCESS");
 
         // Then
         assertEquals(now, jobInfo.getLastExecutionTime());
-        assertEquals("SUCCESS", jobInfo.getLastExecutionStatus());
+        assertEquals("SUCCESS", jobInfo.getLastExecutionResult());
+    }
+
+    @Test
+    @DisplayName("Lock 설정")
+    void testLockSettings() {
+        // Given
+        ErafJobInfo jobInfo = new ErafJobInfo();
+
+        // When
+        jobInfo.setLockEnabled(true);
+        jobInfo.setLockAtMostFor("PT5M");
+        jobInfo.setLockAtLeastFor("PT1M");
+
+        // Then
+        assertTrue(jobInfo.isLockEnabled());
+        assertEquals("PT5M", jobInfo.getLockAtMostFor());
+        assertEquals("PT1M", jobInfo.getLockAtLeastFor());
+    }
+
+    @Test
+    @DisplayName("Fixed Delay/Rate 설정")
+    void testFixedDelayAndRate() {
+        // Given
+        ErafJobInfo jobInfo = new ErafJobInfo();
+
+        // When
+        jobInfo.setFixedDelay(5000L);
+        jobInfo.setFixedRate(10000L);
+
+        // Then
+        assertEquals(5000L, jobInfo.getFixedDelay());
+        assertEquals(10000L, jobInfo.getFixedRate());
+    }
+
+    @Test
+    @DisplayName("다음 실행 시간 설정")
+    void testNextExecutionTime() {
+        // Given
+        ErafJobInfo jobInfo = new ErafJobInfo();
+        Instant future = Instant.now().plusSeconds(3600);
+
+        // When
+        jobInfo.setNextExecutionTime(future);
+
+        // Then
+        assertEquals(future, jobInfo.getNextExecutionTime());
     }
 }

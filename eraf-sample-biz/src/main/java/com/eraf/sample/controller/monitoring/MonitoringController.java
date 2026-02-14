@@ -1,5 +1,16 @@
 package com.eraf.sample.controller.monitoring;
 
+import com.eraf.actuator.health.LivenessHealthIndicator;
+import com.eraf.actuator.health.ReadinessHealthIndicator;
+import com.eraf.actuator.metrics.ApiMetrics;
+import com.eraf.actuator.metrics.CacheMetrics;
+import com.eraf.actuator.metrics.CustomMetrics;
+import com.eraf.jpa.audit.AsyncAuditLogger;
+import com.eraf.jpa.audit.AuditEventStandard;
+import com.eraf.jpa.audit.AuditLogEntity;
+import com.eraf.web.context.RequestContext;
+import com.eraf.web.context.RequestContextHolder;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +21,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -34,6 +47,25 @@ public class MonitoringController {
 
     @Autowired(required = false)
     private MetricsEndpoint metricsEndpoint;
+
+    // Phase 2: New ERAF Components
+    @Autowired(required = false)
+    private LivenessHealthIndicator livenessHealthIndicator;
+
+    @Autowired(required = false)
+    private ReadinessHealthIndicator readinessHealthIndicator;
+
+    @Autowired(required = false)
+    private CustomMetrics customMetrics;
+
+    @Autowired(required = false)
+    private CacheMetrics cacheMetrics;
+
+    @Autowired(required = false)
+    private ApiMetrics apiMetrics;
+
+    @Autowired(required = false)
+    private AsyncAuditLogger asyncAuditLogger;
 
     // In-memory simulation data
     private final Map<String, ComponentHealth> mockHealthData = new ConcurrentHashMap<>();
@@ -358,6 +390,302 @@ public class MonitoringController {
         result.put("endpoints", endpoints);
 
         return result;
+    }
+
+    // ============ Phase 2: Request Context ============
+
+    @GetMapping("/context")
+    @ResponseBody
+    public Map<String, Object> getRequestContext() {
+        RequestContext context = RequestContextHolder.getContext();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        if (context != null) {
+            result.put("requestId", context.getRequestId());
+            result.put("traceId", context.getTraceId());
+            result.put("sessionId", context.getSessionId());
+            result.put("userId", context.getUserId());
+            result.put("username", context.getUsername());
+            result.put("clientIp", context.getClientIp());
+            result.put("userAgent", context.getUserAgent());
+            result.put("requestUri", context.getUri());
+            result.put("requestMethod", context.getMethod());
+            result.put("requestTime", context.getRequestTime());
+            result.put("source", "Phase2-RequestContextHolder");
+        } else {
+            result.put("message", "No request context available");
+            result.put("note", "RequestContextFilter may not be enabled");
+        }
+
+        result.put("timestamp", LocalDateTime.now().format(FORMATTER));
+        return result;
+    }
+
+    // ============ Phase 2: Liveness & Readiness ============
+
+    @GetMapping("/health/liveness")
+    @ResponseBody
+    public Map<String, Object> getLiveness() {
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        if (livenessHealthIndicator != null) {
+            Health health = livenessHealthIndicator.health();
+            result.put("status", health.getStatus().getCode());
+            result.put("details", health.getDetails());
+            result.put("source", "Phase2-LivenessHealthIndicator");
+        } else {
+            result.put("status", "UP");
+            result.put("message", "LivenessHealthIndicator not available (fallback)");
+        }
+
+        result.put("timestamp", LocalDateTime.now().format(FORMATTER));
+        return result;
+    }
+
+    @GetMapping("/health/readiness")
+    @ResponseBody
+    public Map<String, Object> getReadiness() {
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        if (readinessHealthIndicator != null) {
+            Health health = readinessHealthIndicator.health();
+            result.put("status", health.getStatus().getCode());
+            result.put("details", health.getDetails());
+            result.put("source", "Phase2-ReadinessHealthIndicator");
+        } else {
+            result.put("status", "UP");
+            result.put("message", "ReadinessHealthIndicator not available (fallback)");
+        }
+
+        result.put("timestamp", LocalDateTime.now().format(FORMATTER));
+        return result;
+    }
+
+    @PostMapping("/health/readiness/dependency")
+    @ResponseBody
+    public Map<String, Object> setReadinessDependency(
+            @RequestParam String name,
+            @RequestParam boolean ready) {
+
+        if (readinessHealthIndicator != null) {
+            readinessHealthIndicator.addDependency(name, ready);
+            return Map.of(
+                    "success", true,
+                    "dependency", name,
+                    "ready", ready,
+                    "message", "Readiness dependency updated"
+            );
+        } else {
+            return Map.of(
+                    "success", false,
+                    "message", "ReadinessHealthIndicator not available"
+            );
+        }
+    }
+
+    // ============ Phase 2: Audit Logging ============
+
+    @PostMapping("/audit/demo")
+    @ResponseBody
+    public Map<String, Object> createAuditLog(@RequestBody Map<String, Object> request) {
+        if (asyncAuditLogger == null) {
+            return Map.of("success", false, "message", "AsyncAuditLogger not available");
+        }
+
+        RequestContext context = RequestContextHolder.getContext();
+
+        String action = (String) request.getOrDefault("action", AuditEventStandard.Action.CREATE);
+        String resource = (String) request.getOrDefault("resource", "test-resource");
+        String result = (String) request.getOrDefault("result", AuditEventStandard.Result.SUCCESS);
+
+        AuditLogEntity auditLog = AuditEventStandard.builder()
+                .action(action)
+                .resource(resource)
+                .result(result)
+                .userId(context != null ? context.getUserId() : "demo-user")
+                .username(context != null ? context.getUsername() : "Demo User")
+                .clientIp(context != null ? context.getClientIp() : "127.0.0.1")
+                .requestUri(context != null ? context.getUri() : "/monitoring/audit/demo")
+                .requestMethod(context != null ? context.getMethod() : "POST")
+                .description("Demo audit log created via monitoring endpoint")
+                .build();
+
+        asyncAuditLogger.logAndForget(auditLog);
+
+        log.info("[Audit Demo] Created audit log: action={}, resource={}, result={}", action, resource, result);
+
+        return Map.of(
+                "success", true,
+                "message", "Audit log created asynchronously",
+                "action", action,
+                "resource", resource,
+                "result", result,
+                "note", "Check database table 'audit_logs' for the entry"
+        );
+    }
+
+    // ============ Phase 2: Custom Metrics ============
+
+    @PostMapping("/metrics/custom/timer")
+    @ResponseBody
+    public Map<String, Object> recordCustomTimer(@RequestBody Map<String, Object> request) {
+        if (customMetrics == null) {
+            return Map.of("success", false, "message", "CustomMetrics not available");
+        }
+
+        String name = (String) request.getOrDefault("name", "demo.operation");
+        long durationMs = ((Number) request.getOrDefault("durationMs", 100)).longValue();
+
+        Timer timer = customMetrics.timer(name, "type", "demo");
+        timer.record(Duration.ofMillis(durationMs));
+
+        log.info("[Custom Metrics] Recorded timer: name={}, duration={}ms", name, durationMs);
+
+        return Map.of(
+                "success", true,
+                "message", "Custom timer recorded",
+                "name", name,
+                "durationMs", durationMs,
+                "note", "Check /actuator/metrics/" + name + " for percentiles"
+        );
+    }
+
+    @PostMapping("/metrics/custom/counter")
+    @ResponseBody
+    public Map<String, Object> incrementCustomCounter(@RequestBody Map<String, Object> request) {
+        if (customMetrics == null) {
+            return Map.of("success", false, "message", "CustomMetrics not available");
+        }
+
+        String name = (String) request.getOrDefault("name", "demo.events");
+        double amount = ((Number) request.getOrDefault("amount", 1)).doubleValue();
+
+        customMetrics.counter(name, "type", "demo").increment(amount);
+
+        log.info("[Custom Metrics] Incremented counter: name={}, amount={}", name, amount);
+
+        return Map.of(
+                "success", true,
+                "message", "Custom counter incremented",
+                "name", name,
+                "amount", amount,
+                "note", "Check /actuator/metrics/" + name + " for current value"
+        );
+    }
+
+    // ============ Phase 2: Cache Metrics ============
+
+    @PostMapping("/metrics/cache/register")
+    @ResponseBody
+    public Map<String, Object> registerCache(@RequestParam String cacheName) {
+        if (cacheMetrics == null) {
+            return Map.of("success", false, "message", "CacheMetrics not available");
+        }
+
+        cacheMetrics.registerCache(cacheName);
+
+        log.info("[Cache Metrics] Registered cache: {}", cacheName);
+
+        return Map.of(
+                "success", true,
+                "cacheName", cacheName,
+                "message", "Cache registered for metrics collection",
+                "note", "Use /metrics/cache/hit or /miss to simulate cache operations"
+        );
+    }
+
+    @PostMapping("/metrics/cache/hit")
+    @ResponseBody
+    public Map<String, Object> recordCacheHit(@RequestParam String cacheName) {
+        if (cacheMetrics == null) {
+            return Map.of("success", false, "message", "CacheMetrics not available");
+        }
+
+        cacheMetrics.recordHit(cacheName);
+
+        log.info("[Cache Metrics] Recorded cache hit: {}", cacheName);
+
+        return Map.of(
+                "success", true,
+                "cacheName", cacheName,
+                "operation", "HIT",
+                "note", "Check cache.hit.ratio metric"
+        );
+    }
+
+    @PostMapping("/metrics/cache/miss")
+    @ResponseBody
+    public Map<String, Object> recordCacheMiss(@RequestParam String cacheName) {
+        if (cacheMetrics == null) {
+            return Map.of("success", false, "message", "CacheMetrics not available");
+        }
+
+        cacheMetrics.recordMiss(cacheName);
+
+        log.info("[Cache Metrics] Recorded cache miss: {}", cacheName);
+
+        return Map.of(
+                "success", true,
+                "cacheName", cacheName,
+                "operation", "MISS",
+                "note", "Check cache.hit.ratio metric"
+        );
+    }
+
+    // ============ Phase 2: API Metrics ============
+
+    @PostMapping("/metrics/api/call")
+    @ResponseBody
+    public Map<String, Object> recordApiCall(@RequestBody Map<String, Object> request) {
+        if (apiMetrics == null) {
+            return Map.of("success", false, "message", "ApiMetrics not available");
+        }
+
+        String endpoint = (String) request.getOrDefault("endpoint", "/api/demo");
+        String method = (String) request.getOrDefault("method", "GET");
+        int statusCode = ((Number) request.getOrDefault("statusCode", 200)).intValue();
+        long durationMs = ((Number) request.getOrDefault("durationMs", 50)).longValue();
+
+        apiMetrics.recordCall(endpoint, method, statusCode);
+        apiMetrics.recordResponseTime(endpoint, method, durationMs);
+
+        log.info("[API Metrics] Recorded API call: endpoint={}, method={}, status={}, duration={}ms",
+                endpoint, method, statusCode, durationMs);
+
+        return Map.of(
+                "success", true,
+                "endpoint", endpoint,
+                "method", method,
+                "statusCode", statusCode,
+                "durationMs", durationMs,
+                "note", "Check api.calls and api.response.time metrics"
+        );
+    }
+
+    @PostMapping("/metrics/api/error")
+    @ResponseBody
+    public Map<String, Object> recordApiError(@RequestBody Map<String, Object> request) {
+        if (apiMetrics == null) {
+            return Map.of("success", false, "message", "ApiMetrics not available");
+        }
+
+        String endpoint = (String) request.getOrDefault("endpoint", "/api/demo");
+        String method = (String) request.getOrDefault("method", "GET");
+        String errorType = (String) request.getOrDefault("errorType", "TimeoutException");
+
+        apiMetrics.recordError(endpoint, method, errorType);
+
+        log.info("[API Metrics] Recorded API error: endpoint={}, method={}, errorType={}",
+                endpoint, method, errorType);
+
+        return Map.of(
+                "success", true,
+                "endpoint", endpoint,
+                "method", method,
+                "errorType", errorType,
+                "note", "Check api.errors metric"
+        );
     }
 
     // ============ DTOs ============

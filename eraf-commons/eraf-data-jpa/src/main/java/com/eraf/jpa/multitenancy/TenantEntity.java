@@ -11,7 +11,7 @@ import jakarta.persistence.PrePersist;
 @MappedSuperclass
 public abstract class TenantEntity extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false, updatable = false, length = 50)
+    @Column(name = "tenant_id", nullable = false, updatable = false, length = 100)
     private String tenantId;
 
     @PrePersist

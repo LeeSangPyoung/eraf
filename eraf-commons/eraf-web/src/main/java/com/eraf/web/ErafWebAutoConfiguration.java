@@ -1,24 +1,26 @@
 package com.eraf.web;
 
-import com.eraf.core.code.CodeRepository;
-import com.eraf.core.code.CodeService;
-import com.eraf.core.code.InMemoryCodeRepository;
+import com.eraf.code.CodeRepository;
+import com.eraf.code.CodeService;
+import com.eraf.code.InMemoryCodeRepository;
 import com.eraf.core.config.FeatureToggle;
 import com.eraf.core.config.FeatureToggleAspect;
-import com.eraf.core.exception.GlobalExceptionHandler;
-import com.eraf.core.file.FileStorageService;
-import com.eraf.core.file.LocalFileStorageService;
-import com.eraf.core.i18n.MessageAspect;
-import com.eraf.core.i18n.MessageService;
-import com.eraf.core.idempotent.IdempotencyStore;
-import com.eraf.core.idempotent.IdempotentAspect;
-import com.eraf.core.idempotent.InMemoryIdempotencyStore;
-import com.eraf.core.lock.DistributedLockAspect;
-import com.eraf.core.lock.InMemoryLockProvider;
-import com.eraf.core.lock.LockProvider;
-import com.eraf.core.resilience.*;
-import com.eraf.core.response.ApiResponse;
-import com.eraf.core.sequence.SequenceAspect;
+import com.eraf.exception.GlobalExceptionHandler;
+import com.eraf.util.file.FileStorageService;
+import com.eraf.util.file.LocalFileStorageService;
+import com.eraf.i18n.MessageAspect;
+import com.eraf.i18n.MessageService;
+import com.eraf.idempotent.IdempotencyStore;
+import com.eraf.idempotent.IdempotentAspect;
+import com.eraf.idempotent.InMemoryIdempotencyStore;
+import com.eraf.lock.DistributedLockAspect;
+import com.eraf.lock.InMemoryLockProvider;
+import com.eraf.lock.LockProvider;
+import com.eraf.resilience.*;
+import com.eraf.response.ApiResponse;
+import com.eraf.sequence.SequenceAspect;
+import com.eraf.web.context.AsyncRequestContextPropagator;
+import com.eraf.web.context.RequestContextFilter;
 import com.eraf.web.filter.RequestLoggingFilter;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -171,6 +173,31 @@ public class ErafWebAutoConfiguration {
     }
 
     /**
+     * RequestContext 필터 (최우선 순위)
+     */
+    @Bean
+    @ConditionalOnMissingBean(RequestContextFilter.class)
+    public FilterRegistrationBean<RequestContextFilter> requestContextFilter() {
+        RequestContextFilter filter = new RequestContextFilter();
+
+        FilterRegistrationBean<RequestContextFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
+        registration.addUrlPatterns("/*");
+        registration.setName("requestContextFilter");
+
+        return registration;
+    }
+
+    /**
+     * 비동기 작업에서 RequestContext 전파
+     */
+    @Bean
+    @ConditionalOnMissingBean(AsyncRequestContextPropagator.class)
+    public AsyncRequestContextPropagator asyncRequestContextPropagator() {
+        return new AsyncRequestContextPropagator();
+    }
+
+    /**
      * 요청/응답 로깅 필터
      */
     @Bean
@@ -182,7 +209,8 @@ public class ErafWebAutoConfiguration {
         RequestLoggingFilter filter = new RequestLoggingFilter(
                 config.isIncludePayload(),
                 config.getMaxPayloadLength(),
-                Arrays.asList(config.getExcludePatterns())
+                Arrays.asList(config.getExcludePatterns()),
+                config.getSampleRate()
         );
 
         FilterRegistrationBean<RequestLoggingFilter> registration = new FilterRegistrationBean<>(filter);

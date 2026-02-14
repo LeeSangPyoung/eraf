@@ -1,7 +1,7 @@
 package com.eraf.core.config;
 
-import com.eraf.core.exception.BusinessException;
-import com.eraf.core.exception.CommonErrorCode;
+import com.eraf.exception.BusinessException;
+import com.eraf.exception.CommonErrorCode;
 
 /**
  * 기능 비활성화 예외

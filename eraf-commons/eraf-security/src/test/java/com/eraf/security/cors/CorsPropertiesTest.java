@@ -24,11 +24,14 @@ class CorsPropertiesTest {
     @Test
     @DisplayName("기본값 확인")
     void shouldHaveDefaultValues() {
-        assertEquals(List.of("*"), properties.getAllowedOrigins());
-        assertEquals(List.of("*"), properties.getAllowedMethods());
+        assertTrue(properties.getAllowedOrigins().isEmpty());
+        assertEquals(List.of("*"), properties.getAllowedOriginPatterns());
+        assertEquals(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"), properties.getAllowedMethods());
         assertEquals(List.of("*"), properties.getAllowedHeaders());
-        assertTrue(properties.getAllowCredentials());
+        assertTrue(properties.isAllowCredentials());
         assertEquals(3600L, properties.getMaxAge());
+        assertTrue(properties.isEnabled());
+        assertEquals("/**", properties.getPathPattern());
     }
 
     @Test
@@ -79,7 +82,7 @@ class CorsPropertiesTest {
     void shouldSetAllowCredentials() {
         properties.setAllowCredentials(false);
 
-        assertFalse(properties.getAllowCredentials());
+        assertFalse(properties.isAllowCredentials());
     }
 
     @Test
@@ -105,7 +108,7 @@ class CorsPropertiesTest {
         assertEquals(2, properties.getAllowedMethods().size());
         assertEquals(1, properties.getAllowedHeaders().size());
         assertEquals(1, properties.getExposedHeaders().size());
-        assertTrue(properties.getAllowCredentials());
+        assertTrue(properties.isAllowCredentials());
         assertEquals(1800L, properties.getMaxAge());
     }
 
@@ -123,5 +126,13 @@ class CorsPropertiesTest {
         properties.setAllowedOrigins(List.of("https://*.example.com"));
 
         assertEquals("https://*.example.com", properties.getAllowedOrigins().get(0));
+    }
+
+    @Test
+    @DisplayName("경로 패턴 설정")
+    void shouldSetPathPattern() {
+        properties.setPathPattern("/api/**");
+
+        assertEquals("/api/**", properties.getPathPattern());
     }
 }

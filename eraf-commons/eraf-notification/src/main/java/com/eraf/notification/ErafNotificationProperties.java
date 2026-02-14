@@ -23,6 +23,11 @@ public class ErafNotificationProperties {
      */
     private Push push = new Push();
 
+    /**
+     * Webhook 설정 (Slack, Teams)
+     */
+    private Webhook webhook = new Webhook();
+
     public static class Email {
         /**
          * 활성화 여부
@@ -312,5 +317,136 @@ public class ErafNotificationProperties {
 
     public void setPush(Push push) {
         this.push = push;
+    }
+
+    public Webhook getWebhook() {
+        return webhook;
+    }
+
+    public void setWebhook(Webhook webhook) {
+        this.webhook = webhook;
+    }
+
+    /**
+     * Retention 설정
+     */
+    private Retention retention = new Retention();
+
+    public Retention getRetention() {
+        return retention;
+    }
+
+    public void setRetention(Retention retention) {
+        this.retention = retention;
+    }
+
+    public static class Retention {
+        private boolean enabled = true;
+        private int retentionDays = 90;
+        private String cron = "0 0 4 * * ?";
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public int getRetentionDays() { return retentionDays; }
+        public void setRetentionDays(int retentionDays) { this.retentionDays = retentionDays; }
+        public String getCron() { return cron; }
+        public void setCron(String cron) { this.cron = cron; }
+    }
+
+    public static class Webhook {
+        /**
+         * Slack 설정
+         */
+        private Slack slack = new Slack();
+
+        /**
+         * Microsoft Teams 설정
+         */
+        private Teams teams = new Teams();
+
+        public static class Slack {
+            /**
+             * 활성화 여부
+             */
+            private boolean enabled = false;
+
+            /**
+             * Webhook URL
+             */
+            private String webhookUrl;
+
+            /**
+             * 기본 채널 (옵션)
+             */
+            private String defaultChannel;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public String getWebhookUrl() {
+                return webhookUrl;
+            }
+
+            public void setWebhookUrl(String webhookUrl) {
+                this.webhookUrl = webhookUrl;
+            }
+
+            public String getDefaultChannel() {
+                return defaultChannel;
+            }
+
+            public void setDefaultChannel(String defaultChannel) {
+                this.defaultChannel = defaultChannel;
+            }
+        }
+
+        public static class Teams {
+            /**
+             * 활성화 여부
+             */
+            private boolean enabled = false;
+
+            /**
+             * Webhook URL
+             */
+            private String webhookUrl;
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public String getWebhookUrl() {
+                return webhookUrl;
+            }
+
+            public void setWebhookUrl(String webhookUrl) {
+                this.webhookUrl = webhookUrl;
+            }
+        }
+
+        public Slack getSlack() {
+            return slack;
+        }
+
+        public void setSlack(Slack slack) {
+            this.slack = slack;
+        }
+
+        public Teams getTeams() {
+            return teams;
+        }
+
+        public void setTeams(Teams teams) {
+            this.teams = teams;
+        }
     }
 }

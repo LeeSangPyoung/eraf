@@ -42,10 +42,10 @@ class ErafNotificationPropertiesTest {
 
         // When
         sms.setEnabled(true);
-        sms.setProvider("twilio");
+        sms.setProvider(ErafNotificationProperties.Sms.SmsProvider.TWILIO);
 
         // Then
         assertTrue(sms.isEnabled());
-        assertEquals("twilio", sms.getProvider());
+        assertEquals(ErafNotificationProperties.Sms.SmsProvider.TWILIO, sms.getProvider());
     }
 }

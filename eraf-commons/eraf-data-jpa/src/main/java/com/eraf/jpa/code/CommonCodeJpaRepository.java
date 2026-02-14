@@ -1,6 +1,6 @@
 package com.eraf.jpa.code;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.eraf.jpa.softdelete.SoftDeleteRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -9,8 +9,9 @@ import java.util.Optional;
 
 /**
  * 공통코드 JPA Repository
+ * SoftDeleteRepository를 상속받아 Soft Delete 기능 지원
  */
-public interface CommonCodeJpaRepository extends JpaRepository<CommonCodeEntity, Long> {
+public interface CommonCodeJpaRepository extends SoftDeleteRepository<CommonCodeEntity, Long> {
 
     /**
      * 그룹의 모든 코드 조회 (정렬순)

@@ -1,9 +1,9 @@
 package com.eraf.kafka;
 
 import com.eraf.core.context.ErafContext;
-import com.eraf.core.messaging.ErafMessage;
-import com.eraf.core.messaging.MessagingProperties;
-import com.eraf.core.messaging.MessagePublisher;
+import com.eraf.messaging.ErafMessage;
+import com.eraf.messaging.MessagingProperties;
+import com.eraf.messaging.MessagePublisher;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;

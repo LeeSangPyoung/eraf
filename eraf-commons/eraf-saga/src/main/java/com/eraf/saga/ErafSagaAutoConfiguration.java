@@ -1,6 +1,6 @@
 package com.eraf.saga;
 
-import com.eraf.core.messaging.MessagePublisher;
+import com.eraf.messaging.MessagePublisher;
 import com.eraf.saga.core.SagaOrchestrator;
 import com.eraf.saga.core.SagaRegistrar;
 import com.eraf.saga.event.MessagingSagaEventPublisher;

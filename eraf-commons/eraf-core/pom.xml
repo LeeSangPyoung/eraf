@@ -17,6 +17,42 @@
     <description>ERAF Core Library - 25 Essential Packages</description>
 
     <dependencies>
+        <!-- ERAF Core Crypto (분리된 암호화 모듈) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-crypto</artifactId>
+        </dependency>
+
+        <!-- ERAF Core Util (분리된 유틸리티 모듈) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-util</artifactId>
+        </dependency>
+
+        <!-- ERAF Core Exception (분리된 예외 처리 모듈) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-exception</artifactId>
+        </dependency>
+
+        <!-- ERAF Core Validation (분리된 검증 모듈) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-validation</artifactId>
+        </dependency>
+
+        <!-- ERAF Core Resilience (분리된 안정성 모듈) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-resilience</artifactId>
+        </dependency>
+
+        <!-- ERAF Core Async (분리된 비동기 모듈) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-async</artifactId>
+        </dependency>
+
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -103,6 +139,35 @@
         <dependency>
             <groupId>net.lingala.zip4j</groupId>
             <artifactId>zip4j</artifactId>
+        </dependency>
+
+        <!-- Jasypt (Config Encryption) -->
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>3.0.5</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Data JPA (optional, for FeatureFlagRepository) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Flyway (optional, for database migrations) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Data Redis (optional, for FeatureFlagCacheManager L2 cache) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Jakarta Servlet (optional) -->

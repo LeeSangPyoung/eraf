@@ -1,6 +1,6 @@
 package com.eraf.openapi.admin.controller;
 
-import com.eraf.core.response.ApiResponse;
+import com.eraf.response.ApiResponse;
 import com.eraf.openapi.admin.dto.ApiRequest;
 import com.eraf.openapi.admin.service.ApiAdminService;
 import jakarta.validation.Valid;

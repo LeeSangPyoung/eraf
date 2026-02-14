@@ -5,13 +5,14 @@ import com.eraf.openapi.admin.dto.ConsumerResponse;
 import com.eraf.openapi.admin.mapper.ConsumerMapper;
 import com.eraf.openapi.core.domain.GatewayConsumer;
 import com.eraf.openapi.core.repository.GatewayConsumerRepository;
-import com.eraf.core.exception.BusinessException;
+import com.eraf.exception.BusinessException;
 import com.eraf.openapi.core.exception.GatewayErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,5 +201,149 @@ public class ConsumerAdminService {
         stats.put("disabledConsumers", total - enabled);
 
         return stats;
+    }
+
+    // ===== 고급 기능: API Key 만료 관리 =====
+
+    /**
+     * API Key 만료 기한 설정
+     */
+    @Transactional
+    public ConsumerResponse setExpiration(Long id, LocalDateTime expiresAt) {
+        log.info("Setting expiration for consumer {}: {}", id, expiresAt);
+
+        GatewayConsumer consumer = consumerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(GatewayErrorCode.RESOURCE_NOT_FOUND, "Consumer " + id));
+
+        consumer.setExpiresAt(expiresAt);
+        consumer.setExpiryNotificationSent(false); // 새 만료 기한 설정 시 알림 초기화
+
+        GatewayConsumer updated = consumerRepository.save(consumer);
+        log.info("Expiration set for consumer: {} (id={})", updated.getUsername(), updated.getId());
+
+        return consumerMapper.toResponse(updated);
+    }
+
+    /**
+     * 만료된 Consumer 조회
+     */
+    public List<ConsumerResponse> findExpired() {
+        return consumerRepository.findAll().stream()
+                .filter(GatewayConsumer::isExpired)
+                .map(consumerMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 곧 만료될 Consumer 조회 (N일 이내)
+     */
+    public List<ConsumerResponse> findExpiringSoon(int days) {
+        return consumerRepository.findAll().stream()
+                .filter(consumer -> consumer.isExpiringSoon(days))
+                .map(consumerMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    // ===== 고급 기능: IP 화이트리스트 =====
+
+    /**
+     * IP 화이트리스트 설정
+     */
+    @Transactional
+    public ConsumerResponse setIpWhitelist(Long id, List<String> ipRanges) {
+        log.info("Setting IP whitelist for consumer {}: {}", id, ipRanges);
+
+        GatewayConsumer consumer = consumerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(GatewayErrorCode.RESOURCE_NOT_FOUND, "Consumer " + id));
+
+        consumer.getAllowedIpRanges().clear();
+        if (ipRanges != null) {
+            consumer.getAllowedIpRanges().addAll(ipRanges);
+        }
+
+        GatewayConsumer updated = consumerRepository.save(consumer);
+        log.info("IP whitelist updated for consumer: {} (id={})", updated.getUsername(), updated.getId());
+
+        return consumerMapper.toResponse(updated);
+    }
+
+    // ===== 고급 기능: 스코프/권한 =====
+
+    /**
+     * 스코프 설정
+     */
+    @Transactional
+    public ConsumerResponse setScopes(Long id, List<String> scopes) {
+        log.info("Setting scopes for consumer {}: {}", id, scopes);
+
+        GatewayConsumer consumer = consumerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(GatewayErrorCode.RESOURCE_NOT_FOUND, "Consumer " + id));
+
+        consumer.getScopes().clear();
+        if (scopes != null) {
+            consumer.getScopes().addAll(scopes);
+        }
+
+        GatewayConsumer updated = consumerRepository.save(consumer);
+        log.info("Scopes updated for consumer: {} (id={})", updated.getUsername(), updated.getId());
+
+        return consumerMapper.toResponse(updated);
+    }
+
+    // ===== 고급 기능: 사용 통계 =====
+
+    /**
+     * API Key 사용 통계 조회
+     */
+    public Map<String, Object> getUsageStats(Long id) {
+        GatewayConsumer consumer = consumerRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(GatewayErrorCode.RESOURCE_NOT_FOUND, "Consumer " + id));
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("consumerId", consumer.getId());
+        stats.put("username", consumer.getUsername());
+        stats.put("usageCount", consumer.getUsageCount() != null ? consumer.getUsageCount() : 0);
+        stats.put("lastUsedAt", consumer.getLastUsedAt());
+        stats.put("lastUsedIp", consumer.getLastUsedIp());
+        stats.put("keyVersion", consumer.getKeyVersion());
+        stats.put("isExpired", consumer.isExpired());
+
+        return stats;
+    }
+
+    /**
+     * API Key 유효성 검증 (활성화 + 만료 + IP)
+     */
+    public Map<String, Object> validateApiKey(String apiKey, String requestIp) {
+        GatewayConsumer consumer = consumerRepository.findByApiKey(apiKey).orElse(null);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("valid", false);
+
+        if (consumer == null) {
+            result.put("reason", "API Key not found");
+            return result;
+        }
+
+        result.put("consumerId", consumer.getId());
+        result.put("username", consumer.getUsername());
+        result.put("enabled", consumer.getEnabled());
+        result.put("expired", consumer.isExpired());
+        result.put("ipAllowed", consumer.isIpAllowed(requestIp));
+
+        boolean valid = consumer.isValid(requestIp);
+        result.put("valid", valid);
+
+        if (!valid) {
+            if (!consumer.getEnabled()) {
+                result.put("reason", "Consumer disabled");
+            } else if (consumer.isExpired()) {
+                result.put("reason", "API Key expired");
+            } else if (!consumer.isIpAllowed(requestIp)) {
+                result.put("reason", "IP not in whitelist");
+            }
+        }
+
+        return result;
     }
 }

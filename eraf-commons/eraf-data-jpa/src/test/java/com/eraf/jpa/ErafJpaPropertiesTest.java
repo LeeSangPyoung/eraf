@@ -48,13 +48,13 @@ class ErafJpaPropertiesTest {
         ErafJpaProperties.MultiTenancy mt = new ErafJpaProperties.MultiTenancy();
         mt.setEnabled(true);
         mt.setHeaderName("X-Organization");
-        mt.setDefaultTenant("default-org");
+        mt.setDefaultTenantId("default-org");
 
         properties.setMultiTenancy(mt);
 
         assertTrue(properties.getMultiTenancy().isEnabled());
         assertEquals("X-Organization", properties.getMultiTenancy().getHeaderName());
-        assertEquals("default-org", properties.getMultiTenancy().getDefaultTenant());
+        assertEquals("default-org", properties.getMultiTenancy().getDefaultTenantId());
     }
 
     @Test
@@ -64,15 +64,13 @@ class ErafJpaPropertiesTest {
 
         mt.setEnabled(true);
         mt.setHeaderName("Tenant");
-        mt.setDefaultTenant("tenant-1");
-        mt.setColumnName("tenant_id");
-        mt.setFilterName("tenantFilter");
+        mt.setDefaultTenantId("tenant-1");
+        mt.setRequired(true);
 
         assertTrue(mt.isEnabled());
         assertEquals("Tenant", mt.getHeaderName());
-        assertEquals("tenant-1", mt.getDefaultTenant());
-        assertEquals("tenant_id", mt.getColumnName());
-        assertEquals("tenantFilter", mt.getFilterName());
+        assertEquals("tenant-1", mt.getDefaultTenantId());
+        assertTrue(mt.isRequired());
     }
 
     @Test

@@ -16,6 +16,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * ERAF Swagger Auto Configuration
  * SpringDoc OpenAPI 자동 설정
@@ -45,16 +49,36 @@ public class ErafSwaggerAutoConfiguration {
         OpenAPI openAPI = new OpenAPI()
                 .info(createInfo(apiInfo));
 
-        // JWT 인증 스키마 추가
         if (security.isEnabled()) {
-            openAPI.addSecurityItem(new SecurityRequirement().addList(security.getSchemeName()))
-                    .components(new Components()
-                            .addSecuritySchemes(security.getSchemeName(),
-                                    new SecurityScheme()
-                                            .name(security.getSchemeName())
-                                            .type(SecurityScheme.Type.HTTP)
-                                            .scheme(security.getScheme())
-                                            .bearerFormat(security.getBearerFormat())));
+            Components components = new Components();
+
+            // JWT Bearer 인증 스키마 추가
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(security.getSchemeName());
+            components.addSecuritySchemes(security.getSchemeName(),
+                    new SecurityScheme()
+                            .name(security.getSchemeName())
+                            .type(SecurityScheme.Type.HTTP)
+                            .scheme(security.getScheme())
+                            .bearerFormat(security.getBearerFormat()));
+
+            // API Key 보안 스키마 추가
+            ErafSwaggerProperties.ApiKey apiKey = security.getApiKey();
+            if (apiKey.isEnabled()) {
+                String apiKeySchemeName = apiKey.getName();
+                SecurityScheme.In location = "query".equalsIgnoreCase(apiKey.getIn())
+                        ? SecurityScheme.In.QUERY
+                        : SecurityScheme.In.HEADER;
+                components.addSecuritySchemes(apiKeySchemeName,
+                        new SecurityScheme()
+                                .name(apiKeySchemeName)
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(location));
+                securityRequirement.addList(apiKeySchemeName);
+            }
+
+            openAPI.addSecurityItem(securityRequirement)
+                    .components(components);
         }
 
         return openAPI;
@@ -67,9 +91,32 @@ public class ErafSwaggerAutoConfiguration {
     @ConditionalOnMissingBean
     public GroupedOpenApi erafGroupedOpenApi() {
         ErafSwaggerProperties.Group group = properties.getGroup();
+        return buildGroupedOpenApi(group.getDefaultGroup(), group);
+    }
 
+    /**
+     * 추가 API 그룹 설정
+     * properties에 정의된 additional-groups를 GroupedOpenApi 빈으로 등록
+     */
+    @Bean
+    @ConditionalOnMissingBean(name = "erafAdditionalGroupedOpenApis")
+    public List<GroupedOpenApi> erafAdditionalGroupedOpenApis() {
+        List<GroupedOpenApi> additionalGroups = new ArrayList<>();
+        Map<String, ErafSwaggerProperties.Group> groups = properties.getAdditionalGroups();
+        if (groups != null) {
+            groups.forEach((groupName, groupConfig) -> {
+                additionalGroups.add(buildGroupedOpenApi(groupName, groupConfig));
+            });
+        }
+        return additionalGroups;
+    }
+
+    /**
+     * GroupedOpenApi 빌드 헬퍼
+     */
+    private GroupedOpenApi buildGroupedOpenApi(String groupName, ErafSwaggerProperties.Group group) {
         GroupedOpenApi.Builder builder = GroupedOpenApi.builder()
-                .group(group.getDefaultGroup())
+                .group(groupName)
                 .pathsToMatch(group.getPathsToMatch())
                 .pathsToExclude(group.getPathsToExclude());
 
