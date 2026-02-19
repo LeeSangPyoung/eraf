@@ -174,12 +174,109 @@ public class ErafJpaProperties {
          */
         private boolean enabled = false;
 
+        /**
+         * Primary (쓰기) DataSource 키 (@DataSourceRouting 값)
+         */
+        private String primaryKey = "primary";
+
+        /**
+         * ReadOnly (읽기/복제) DataSource 키 (@DataSourceRouting 값)
+         */
+        private String readOnlyKey = "readOnly";
+
+        /**
+         * Replica DataSource 설정
+         * 이 URL이 설정되면 멀티 DataSource가 자동 구성됩니다.
+         */
+        private ReplicaDataSourceConfig replica = new ReplicaDataSourceConfig();
+
         public boolean isEnabled() {
             return enabled;
         }
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
+        }
+
+        public String getPrimaryKey() {
+            return primaryKey;
+        }
+
+        public void setPrimaryKey(String primaryKey) {
+            this.primaryKey = primaryKey;
+        }
+
+        public String getReadOnlyKey() {
+            return readOnlyKey;
+        }
+
+        public void setReadOnlyKey(String readOnlyKey) {
+            this.readOnlyKey = readOnlyKey;
+        }
+
+        public ReplicaDataSourceConfig getReplica() {
+            return replica;
+        }
+
+        public void setReplica(ReplicaDataSourceConfig replica) {
+            this.replica = replica;
+        }
+
+        /**
+         * Replica DataSource 연결 설정
+         *
+         * <p>설정 예시:</p>
+         * <pre>
+         * eraf:
+         *   jpa:
+         *     datasource-routing:
+         *       enabled: true
+         *       replica:
+         *         url: jdbc:postgresql://replica-host:5432/mydb
+         *         username: user
+         *         password: ${REPLICA_DB_PASSWORD}
+         *         hikari:
+         *           maximum-pool-size: 10
+         *           pool-name: eraf-replica-pool
+         * </pre>
+         */
+        public static class ReplicaDataSourceConfig {
+            private String url;
+            private String username;
+            private String password;
+            private String driverClassName;
+
+            public String getUrl() {
+                return url;
+            }
+
+            public void setUrl(String url) {
+                this.url = url;
+            }
+
+            public String getUsername() {
+                return username;
+            }
+
+            public void setUsername(String username) {
+                this.username = username;
+            }
+
+            public String getPassword() {
+                return password;
+            }
+
+            public void setPassword(String password) {
+                this.password = password;
+            }
+
+            public String getDriverClassName() {
+                return driverClassName;
+            }
+
+            public void setDriverClassName(String driverClassName) {
+                this.driverClassName = driverClassName;
+            }
         }
     }
 

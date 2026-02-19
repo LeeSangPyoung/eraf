@@ -1,5 +1,7 @@
 package com.eraf.saga.core;
 
+import com.eraf.saga.event.SagaEvent;
+import com.eraf.saga.event.SagaEventPublisher;
 import com.eraf.saga.execution.SagaExecution;
 import com.eraf.saga.execution.StepExecution;
 import com.eraf.saga.repository.SagaRepository;
@@ -7,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,6 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Saga Orchestrator
  * Saga 실행을 중앙에서 조율합니다.
+ *
+ * <p>{@link SagaEventPublisher}가 설정된 경우 Saga 시작/완료/실패/보상,
+ * Step 시작/완료/실패 시점에 {@link SagaEvent}를 자동 발행합니다.</p>
  */
 public class SagaOrchestrator {
 
@@ -21,9 +28,14 @@ public class SagaOrchestrator {
 
     private final Map<String, SagaDefinition> sagaDefinitions = new ConcurrentHashMap<>();
     private final SagaRepository repository;
+    private SagaEventPublisher eventPublisher;
 
     public SagaOrchestrator(SagaRepository repository) {
         this.repository = repository;
+    }
+
+    public void setEventPublisher(SagaEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -39,6 +51,13 @@ public class SagaOrchestrator {
      */
     public SagaDefinition getDefinition(String sagaName) {
         return sagaDefinitions.get(sagaName);
+    }
+
+    /**
+     * 등록된 모든 Saga 정의 목록 조회
+     */
+    public Collection<SagaDefinition> getDefinitions() {
+        return Collections.unmodifiableCollection(sagaDefinitions.values());
     }
 
     /**
@@ -67,6 +86,7 @@ public class SagaOrchestrator {
         try {
             execution.setStatus(SagaStatus.IN_PROGRESS);
             repository.save(execution);
+            publishEvent(SagaEvent.sagaStarted(execution.getId(), sagaName, traceId));
 
             // 각 Step 순차 실행
             for (SagaDefinition.StepDefinition step : definition.getSteps()) {
@@ -75,6 +95,8 @@ public class SagaOrchestrator {
 
                 boolean success = executeStep(definition, step, context, execution);
                 if (!success) {
+                    publishEvent(SagaEvent.sagaFailed(execution.getId(), sagaName, traceId,
+                            execution.getFailureReason()));
                     // 실패 시 보상 트랜잭션 실행
                     compensate(definition, execution, context);
                     return execution;
@@ -84,12 +106,14 @@ public class SagaOrchestrator {
             // 모든 Step 성공
             execution.markCompleted();
             repository.save(execution);
+            publishEvent(SagaEvent.sagaCompleted(execution.getId(), sagaName, traceId));
             log.info("Saga completed: {} (id={})", sagaName, execution.getId());
 
         } catch (Exception e) {
             log.error("Saga execution error: {} (id={})", sagaName, execution.getId(), e);
             execution.markFailed(e.getMessage());
             repository.save(execution);
+            publishEvent(SagaEvent.sagaFailed(execution.getId(), sagaName, traceId, e.getMessage()));
             compensate(definition, execution, context);
         } finally {
             SagaContext.clear();
@@ -120,6 +144,8 @@ public class SagaOrchestrator {
         StepExecution stepExecution = execution.getSteps().get(step.getOrder() - 1);
         stepExecution.markRunning();
         repository.save(execution);
+        publishEvent(SagaEvent.stepStarted(execution.getId(), execution.getSagaName(),
+                step.getOrder(), step.getName()));
 
         int maxRetries = step.getRetries() > 0 ? step.getRetries() : definition.getMaxRetries();
         long retryDelay = step.getRetryDelay();
@@ -133,6 +159,8 @@ public class SagaOrchestrator {
                 String output = result != null ? result.toString() : null;
                 stepExecution.markSuccess(output);
                 repository.save(execution);
+                publishEvent(SagaEvent.stepCompleted(execution.getId(), execution.getSagaName(),
+                        step.getOrder(), step.getName()));
 
                 log.debug("Step {} completed successfully", step.getName());
                 return true;
@@ -152,6 +180,8 @@ public class SagaOrchestrator {
                     stepExecution.markFailed(e.getMessage());
                     execution.markFailed("Step " + step.getName() + " failed: " + e.getMessage());
                     repository.save(execution);
+                    publishEvent(SagaEvent.stepFailed(execution.getId(), execution.getSagaName(),
+                            step.getOrder(), step.getName(), e.getMessage()));
                 }
             }
         }
@@ -200,7 +230,21 @@ public class SagaOrchestrator {
 
         execution.markCompensated();
         repository.save(execution);
+        publishEvent(SagaEvent.sagaCompensated(execution.getId(), definition.getName(), execution.getTraceId()));
         log.info("Compensation completed for saga: {} (id={})", definition.getName(), execution.getId());
+    }
+
+    /**
+     * SagaEvent 발행 (eventPublisher가 설정된 경우에만)
+     */
+    private void publishEvent(SagaEvent event) {
+        if (eventPublisher != null) {
+            try {
+                eventPublisher.publish(event);
+            } catch (Exception e) {
+                log.warn("Failed to publish saga event: {}", event.getEventType(), e);
+            }
+        }
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.eraf.batch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -8,17 +10,28 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ERAF 배치 잡 빌더
  * 표준화된 잡/스텝 생성을 위한 헬퍼 클래스
+ *
+ * <p>생성된 ThreadPoolTaskExecutor 인스턴스의 라이프사이클을 관리하며,
+ * 빈 소멸 시 자동으로 정리합니다.</p>
  */
-public class ErafBatchJobBuilder {
+public class ErafBatchJobBuilder implements DisposableBean {
+
+    private static final Logger log = LoggerFactory.getLogger(ErafBatchJobBuilder.class);
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final ErafBatchProperties properties;
+    private final List<ThreadPoolTaskExecutor> managedExecutors = new ArrayList<>();
 
     public ErafBatchJobBuilder(JobRepository jobRepository,
                                 PlatformTransactionManager transactionManager,
@@ -85,14 +98,7 @@ public class ErafBatchJobBuilder {
 
         // 병렬 처리: TaskExecutor 설정
         if (properties.getThreadPool().isEnabled()) {
-            org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor executor =
-                    new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
-            executor.setCorePoolSize(properties.getThreadPool().getCorePoolSize());
-            executor.setMaxPoolSize(properties.getThreadPool().getMaxPoolSize());
-            executor.setQueueCapacity(properties.getThreadPool().getQueueCapacity());
-            executor.setThreadNamePrefix("eraf-batch-");
-            executor.initialize();
-            stepBuilder = stepBuilder.taskExecutor(executor);
+            stepBuilder = stepBuilder.taskExecutor(createManagedExecutor());
         }
 
         return stepBuilder.build();
@@ -124,14 +130,7 @@ public class ErafBatchJobBuilder {
         }
 
         if (properties.getThreadPool().isEnabled()) {
-            org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor executor =
-                    new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
-            executor.setCorePoolSize(properties.getThreadPool().getCorePoolSize());
-            executor.setMaxPoolSize(properties.getThreadPool().getMaxPoolSize());
-            executor.setQueueCapacity(properties.getThreadPool().getQueueCapacity());
-            executor.setThreadNamePrefix("eraf-batch-");
-            executor.initialize();
-            stepBuilder = stepBuilder.taskExecutor(executor);
+            stepBuilder = stepBuilder.taskExecutor(createManagedExecutor());
         }
 
         return stepBuilder.build();
@@ -149,6 +148,31 @@ public class ErafBatchJobBuilder {
         return job(jobName)
                 .start(step)
                 .build();
+    }
+
+    /**
+     * 라이프사이클이 관리되는 ThreadPoolTaskExecutor 생성
+     */
+    private ThreadPoolTaskExecutor createManagedExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(properties.getThreadPool().getCorePoolSize());
+        executor.setMaxPoolSize(properties.getThreadPool().getMaxPoolSize());
+        executor.setQueueCapacity(properties.getThreadPool().getQueueCapacity());
+        executor.setThreadNamePrefix("eraf-batch-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+        executor.initialize();
+        managedExecutors.add(executor);
+        return executor;
+    }
+
+    @Override
+    public void destroy() {
+        log.info("Shutting down {} managed batch executors", managedExecutors.size());
+        for (ThreadPoolTaskExecutor executor : managedExecutors) {
+            executor.shutdown();
+        }
+        managedExecutors.clear();
     }
 
     public JobRepository getJobRepository() {

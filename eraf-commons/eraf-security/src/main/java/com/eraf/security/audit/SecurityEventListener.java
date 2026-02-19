@@ -79,7 +79,12 @@ public class SecurityEventListener {
 
     @EventListener
     public void onAuthorizationDenied(AuthorizationDeniedEvent event) {
-        Authentication auth = event.getAuthentication().get();
+        Authentication auth = null;
+        try {
+            auth = event.getAuthentication().get();
+        } catch (Exception e) {
+            log.debug("Failed to get authentication from AuthorizationDeniedEvent", e);
+        }
         HttpServletRequest request = getCurrentRequest();
 
         if (request != null) {

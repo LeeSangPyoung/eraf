@@ -2,8 +2,8 @@ package com.eraf.saga.core;
 
 import com.eraf.saga.execution.SagaExecution;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Saga 실행 컨텍스트
@@ -19,7 +19,7 @@ public class SagaContext {
 
     public SagaContext(SagaExecution execution) {
         this.execution = execution;
-        this.data = new HashMap<>();
+        this.data = new ConcurrentHashMap<>();
     }
 
     public SagaContext(SagaExecution execution, Object input) {
@@ -116,6 +116,6 @@ public class SagaContext {
     }
 
     public Map<String, Object> getData() {
-        return new HashMap<>(data);
+        return new ConcurrentHashMap<>(data);
     }
 }

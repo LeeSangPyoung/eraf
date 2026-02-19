@@ -29,7 +29,7 @@ public class DataRetentionService {
      * 매일 새벽 3시에 만료된 데이터 삭제
      */
     @Scheduled(cron = "0 0 3 * * *")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void cleanupExpiredData() {
         log.info("Starting data retention cleanup...");
 

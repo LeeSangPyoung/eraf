@@ -54,6 +54,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Jakarta Validation API (optional) -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,5 +1,7 @@
 package com.eraf.kafka;
 
+import com.eraf.kafka.delayed.KafkaDelayedMessageDispatcher;
+import com.eraf.kafka.dlq.DeadLetterQueuePublisher;
 import com.eraf.messaging.MessagePublisher;
 import com.eraf.messaging.MessagingProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,15 +58,31 @@ public class ErafKafkaAutoConfiguration {
     }
 
     /**
+     * Kafka 지연 메시지 디스패처 빈 등록 (선택적)
+     * eraf.kafka.delayed-messaging.enabled=true 일 때만 활성화
+     */
+    @Bean
+    @ConditionalOnBean(KafkaTemplate.class)
+    @ConditionalOnMissingBean(KafkaDelayedMessageDispatcher.class)
+    @ConditionalOnProperty(name = "eraf.kafka.delayed-messaging.enabled", havingValue = "true")
+    public KafkaDelayedMessageDispatcher kafkaDelayedMessageDispatcher(
+            KafkaTemplate<String, Object> kafkaTemplate) {
+        return new KafkaDelayedMessageDispatcher(kafkaTemplate);
+    }
+
+    /**
      * Kafka 메시지 퍼블리셔 빈 등록
+     * KafkaDelayedMessageDispatcher가 있으면 지연 발행 지원
      */
     @Bean
     @ConditionalOnBean(KafkaTemplate.class)
     @ConditionalOnMissingBean(MessagePublisher.class)
     @ConditionalOnProperty(name = "eraf.messaging.type", havingValue = "kafka", matchIfMissing = true)
     public MessagePublisher kafkaMessagePublisher(KafkaTemplate<String, Object> kafkaTemplate,
-                                                   MessagingProperties properties) {
-        return new KafkaMessagePublisher(kafkaTemplate, properties);
+                                                   MessagingProperties properties,
+                                                   @org.springframework.beans.factory.annotation.Autowired(required = false)
+                                                   KafkaDelayedMessageDispatcher delayedDispatcher) {
+        return new KafkaMessagePublisher(kafkaTemplate, properties, delayedDispatcher);
     }
 
     /**
@@ -101,6 +119,35 @@ public class ErafKafkaAutoConfiguration {
             configs.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, properties.getMaxPollRecords());
             consumerFactory.updateConfigs(configs);
         };
+    }
+
+    /**
+     * Dead Letter Queue Publisher 빈 등록
+     * DLQ 활성화 시 실패 메시지를 DLQ 토픽으로 발행
+     */
+    @Bean
+    @ConditionalOnBean(KafkaTemplate.class)
+    @ConditionalOnMissingBean(DeadLetterQueuePublisher.class)
+    @ConditionalOnProperty(name = "eraf.kafka.dlq.enabled", havingValue = "true", matchIfMissing = true)
+    public DeadLetterQueuePublisher deadLetterQueuePublisher(
+            KafkaTemplate<String, String> kafkaTemplate,
+            ObjectMapper objectMapper,
+            ErafKafkaProperties properties) {
+        return new DeadLetterQueuePublisher(kafkaTemplate, objectMapper, properties.getDlq().getTopicSuffix());
+    }
+
+    /**
+     * ERAF Kafka 에러 핸들러 빈 등록
+     * DLQ 활성화 시 실패 메시지를 자동으로 DLQ로 라우팅
+     */
+    @Bean
+    @ConditionalOnBean(ErafKafkaProducer.class)
+    @ConditionalOnMissingBean(ErafKafkaErrorHandler.class)
+    @ConditionalOnProperty(name = "eraf.kafka.dlq.enabled", havingValue = "true", matchIfMissing = true)
+    public ErafKafkaErrorHandler erafKafkaErrorHandler(
+            ErafKafkaProducer producer,
+            ErafKafkaProperties properties) {
+        return new ErafKafkaErrorHandler(producer, properties);
     }
 
     /**

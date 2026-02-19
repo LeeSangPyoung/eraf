@@ -8,6 +8,7 @@
     </parent>
     <artifactId>eraf-config</artifactId>
     <name>ERAF Config</name>
+    <description>ERAF Config - Dynamic Configuration Management with Spring Cloud Config, Consul, and Vault</description>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -16,13 +17,21 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-config-server</artifactId>
-            <version>4.1.0</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-config-client</artifactId>
-            <version>4.1.0</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-consul-config</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-vault-config</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

@@ -65,7 +65,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
         // 3. 서브도메인에서 추출 (예: tenant1.example.com)
         String serverName = request.getServerName();
-        if (serverName.contains(".")) {
+        if (isValidDomainForTenantExtraction(serverName)) {
             String subdomain = serverName.split("\\.")[0];
             if (!"www".equals(subdomain) && !"api".equals(subdomain)) {
                 return subdomain;
@@ -74,5 +74,33 @@ public class TenantFilter extends OncePerRequestFilter {
 
         // 4. 기본값 반환
         return defaultTenantId;
+    }
+
+    /**
+     * 테넌트 추출에 유효한 도메인인지 확인
+     * localhost, IP 주소는 제외
+     */
+    private boolean isValidDomainForTenantExtraction(String serverName) {
+        if (!serverName.contains(".")) {
+            return false;
+        }
+
+        // localhost 제외
+        if ("localhost".equalsIgnoreCase(serverName) || serverName.startsWith("localhost.")) {
+            return false;
+        }
+
+        // IP 주소 제외 (간단한 패턴 매칭)
+        // IPv4: 숫자.숫자.숫자.숫자
+        if (serverName.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$")) {
+            return false;
+        }
+
+        // IPv6: 콜론 포함
+        if (serverName.contains(":")) {
+            return false;
+        }
+
+        return true;
     }
 }

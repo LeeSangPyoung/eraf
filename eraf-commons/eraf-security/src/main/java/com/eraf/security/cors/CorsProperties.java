@@ -23,8 +23,9 @@ public class CorsProperties {
 
     /**
      * Origin 패턴 (정규식 지원)
+     * 운영 환경에서는 반드시 명시적으로 설정하세요.
      */
-    private List<String> allowedOriginPatterns = List.of("*");
+    private List<String> allowedOriginPatterns = new ArrayList<>();
 
     /**
      * 허용할 HTTP 메서드
@@ -43,8 +44,9 @@ public class CorsProperties {
 
     /**
      * 자격 증명 허용 여부
+     * true로 설정 시 allowedOriginPatterns에 와일드카드(*)를 사용할 수 없습니다.
      */
-    private boolean allowCredentials = true;
+    private boolean allowCredentials = false;
 
     /**
      * Preflight 캐시 시간 (초)

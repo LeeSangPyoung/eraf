@@ -22,9 +22,10 @@ public class ErafSessionProperties {
     private String cookieName = "ERAF_SESSION";
 
     /**
-     * Enable secure cookie
+     * Enable secure cookie (HTTPS 전용 쿠키 전송)
+     * 운영 환경에서는 반드시 true로 유지하세요.
      */
-    private boolean secureCookie = false;
+    private boolean secureCookie = true;
 
     /**
      * Enable HTTP only cookie

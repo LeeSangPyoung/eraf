@@ -1,5 +1,6 @@
 package com.eraf.workflow;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -26,11 +27,13 @@ public class WorkflowProperties {
     /**
      * 최대 동시 실행 워크플로우 수 (0 = 제한 없음)
      */
+    @PositiveOrZero
     private int maxConcurrentWorkflows = 0;
 
     /**
      * Step 기본 타임아웃
      */
+    @NotNull
     private Duration stepTimeout = Duration.ofMinutes(5);
 
     // Getters and Setters

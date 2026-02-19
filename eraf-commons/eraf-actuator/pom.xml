@@ -64,6 +64,35 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- RabbitMQ (optional - for RabbitMQHealthIndicator) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- MongoDB (optional - for MongoHealthIndicator) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- gRPC (optional - for GrpcHealthIndicator) -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+            <version>1.58.0</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ERAF Notification (optional - for HealthAlertNotificationBridge) -->
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-notification</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -6,6 +6,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.*;
@@ -14,7 +15,7 @@ import java.util.concurrent.*;
  * Timeout AOP Aspect
  */
 @Aspect
-public class TimeoutAspect {
+public class TimeoutAspect implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(TimeoutAspect.class);
 
@@ -105,6 +106,19 @@ public class TimeoutAspect {
         } catch (Exception e) {
             log.error("Failed to invoke fallback method '{}': {}", fallbackMethod, e.getMessage());
             throw cause;
+        }
+    }
+
+    @Override
+    public void destroy() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 }

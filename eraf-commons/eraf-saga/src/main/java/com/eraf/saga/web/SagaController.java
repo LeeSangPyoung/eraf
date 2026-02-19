@@ -78,9 +78,28 @@ public class SagaController {
      */
     @GetMapping("/definitions")
     public ResponseEntity<List<Map<String, Object>>> getDefinitions() {
-        // Orchestrator에서 정의 목록 가져오기 (간단한 요약)
-        // 실제 구현에서는 SagaOrchestrator에 getDefinitions() 메서드 추가 필요
-        return ResponseEntity.ok(List.of());
+        List<Map<String, Object>> definitions = orchestrator.getDefinitions().stream()
+                .map(def -> {
+                    Map<String, Object> info = new HashMap<>();
+                    info.put("name", def.getName());
+                    info.put("description", def.getDescription());
+                    info.put("totalSteps", def.getTotalSteps());
+                    info.put("maxRetries", def.getMaxRetries());
+                    info.put("timeout", def.getTimeout());
+                    info.put("steps", def.getSteps().stream()
+                            .map(step -> {
+                                Map<String, Object> stepInfo = new HashMap<>();
+                                stepInfo.put("order", step.getOrder());
+                                stepInfo.put("name", step.getName());
+                                stepInfo.put("hasCompensation", step.hasCompensation());
+                                return stepInfo;
+                            })
+                            .collect(Collectors.toList()));
+                    return info;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(definitions);
     }
 
     /**

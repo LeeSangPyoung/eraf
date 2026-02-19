@@ -18,6 +18,17 @@
             <artifactId>eraf-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-core-async</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Jakarta Validation API (optional) -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>

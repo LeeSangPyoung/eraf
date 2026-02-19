@@ -1,5 +1,6 @@
 package com.eraf.crypto.config;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -16,16 +17,19 @@ public class ErafEncryptionProperties {
     /**
      * 암호화 알고리즘 (기본: PBEWITHHMACSHA512ANDAES_256)
      */
+    @NotBlank
     private String algorithm = "PBEWITHHMACSHA512ANDAES_256";
 
     /**
      * Key Obtention Iterations (기본: 1000)
      */
+    @Positive
     private int keyObtentionIterations = 1000;
 
     /**
      * Pool Size (기본: 1)
      */
+    @Positive
     private int poolSize = 1;
 
     /**

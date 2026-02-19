@@ -48,8 +48,11 @@ public class ErafSagaAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(SagaOrchestrator.class)
-    public SagaOrchestrator sagaOrchestrator(SagaRepository sagaRepository) {
-        return new SagaOrchestrator(sagaRepository);
+    public SagaOrchestrator sagaOrchestrator(SagaRepository sagaRepository,
+                                              org.springframework.beans.factory.ObjectProvider<SagaEventPublisher> eventPublisherProvider) {
+        SagaOrchestrator orchestrator = new SagaOrchestrator(sagaRepository);
+        eventPublisherProvider.ifAvailable(orchestrator::setEventPublisher);
+        return orchestrator;
     }
 
     /**

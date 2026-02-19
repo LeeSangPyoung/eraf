@@ -12,7 +12,11 @@ import java.util.function.Supplier;
  */
 public class AsyncTask<T> {
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private static final ExecutorService executor = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r, "eraf-async-task");
+        t.setDaemon(true);
+        return t;
+    });
     private static final Map<String, TaskInfo<?>> tasks = new ConcurrentHashMap<>();
 
     private final String taskId;
@@ -171,6 +175,22 @@ public class AsyncTask<T> {
      */
     public static void cleanup() {
         tasks.entrySet().removeIf(entry -> entry.getValue().task.isDone());
+    }
+
+    /**
+     * ExecutorService 종료 (애플리케이션 종료 시 호출)
+     */
+    public static void shutdown() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        tasks.clear();
     }
 
     private static String generateTaskId() {

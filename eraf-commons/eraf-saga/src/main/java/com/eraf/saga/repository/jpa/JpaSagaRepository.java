@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * JPA 기반 Saga Repository 구현
  */
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class JpaSagaRepository implements SagaRepository {
 
     private static final Logger log = LoggerFactory.getLogger(JpaSagaRepository.class);

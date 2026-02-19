@@ -10,6 +10,7 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.io.File;
 import java.util.Map;
@@ -20,8 +21,9 @@ import java.util.concurrent.TimeUnit;
  * gRPC 클라이언트 팩토리
  *
  * gRPC 채널 관리 및 메타데이터 전파를 포함한 클라이언트 생성을 지원합니다.
+ * 애플리케이션 종료 시 {@link DisposableBean}을 통해 모든 채널을 안전하게 종료합니다.
  */
-public class GrpcClientFactory {
+public class GrpcClientFactory implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(GrpcClientFactory.class);
 
@@ -113,7 +115,22 @@ public class GrpcClientFactory {
         channels.forEach((target, channel) -> {
             log.info("Closing gRPC channel to: {}", target);
             channel.shutdown();
+            try {
+                if (!channel.awaitTermination(5, TimeUnit.SECONDS)) {
+                    log.warn("gRPC channel to {} did not terminate in time, forcing shutdown", target);
+                    channel.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                channel.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         });
         channels.clear();
+    }
+
+    @Override
+    public void destroy() {
+        log.info("Destroying GrpcClientFactory, closing {} channels", channels.size());
+        closeAll();
     }
 }

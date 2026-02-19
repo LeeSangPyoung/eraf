@@ -44,7 +44,7 @@ public class OutboxScheduler {
      * 주기적으로 PENDING 메시지를 처리 (5초 간격)
      */
     @Scheduled(fixedDelayString = "${eraf.outbox.poll-interval:5000}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void pollAndPublish() {
         if (messagePublisher == null) {
             return;
@@ -91,7 +91,7 @@ public class OutboxScheduler {
     /**
      * FAILED 상태 메시지 재시도
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int retryFailedMessages() {
         List<OutboxMessage> failedMessages = repository.findByStatusOrderByCreatedAtAsc(
                 OutboxMessage.OutboxStatus.FAILED,
@@ -111,7 +111,7 @@ public class OutboxScheduler {
      * 처리 완료된 오래된 메시지 정리
      */
     @Scheduled(cron = "${eraf.outbox.cleanup-cron:0 0 3 * * ?}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void cleanupProcessedMessages() {
         int cleanupDays = properties.getCleanupDays();
         Instant cutoff = Instant.now().minusSeconds(86400L * cleanupDays);

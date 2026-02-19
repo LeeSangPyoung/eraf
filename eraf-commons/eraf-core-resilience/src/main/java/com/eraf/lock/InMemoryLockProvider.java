@@ -1,5 +1,7 @@
 package com.eraf.lock;
 
+import org.springframework.beans.factory.DisposableBean;
+
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -8,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 인메모리 락 제공자 구현
  * 단일 인스턴스 환경에서 사용
  */
-public class InMemoryLockProvider implements LockProvider {
+public class InMemoryLockProvider implements LockProvider, DisposableBean {
 
     private final Map<String, LockInfo> locks = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler;
@@ -94,6 +96,20 @@ public class InMemoryLockProvider implements LockProvider {
             // 만료된 락은 논리적으로 해제된 것으로 표시
             lockInfo.expired = true;
         }
+    }
+
+    @Override
+    public void destroy() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        locks.clear();
     }
 
     private static class LockInfo {

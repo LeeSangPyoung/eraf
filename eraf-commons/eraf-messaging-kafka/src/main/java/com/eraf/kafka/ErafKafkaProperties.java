@@ -1,5 +1,6 @@
 package com.eraf.kafka;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -32,6 +33,7 @@ public class ErafKafkaProperties {
     /**
      * Max poll records
      */
+    @Positive
     private int maxPollRecords = 500;
 
     /**
@@ -53,6 +55,11 @@ public class ErafKafkaProperties {
      * 프로듀서 설정
      */
     private ProducerProperties producer = new ProducerProperties();
+
+    /**
+     * 지연 메시지 발행 설정
+     */
+    private DelayedMessagingProperties delayedMessaging = new DelayedMessagingProperties();
 
     public String getTopicPrefix() {
         return topicPrefix;
@@ -126,6 +133,33 @@ public class ErafKafkaProperties {
         this.producer = producer;
     }
 
+    public DelayedMessagingProperties getDelayedMessaging() {
+        return delayedMessaging;
+    }
+
+    public void setDelayedMessaging(DelayedMessagingProperties delayedMessaging) {
+        this.delayedMessaging = delayedMessaging;
+    }
+
+    /**
+     * 지연 메시지 발행 설정
+     */
+    public static class DelayedMessagingProperties {
+        /**
+         * 지연 발행 활성화 여부
+         * true 시 KafkaDelayedMessageDispatcher 빈이 등록됩니다.
+         */
+        private boolean enabled = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
     /**
      * 재시도 설정
      */
@@ -138,11 +172,13 @@ public class ErafKafkaProperties {
         /**
          * 최대 재시도 횟수
          */
+        @Positive
         private int maxAttempts = 3;
 
         /**
          * 재시도 간격 (밀리초)
          */
+        @Positive
         private long backoffInterval = 1000;
 
         /**
@@ -153,6 +189,7 @@ public class ErafKafkaProperties {
         /**
          * 최대 백오프 간격 (밀리초)
          */
+        @Positive
         private long maxBackoffInterval = 30000;
 
         public boolean isEnabled() {
@@ -213,6 +250,7 @@ public class ErafKafkaProperties {
         /**
          * DLQ 보존 기간 (일)
          */
+        @Positive
         private int retentionDays = 7;
 
         public boolean isEnabled() {
@@ -257,6 +295,7 @@ public class ErafKafkaProperties {
         /**
          * 트랜잭션 타임아웃 (초)
          */
+        @Positive
         private int timeoutSeconds = 60;
 
         public boolean isEnabled() {
@@ -296,16 +335,19 @@ public class ErafKafkaProperties {
         /**
          * 배치 크기 (바이트)
          */
+        @Positive
         private int batchSize = 16384;
 
         /**
          * 링거 시간 (밀리초)
          */
+        @PositiveOrZero
         private int lingerMs = 0;
 
         /**
          * 버퍼 메모리 (바이트)
          */
+        @Positive
         private long bufferMemory = 33554432;
 
         /**

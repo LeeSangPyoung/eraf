@@ -34,6 +34,10 @@
             <groupId>com.eraf</groupId>
             <artifactId>eraf-core-system</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.eraf</groupId>
+            <artifactId>eraf-feature-flag</artifactId>
+        </dependency>
 
         <!-- Spring Boot Web -->
         <dependency>

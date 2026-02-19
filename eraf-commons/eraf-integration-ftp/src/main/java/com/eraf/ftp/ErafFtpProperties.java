@@ -1,5 +1,6 @@
 package com.eraf.ftp;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -16,21 +17,25 @@ public class ErafFtpProperties {
     /**
      * 호스트
      */
+    @NotBlank
     private String host;
 
     /**
      * 포트
      */
+    @Positive
     private int port = 21;
 
     /**
      * 사용자명
      */
+    @NotBlank
     private String username;
 
     /**
      * 비밀번호
      */
+    @NotBlank
     private String password;
 
     /**
@@ -46,11 +51,13 @@ public class ErafFtpProperties {
     /**
      * 연결 타임아웃 (ms)
      */
+    @Positive
     private int connectionTimeout = 10000;
 
     /**
      * 데이터 타임아웃 (ms)
      */
+    @Positive
     private int dataTimeout = 30000;
 
     /**

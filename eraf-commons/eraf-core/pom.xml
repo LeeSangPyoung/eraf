@@ -149,27 +149,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Data JPA (optional, for FeatureFlagRepository) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Flyway (optional, for database migrations) -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Spring Data Redis (optional, for FeatureFlagCacheManager L2 cache) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Jakarta Servlet (optional) -->
         <dependency>
             <groupId>jakarta.servlet</groupId>

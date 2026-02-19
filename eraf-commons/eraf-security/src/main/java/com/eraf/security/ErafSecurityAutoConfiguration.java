@@ -10,6 +10,7 @@ import com.eraf.security.cors.CorsProperties;
 import com.eraf.security.ip.IpAccessControlFilter;
 import com.eraf.security.ip.IpAccessControlProperties;
 import com.eraf.security.jwt.*;
+import com.eraf.security.oauth2.OAuth2SecurityConfig;
 import com.eraf.security.rbac.ErafMethodSecurityConfiguration;
 import com.eraf.security.rbac.ErafPermissionEvaluator;
 import com.eraf.security.rbac.RbacAspect;
@@ -29,6 +30,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -47,7 +49,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
         IpAccessControlProperties.class
 })
 @EnableWebSecurity
-@Import(ErafMethodSecurityConfiguration.class)
+@Import({ErafMethodSecurityConfiguration.class, OAuth2SecurityConfig.class})
 public class ErafSecurityAutoConfiguration {
 
     @Bean
@@ -180,6 +182,41 @@ public class ErafSecurityAutoConfiguration {
         return source;
     }
 
+    // ===== Security Headers =====
+
+    /**
+     * 공통 보안 헤더 적용 (HSTS, X-Content-Type-Options, Referrer-Policy, X-Frame-Options, CSP)
+     */
+    private void configureSecurityHeaders(HttpSecurity http, ErafSecurityProperties properties) throws Exception {
+        http.headers(headers -> {
+            // HSTS (HTTP Strict Transport Security)
+            headers.httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000) // 1 year
+            );
+            // X-Content-Type-Options: nosniff
+            headers.contentTypeOptions(contentType -> {});
+            // Referrer-Policy
+            headers.referrerPolicy(referrer -> referrer
+                    .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+            );
+            // X-Frame-Options
+            if (properties.isDisableFrameOptions()) {
+                headers.frameOptions(frame -> frame.disable());
+            } else {
+                headers.frameOptions(frame -> frame.deny());
+            }
+            // Content-Security-Policy
+            headers.contentSecurityPolicy(csp ->
+                    csp.policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'")
+            );
+            // Permissions-Policy
+            headers.permissionsPolicy(permissions ->
+                    permissions.policy("camera=(), microphone=(), geolocation=()")
+            );
+        });
+    }
+
     // ===== Security Filter Chain (JWT) =====
 
     @Bean
@@ -209,16 +246,14 @@ public class ErafSecurityAutoConfiguration {
                         .anyRequest().authenticated()
                 );
 
+        configureSecurityHeaders(http, properties);
+
         // IP Access Control Filter (if enabled)
         if (ipProperties.isEnabled()) {
             http.addFilterBefore(new IpAccessControlFilter(ipProperties, auditLogger), UsernamePasswordAuthenticationFilter.class);
         }
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-        if (properties.isDisableFrameOptions()) {
-            http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
-        }
 
         return http.build();
     }
@@ -245,16 +280,14 @@ public class ErafSecurityAutoConfiguration {
                         .anyRequest().authenticated()
                 );
 
+        configureSecurityHeaders(http, properties);
+
         // IP Access Control Filter (if enabled)
         if (ipProperties.isEnabled()) {
             http.addFilterBefore(new IpAccessControlFilter(ipProperties, auditLogger), UsernamePasswordAuthenticationFilter.class);
         }
 
         http.addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class);
-
-        if (properties.isDisableFrameOptions()) {
-            http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
-        }
 
         return http.build();
     }
@@ -277,9 +310,7 @@ public class ErafSecurityAutoConfiguration {
             http.csrf(csrf -> csrf.disable());
         }
 
-        if (properties.isDisableFrameOptions()) {
-            http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
-        }
+        configureSecurityHeaders(http, properties);
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(properties.getPermitAllPatterns()).permitAll()

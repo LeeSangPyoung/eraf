@@ -28,6 +28,11 @@ public class ErafNotificationProperties {
      */
     private Webhook webhook = new Webhook();
 
+    /**
+     * 비동기 실행 스레드풀 설정
+     */
+    private ExecutorConfig executor = new ExecutorConfig();
+
     public static class Email {
         /**
          * 활성화 여부
@@ -327,6 +332,14 @@ public class ErafNotificationProperties {
         this.webhook = webhook;
     }
 
+    public ExecutorConfig getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(ExecutorConfig executor) {
+        this.executor = executor;
+    }
+
     /**
      * Retention 설정
      */
@@ -448,5 +461,18 @@ public class ErafNotificationProperties {
         public void setTeams(Teams teams) {
             this.teams = teams;
         }
+    }
+
+    public static class ExecutorConfig {
+        private int corePoolSize = 2;
+        private int maxPoolSize = 10;
+        private int queueCapacity = 100;
+
+        public int getCorePoolSize() { return corePoolSize; }
+        public void setCorePoolSize(int corePoolSize) { this.corePoolSize = corePoolSize; }
+        public int getMaxPoolSize() { return maxPoolSize; }
+        public void setMaxPoolSize(int maxPoolSize) { this.maxPoolSize = maxPoolSize; }
+        public int getQueueCapacity() { return queueCapacity; }
+        public void setQueueCapacity(int queueCapacity) { this.queueCapacity = queueCapacity; }
     }
 }

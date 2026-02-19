@@ -3,6 +3,7 @@ package com.eraf.http;
 import com.eraf.util.converter.JsonConverter;
 import okhttp3.*;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,17 +18,26 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * HTTP 클라이언트 (OkHttp 래핑)
+ *
+ * <p>내부적으로 공유 ConnectionPool을 사용하여 커넥션을 재활용합니다.
+ * 애플리케이션 종료 시 {@link #close()}를 호출하여 리소스를 해제하세요.</p>
  */
-public class ErafHttpClient {
+public class ErafHttpClient implements Closeable {
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+
+    /**
+     * 모든 ErafHttpClient 인스턴스가 공유하는 ConnectionPool
+     */
+    private static final ConnectionPool SHARED_CONNECTION_POOL = new ConnectionPool(
+            20, 5, TimeUnit.MINUTES);
 
     private String baseUrl;
     private Duration timeout = Duration.ofSeconds(30);
     private int retryCount = 0;
     private final Map<String, String> defaultHeaders = new HashMap<>();
     private final List<Interceptor> interceptors = new ArrayList<>();
-    private OkHttpClient client;
+    private volatile OkHttpClient client;
 
     private ErafHttpClient() {
     }
@@ -505,6 +515,7 @@ public class ErafHttpClient {
 
     private OkHttpClient buildClient() {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectionPool(SHARED_CONNECTION_POOL)
                 .connectTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
                 .readTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
                 .writeTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
@@ -514,6 +525,16 @@ public class ErafHttpClient {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public void close() {
+        OkHttpClient c = this.client;
+        if (c != null) {
+            c.dispatcher().executorService().shutdown();
+            c.connectionPool().evictAll();
+            this.client = null;
+        }
     }
 
     /**

@@ -3,8 +3,8 @@ package com.eraf.web;
 import com.eraf.code.CodeRepository;
 import com.eraf.code.CodeService;
 import com.eraf.code.InMemoryCodeRepository;
-import com.eraf.core.config.FeatureToggle;
-import com.eraf.core.config.FeatureToggleAspect;
+import com.eraf.featureflag.FeatureToggle;
+import com.eraf.featureflag.FeatureToggleAspect;
 import com.eraf.exception.GlobalExceptionHandler;
 import com.eraf.util.file.FileStorageService;
 import com.eraf.util.file.LocalFileStorageService;
@@ -44,7 +44,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * ERAF Web Auto Configuration
  */
-@AutoConfiguration
+@AutoConfiguration(beforeName = "com.eraf.jpa.ErafJpaAutoConfiguration")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({ApiResponse.class, WebMvcConfigurer.class})
 @EnableConfigurationProperties(ErafWebProperties.class)

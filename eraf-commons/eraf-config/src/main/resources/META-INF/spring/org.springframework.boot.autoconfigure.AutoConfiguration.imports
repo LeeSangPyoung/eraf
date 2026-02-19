@@ -1,1 +1,3 @@
 com.eraf.config.ErafConfigAutoConfiguration
+com.eraf.config.CloudConfigClientAutoConfiguration
+com.eraf.config.VaultConfigAutoConfiguration

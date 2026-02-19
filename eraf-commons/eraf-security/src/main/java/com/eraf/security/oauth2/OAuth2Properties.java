@@ -12,6 +12,8 @@ import java.util.Map;
 public class OAuth2Properties {
 
     private boolean enabled = false;
+    private String successUrl = "/";
+    private String failureUrl = "/login?error";
     private Map<String, Provider> providers = new HashMap<>();
     private Client client = new Client();
     private ResourceServer resourceServer = new ResourceServer();
@@ -82,6 +84,10 @@ public class OAuth2Properties {
     // Main Getters and Setters
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public String getSuccessUrl() { return successUrl; }
+    public void setSuccessUrl(String successUrl) { this.successUrl = successUrl; }
+    public String getFailureUrl() { return failureUrl; }
+    public void setFailureUrl(String failureUrl) { this.failureUrl = failureUrl; }
     public Map<String, Provider> getProviders() { return providers; }
     public void setProviders(Map<String, Provider> providers) { this.providers = providers; }
     public Client getClient() { return client; }

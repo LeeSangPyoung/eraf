@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- ===== Properties ===== -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-}] [%X{requestId:-}] %-5level %logger{50} - %msg%n"/>
+    <property name="LOG_PATH" value="${LOG_PATH:-./logs}"/>
+    <property name="APP_NAME" value="${APP_NAME:-eraf-app}"/>
+
+    <!-- ===== Console Appender (Default) ===== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ===== Console JSON Appender (for ELK/Loki) ===== -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+                    <prettyPrint>false</prettyPrint>
+                </jsonFormatter>
+                <appendLineSeparator>true</appendLineSeparator>
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampFormat>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- ===== File Appender (Rolling) ===== -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== Error File Appender ===== -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== ERAF Framework Logger ===== -->
+    <logger name="com.eraf" level="${ERAF_LOG_LEVEL:-INFO}"/>
+
+    <!-- ===== SQL Logger (for debugging) ===== -->
+    <logger name="org.hibernate.SQL" level="${SQL_LOG_LEVEL:-WARN}"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="${SQL_LOG_LEVEL:-WARN}"/>
+
+    <!-- ===== Profile: default (Console + File) ===== -->
+    <springProfile name="default,local,dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ===== Profile: json (JSON Console for ELK/Loki/CloudWatch) ===== -->
+    <springProfile name="json,k8s,docker,prod-json">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- ===== Profile: production (File only, no console) ===== -->
+    <springProfile name="prod,staging,production">
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>

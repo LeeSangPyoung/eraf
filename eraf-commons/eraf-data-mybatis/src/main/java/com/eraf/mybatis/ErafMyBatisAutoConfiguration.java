@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -72,5 +73,19 @@ public class ErafMyBatisAutoConfiguration {
     @ConditionalOnProperty(name = "eraf.mybatis.pagination-enabled", havingValue = "true", matchIfMissing = true)
     public Interceptor erafPaginationInterceptor() {
         return new PaginationInterceptor();
+    }
+
+    /**
+     * MyBatis 슬로우 쿼리 감지 인터셉터
+     * Mapper ID + SQL 정보를 포함하여 JDBC 레벨보다 상세한 슬로우 쿼리 로깅 제공
+     */
+    @Bean
+    @ConditionalOnMissingBean(SlowQueryInterceptor.class)
+    @ConditionalOnProperty(name = "eraf.mybatis.slow-query.enabled", havingValue = "true", matchIfMissing = true)
+    public Interceptor erafMyBatisSlowQueryInterceptor(ErafMyBatisProperties properties,
+                                                        ApplicationEventPublisher eventPublisher) {
+        ErafMyBatisProperties.SlowQuery sq = properties.getSlowQuery();
+        return new SlowQueryInterceptor(sq.getThresholdMs(), sq.getCriticalThresholdMs(),
+                sq.isLogSql(), eventPublisher);
     }
 }

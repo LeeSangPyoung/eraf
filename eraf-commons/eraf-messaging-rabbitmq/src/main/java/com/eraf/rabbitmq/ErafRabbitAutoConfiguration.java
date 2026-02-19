@@ -92,11 +92,14 @@ public class ErafRabbitAutoConfiguration {
 
     /**
      * RabbitMQ 에러 핸들러 빈 등록
+     * DLQ 활성화 시 RabbitTemplate을 주입하여 실패 메시지를 DLQ로 라우팅
      */
     @Bean
     @ConditionalOnMissingBean(name = "erafRabbitErrorHandler")
-    public RabbitListenerErrorHandler erafRabbitErrorHandler(ErafRabbitProperties properties) {
-        return new RabbitErrorHandler(properties);
+    public RabbitListenerErrorHandler erafRabbitErrorHandler(
+            ErafRabbitProperties properties,
+            ObjectProvider<RabbitTemplate> rabbitTemplateProvider) {
+        return new RabbitErrorHandler(properties, rabbitTemplateProvider.getIfAvailable());
     }
 
     /**

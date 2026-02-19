@@ -52,11 +52,30 @@ public class RabbitMessagePublisher implements MessagePublisher {
     }
 
     @Override
+    public void publish(String destination, String key, Object message) {
+        publish(destination, key, message, null);
+    }
+
+    @Override
+    public void publish(String destination, String key, Object message, Map<String, Object> headers) {
+        ErafMessage<Object> erafMessage = wrapMessage(message);
+        rabbitTemplate.convertAndSend(destination, key, erafMessage, msg -> {
+            applyHeaders(msg.getMessageProperties(), erafMessage, headers);
+            return msg;
+        });
+    }
+
+    @Override
     public void publishDelayed(String destination, Object message, long delayMillis) {
+        publishDelayed(destination, message, delayMillis, null);
+    }
+
+    @Override
+    public void publishDelayed(String destination, Object message, long delayMillis, Map<String, Object> headers) {
         ErafMessage<Object> erafMessage = wrapMessage(message);
         rabbitTemplate.convertAndSend(destination, erafMessage, msg -> {
             msg.getMessageProperties().setDelayLong(delayMillis);
-            applyHeaders(msg.getMessageProperties(), erafMessage, null);
+            applyHeaders(msg.getMessageProperties(), erafMessage, headers);
             return msg;
         });
     }

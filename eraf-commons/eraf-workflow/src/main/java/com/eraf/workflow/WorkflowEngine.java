@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 /**
  * Workflow 엔진
@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * WorkflowInstance instance = engine.startWorkflow(definition, Map.of("docId", "DOC-001"));
  * }</pre>
  */
-public class WorkflowEngine {
+public class WorkflowEngine implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(WorkflowEngine.class);
 
@@ -38,6 +38,7 @@ public class WorkflowEngine {
     private final Map<String, WorkflowStepHandler> handlers = new ConcurrentHashMap<>();
 
     private final WorkflowProperties properties;
+    private final ExecutorService stepExecutor;
 
     public WorkflowEngine() {
         this(new WorkflowProperties());
@@ -45,6 +46,11 @@ public class WorkflowEngine {
 
     public WorkflowEngine(WorkflowProperties properties) {
         this.properties = properties;
+        this.stepExecutor = Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r, "workflow-step-executor");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     // --- 정의 관리 ---
@@ -270,7 +276,28 @@ public class WorkflowEngine {
 
             instance.setCurrentStep(currentStepName);
 
-            // Step 실행
+            // PARALLEL Step: 여러 핸들러를 동시에 실행
+            if (step.getType() == WorkflowStepType.PARALLEL && step.getNextSteps().size() > 1) {
+                WorkflowStepResult parallelResult = executeParallelSteps(instance, definition, step);
+                if (parallelResult.isFailed()) {
+                    instance.markFailed(parallelResult.getErrorMessage());
+                    return;
+                }
+                if (!parallelResult.getOutputData().isEmpty()) {
+                    instance.putVariables(parallelResult.getOutputData());
+                }
+                // PARALLEL 이후 다음 Step은 정의순서로
+                WorkflowStep nextStep = definition.getNextStep(currentStepName);
+                currentStepName = nextStep != null ? nextStep.getName() : null;
+                if (currentStepName == null) {
+                    instance.markCompleted();
+                    log.info("Workflow completed: {} (id={})",
+                            instance.getWorkflowName(), instance.getId());
+                }
+                continue;
+            }
+
+            // Step 실행 (timeout 적용)
             WorkflowStepResult result = executeStep(instance, step);
 
             // 결과에 따라 다음 동작 결정
@@ -321,7 +348,7 @@ public class WorkflowEngine {
     }
 
     /**
-     * 단일 Step 실행
+     * 단일 Step 실행 (timeout 적용)
      */
     private WorkflowStepResult executeStep(WorkflowInstance instance, WorkflowStep step) {
         // 핸들러 찾기
@@ -339,14 +366,21 @@ public class WorkflowEngine {
         WorkflowContext context = new WorkflowContext(
                 instance.getId(), step.getName(), instance.getVariables());
 
+        // timeout 결정: Step 자체 timeout > 글로벌 stepTimeout
+        long timeoutMs = step.getTimeout() != null
+                ? step.getTimeout().toMillis()
+                : properties.getStepTimeout().toMillis();
+
         // 재시도 로직 포함 실행
         int maxAttempts = step.isRetryable() ? step.getMaxRetries() + 1 : 1;
         WorkflowStepResult result = null;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-                log.debug("Executing step '{}' (attempt {}/{})", step.getName(), attempt, maxAttempts);
-                result = handler.execute(context);
+                log.debug("Executing step '{}' (attempt {}/{}, timeout={}ms)",
+                        step.getName(), attempt, maxAttempts, timeoutMs);
+
+                result = executeWithTimeout(handler, context, timeoutMs);
 
                 // 컨텍스트에서 변경된 변수를 인스턴스에 반영
                 syncVariables(instance, context);
@@ -383,11 +417,114 @@ public class WorkflowEngine {
     }
 
     /**
+     * 타임아웃을 적용하여 핸들러 실행 (공유 stepExecutor 사용)
+     */
+    private WorkflowStepResult executeWithTimeout(WorkflowStepHandler handler,
+                                                    WorkflowContext context,
+                                                    long timeoutMs) {
+        Future<WorkflowStepResult> future = stepExecutor.submit(() -> handler.execute(context));
+        try {
+            return future.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            return WorkflowStepResult.failed("Step timed out after " + timeoutMs + "ms");
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            return WorkflowStepResult.failed("Step execution error: " + cause.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return WorkflowStepResult.failed("Step interrupted");
+        }
+    }
+
+    /**
+     * PARALLEL Step 실행: nextSteps에 지정된 Step들을 동시 실행 (공유 stepExecutor 사용)
+     */
+    private WorkflowStepResult executeParallelSteps(WorkflowInstance instance,
+                                                      WorkflowDefinition definition,
+                                                      WorkflowStep parallelStep) {
+        List<String> parallelStepNames = parallelStep.getNextSteps();
+        log.info("Executing {} parallel steps for '{}'", parallelStepNames.size(), parallelStep.getName());
+
+        long timeoutMs = parallelStep.getTimeout() != null
+                ? parallelStep.getTimeout().toMillis()
+                : properties.getStepTimeout().toMillis();
+
+        try {
+            List<Future<WorkflowStepResult>> futures = new ArrayList<>();
+            List<WorkflowStep> steps = new ArrayList<>();
+
+            for (String stepName : parallelStepNames) {
+                WorkflowStep step = definition.getStep(stepName);
+                if (step == null) {
+                    return WorkflowStepResult.failed("Parallel step not found: " + stepName);
+                }
+                steps.add(step);
+
+                WorkflowStepHandler handler = handlers.get(stepName);
+                if (handler == null) {
+                    return WorkflowStepResult.failed("No handler for parallel step: " + stepName);
+                }
+
+                WorkflowContext context = new WorkflowContext(
+                        instance.getId(), stepName, instance.getVariables());
+
+                futures.add(stepExecutor.submit(() -> handler.execute(context)));
+            }
+
+            // 모든 결과 수집
+            Map<String, Object> mergedOutput = new ConcurrentHashMap<>();
+            for (int i = 0; i < futures.size(); i++) {
+                WorkflowStep step = steps.get(i);
+                try {
+                    WorkflowStepResult result = futures.get(i).get(timeoutMs, TimeUnit.MILLISECONDS);
+
+                    WorkflowStepExecution execution = new WorkflowStepExecution(
+                            step.getName(), result.getStatus(), result.getOutputData(), result.getErrorMessage());
+                    instance.addStepExecution(execution);
+
+                    if (result.isFailed()) {
+                        return WorkflowStepResult.failed(
+                                "Parallel step '" + step.getName() + "' failed: " + result.getErrorMessage());
+                    }
+                    mergedOutput.putAll(result.getOutputData());
+
+                } catch (TimeoutException e) {
+                    return WorkflowStepResult.failed(
+                            "Parallel step '" + step.getName() + "' timed out after " + timeoutMs + "ms");
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause() != null ? e.getCause() : e;
+                    return WorkflowStepResult.failed(
+                            "Parallel step '" + step.getName() + "' error: " + cause.getMessage());
+                }
+            }
+
+            return WorkflowStepResult.completed(mergedOutput);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return WorkflowStepResult.failed("Parallel execution interrupted");
+        }
+    }
+
+    /**
      * 컨텍스트 변수 변경 사항을 인스턴스에 동기화
      */
     private void syncVariables(WorkflowInstance instance, WorkflowContext context) {
         for (Map.Entry<String, Object> entry : context.getVariables().entrySet()) {
             instance.putVariable(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Override
+    public void close() {
+        stepExecutor.shutdown();
+        try {
+            if (!stepExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+                stepExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            stepExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 }

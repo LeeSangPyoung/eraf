@@ -82,6 +82,9 @@ public class ErafStateMachineService {
 
     /**
      * 이벤트 전송 및 상태 전이 (컨텍스트 포함)
+     *
+     * <p>동시 전이 보호: 동일 엔티티에 대한 동시 전이 시도 시
+     * CAS(Compare-And-Swap) 기반으로 충돌을 감지하고 예외를 던집니다.</p>
      */
     public StateInfo sendEvent(String machineId, String entityId, String event, Map<String, Object> eventContext) {
         StateMachineDefinition definition = registry.getDefinition(machineId)
@@ -118,8 +121,13 @@ public class ErafStateMachineService {
         // 이벤트 컨텍스트 병합
         stateInfo.getContext().putAll(eventContext);
 
-        // 상태 저장
-        stateStore.save(machineId, entityId, stateInfo);
+        // CAS 기반 동시 전이 보호: expectedState를 전달하여 저장 시점에 상태 변경 여부 검증
+        boolean saved = stateStore.saveIfCurrentState(machineId, entityId, stateInfo, previousState);
+        if (!saved) {
+            throw new StateMachineException(
+                    "Concurrent state transition detected for entity: " + entityId +
+                    " (machineId=" + machineId + ", expected=" + previousState + ")");
+        }
 
         log.info("State transition: machineId={}, entityId={}, {} -> {} (event={})",
                 machineId, entityId, previousState, transition.getTarget(), event);

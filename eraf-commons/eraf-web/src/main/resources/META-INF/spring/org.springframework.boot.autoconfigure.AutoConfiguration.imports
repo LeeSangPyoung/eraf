@@ -1,1 +1,2 @@
 com.eraf.web.ErafWebAutoConfiguration
+com.eraf.web.version.ApiVersionAutoConfiguration

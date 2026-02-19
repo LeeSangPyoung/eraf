@@ -31,14 +31,14 @@ public class FcmPushSender implements PushSender {
         if (!initialized) {
             try {
                 String credentialsPath = properties.getPush().getFcm().getCredentialsPath();
-                FileInputStream serviceAccount = new FileInputStream(credentialsPath);
+                try (FileInputStream serviceAccount = new FileInputStream(credentialsPath)) {
+                    FirebaseOptions options = FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                            .build();
 
-                FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .build();
-
-                if (FirebaseApp.getApps().isEmpty()) {
-                    FirebaseApp.initializeApp(options);
+                    if (FirebaseApp.getApps().isEmpty()) {
+                        FirebaseApp.initializeApp(options);
+                    }
                 }
                 initialized = true;
             } catch (IOException e) {

@@ -58,12 +58,32 @@ public class InMemoryCodeRepository implements CodeRepository {
         return Optional.ofNullable(groupCodes.get(code));
     }
 
-    /**
-     * 코드 추가
-     */
-    public void addCode(CodeItem codeItem) {
+    @Override
+    public void save(CodeItem codeItem) {
         codeStore.computeIfAbsent(codeItem.getGroup(), k -> new ConcurrentHashMap<>())
                 .put(codeItem.getCode(), codeItem);
+    }
+
+    @Override
+    public void delete(String group, String code) {
+        Map<String, CodeItem> groupCodes = codeStore.get(group);
+        if (groupCodes != null) {
+            groupCodes.remove(code);
+        }
+    }
+
+    @Override
+    public void deleteByGroup(String group) {
+        codeStore.remove(group);
+    }
+
+    /**
+     * 코드 추가
+     * @deprecated use {@link #save(CodeItem)} instead
+     */
+    @Deprecated
+    public void addCode(CodeItem codeItem) {
+        save(codeItem);
     }
 
     /**
@@ -71,25 +91,26 @@ public class InMemoryCodeRepository implements CodeRepository {
      */
     public void addCodes(List<CodeItem> codeItems) {
         for (CodeItem item : codeItems) {
-            addCode(item);
+            save(item);
         }
     }
 
     /**
      * 코드 제거
+     * @deprecated use {@link #delete(String, String)} instead
      */
+    @Deprecated
     public void removeCode(String group, String code) {
-        Map<String, CodeItem> groupCodes = codeStore.get(group);
-        if (groupCodes != null) {
-            groupCodes.remove(code);
-        }
+        delete(group, code);
     }
 
     /**
      * 그룹 전체 제거
+     * @deprecated use {@link #deleteByGroup(String)} instead
      */
+    @Deprecated
     public void removeGroup(String group) {
-        codeStore.remove(group);
+        deleteByGroup(group);
     }
 
     /**

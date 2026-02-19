@@ -90,8 +90,7 @@ public class FtpClientImpl implements FtpClient {
 
     @Override
     public InputStream download(String remotePath) {
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             if (!ftpClient.retrieveFile(remotePath, outputStream)) {
                 throw new RuntimeException("Failed to download file: " + remotePath);
             }

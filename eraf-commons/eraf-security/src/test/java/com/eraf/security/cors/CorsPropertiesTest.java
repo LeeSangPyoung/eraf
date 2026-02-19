@@ -25,10 +25,10 @@ class CorsPropertiesTest {
     @DisplayName("기본값 확인")
     void shouldHaveDefaultValues() {
         assertTrue(properties.getAllowedOrigins().isEmpty());
-        assertEquals(List.of("*"), properties.getAllowedOriginPatterns());
+        assertTrue(properties.getAllowedOriginPatterns().isEmpty());
         assertEquals(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"), properties.getAllowedMethods());
         assertEquals(List.of("*"), properties.getAllowedHeaders());
-        assertTrue(properties.isAllowCredentials());
+        assertFalse(properties.isAllowCredentials());
         assertEquals(3600L, properties.getMaxAge());
         assertTrue(properties.isEnabled());
         assertEquals("/**", properties.getPathPattern());

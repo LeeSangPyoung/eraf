@@ -11,13 +11,18 @@ public class OutboxMessage {
     private String aggregateType;
     private String aggregateId;
     private String eventType;
+    private String destination;
     @Column(columnDefinition = "TEXT")
     private String payload;
+    @Column(columnDefinition = "TEXT")
+    private String headersJson;
     @Enumerated(EnumType.STRING)
     private OutboxStatus status = OutboxStatus.PENDING;
     private Instant createdAt = Instant.now();
     private Instant processedAt;
     private Integer retryCount = 0;
+    @Version
+    private Long version;
 
     public enum OutboxStatus { PENDING, PROCESSED, FAILED }
 
@@ -39,4 +44,10 @@ public class OutboxMessage {
     public void setRetryCount(Integer retryCount) { this.retryCount = retryCount; }
     public String getAggregateId() { return aggregateId; }
     public void setAggregateId(String aggregateId) { this.aggregateId = aggregateId; }
+    public String getDestination() { return destination; }
+    public void setDestination(String destination) { this.destination = destination; }
+    public String getHeadersJson() { return headersJson; }
+    public void setHeadersJson(String headersJson) { this.headersJson = headersJson; }
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
 }

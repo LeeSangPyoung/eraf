@@ -18,14 +18,73 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- ERAF Core -->
+            <!-- ==================== -->
+            <!-- ERAF Core            -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-core</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-async</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-crypto</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-exception</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-http</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-i18n</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-resilience</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-system</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-util</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-core-validation</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-config</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-feature-flag</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
 
-            <!-- ERAF Web -->
+            <!-- ==================== -->
+            <!-- ERAF Web             -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-web</artifactId>
@@ -46,8 +105,15 @@
                 <artifactId>eraf-swagger</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
 
-            <!-- ERAF Data -->
+            <!-- ==================== -->
+            <!-- ERAF Data            -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-data-jpa</artifactId>
@@ -70,11 +136,18 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
+                <artifactId>eraf-data-mongo</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
                 <artifactId>eraf-data-cache</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
-            <!-- ERAF Messaging -->
+            <!-- ==================== -->
+            <!-- ERAF Messaging       -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-messaging-kafka</artifactId>
@@ -86,7 +159,9 @@
                 <version>${eraf.version}</version>
             </dependency>
 
-            <!-- ERAF Integration -->
+            <!-- ==================== -->
+            <!-- ERAF Integration     -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-integration-ftp</artifactId>
@@ -107,8 +182,20 @@
                 <artifactId>eraf-integration-http</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-integration-grpc</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-integration-websocket</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
 
-            <!-- ERAF Processing -->
+            <!-- ==================== -->
+            <!-- ERAF Processing      -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-batch</artifactId>
@@ -136,11 +223,32 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-actuator</artifactId>
+                <artifactId>eraf-outbox</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-workflow</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
+            <!-- ==================== -->
+            <!-- ERAF Observability   -->
+            <!-- ==================== -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-actuator</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-observability</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ==================== -->
             <!-- ERAF Document & Media -->
+            <!-- ==================== -->
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-excel</artifactId>
@@ -160,6 +268,21 @@
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-image</artifactId>
                 <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-report</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+
+            <!-- ==================== -->
+            <!-- ERAF Test            -->
+            <!-- ==================== -->
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-test</artifactId>
+                <version>${eraf.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 
+import org.springframework.beans.factory.DisposableBean;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
  * Health Indicator 레지스트리
  * 여러 Health Indicator를 등록하고 관리
  */
-public class HealthCheckRegistry {
+public class HealthCheckRegistry implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(HealthCheckRegistry.class);
 
@@ -191,6 +193,11 @@ public class HealthCheckRegistry {
      */
     public int size() {
         return indicators.size();
+    }
+
+    @Override
+    public void destroy() {
+        shutdown();
     }
 
     /**

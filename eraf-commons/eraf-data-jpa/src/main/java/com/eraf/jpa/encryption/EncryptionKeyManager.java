@@ -268,7 +268,7 @@ public class EncryptionKeyManager {
     /**
      * 테스트용: 키 수동 설정
      */
-    public void setKeyForTesting(int version, String key) {
+    public synchronized void setKeyForTesting(int version, String key) {
         keys.put(version, key);
         if (version > currentVersion) {
             currentVersion = version;

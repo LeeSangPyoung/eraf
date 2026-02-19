@@ -67,6 +67,8 @@ public class ErafActuatorProperties {
         private IndicatorConfig redis = new IndicatorConfig();
         private IndicatorConfig database = new IndicatorConfig();
         private IndicatorConfig kafka = new IndicatorConfig();
+        private ElasticsearchConfig elasticsearch = new ElasticsearchConfig();
+        private S3Config s3 = new S3Config();
 
         public IndicatorConfig getRedis() {
             return redis;
@@ -90,6 +92,79 @@ public class ErafActuatorProperties {
 
         public void setKafka(IndicatorConfig kafka) {
             this.kafka = kafka;
+        }
+
+        public ElasticsearchConfig getElasticsearch() {
+            return elasticsearch;
+        }
+
+        public void setElasticsearch(ElasticsearchConfig elasticsearch) {
+            this.elasticsearch = elasticsearch;
+        }
+
+        public S3Config getS3() {
+            return s3;
+        }
+
+        public void setS3(S3Config s3) {
+            this.s3 = s3;
+        }
+    }
+
+    /**
+     * Elasticsearch Health 설정
+     */
+    public static class ElasticsearchConfig {
+        private String url;
+        private long timeoutMs = 5000L;
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public long getTimeoutMs() {
+            return timeoutMs;
+        }
+
+        public void setTimeoutMs(long timeoutMs) {
+            this.timeoutMs = timeoutMs;
+        }
+    }
+
+    /**
+     * S3 Health 설정
+     */
+    public static class S3Config {
+        private String endpoint;
+        private String bucket;
+        private long timeoutMs = 5000L;
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public String getBucket() {
+            return bucket;
+        }
+
+        public void setBucket(String bucket) {
+            this.bucket = bucket;
+        }
+
+        public long getTimeoutMs() {
+            return timeoutMs;
+        }
+
+        public void setTimeoutMs(long timeoutMs) {
+            this.timeoutMs = timeoutMs;
         }
     }
 

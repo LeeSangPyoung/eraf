@@ -28,19 +28,19 @@ public class ExcelReader implements AutoCloseable {
      * Excel 파일 열기
      */
     public static ExcelReader open(Path path) throws IOException {
-        InputStream is = Files.newInputStream(path);
         String filename = path.getFileName().toString().toLowerCase();
 
-        Workbook workbook;
-        if (filename.endsWith(".xlsx")) {
-            workbook = new XSSFWorkbook(is);
-        } else if (filename.endsWith(".xls")) {
-            workbook = new HSSFWorkbook(is);
-        } else {
-            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다: " + filename);
+        try (InputStream is = Files.newInputStream(path)) {
+            Workbook workbook;
+            if (filename.endsWith(".xlsx")) {
+                workbook = new XSSFWorkbook(is);
+            } else if (filename.endsWith(".xls")) {
+                workbook = new HSSFWorkbook(is);
+            } else {
+                throw new IllegalArgumentException("지원하지 않는 파일 형식입니다: " + filename);
+            }
+            return new ExcelReader(workbook);
         }
-
-        return new ExcelReader(workbook);
     }
 
     /**

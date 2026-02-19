@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -24,7 +25,7 @@ public class SlowQueryDetector implements StatementInspector {
     private final SlowQueryProperties properties;
     private final ThreadLocal<QueryExecutionContext> contextHolder = new ThreadLocal<>();
     private final ConcurrentHashMap<String, Long> slowQueryStats = new ConcurrentHashMap<>();
-    private final List<Consumer<SlowQueryEvent>> alertListeners = new ArrayList<>();
+    private final List<Consumer<SlowQueryEvent>> alertListeners = new CopyOnWriteArrayList<>();
     private volatile DataSource dataSource;
 
     public SlowQueryDetector(SlowQueryProperties properties) {

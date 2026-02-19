@@ -38,6 +38,11 @@ public class ReportProperties {
      */
     private int maxRows = 0;
 
+    /**
+     * JasperReports configuration
+     */
+    private JasperReports jasper = new JasperReports();
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -68,5 +73,44 @@ public class ReportProperties {
 
     public void setMaxRows(int maxRows) {
         this.maxRows = maxRows;
+    }
+
+    public JasperReports getJasper() {
+        return jasper;
+    }
+
+    public void setJasper(JasperReports jasper) {
+        this.jasper = jasper;
+    }
+
+    /**
+     * JasperReports specific configuration
+     */
+    public static class JasperReports {
+        /**
+         * Default template path for JasperReports (classpath resource)
+         */
+        private String defaultTemplate = "reports/default-report.jrxml";
+
+        /**
+         * Enable JasperReports generator
+         */
+        private boolean enabled = true;
+
+        public String getDefaultTemplate() {
+            return defaultTemplate;
+        }
+
+        public void setDefaultTemplate(String defaultTemplate) {
+            this.defaultTemplate = defaultTemplate;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 }

@@ -7,12 +7,16 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import org.springframework.beans.factory.DisposableBean;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -37,12 +41,12 @@ import java.util.function.Supplier;
  * </pre>
  */
 @Component
-public class CacheWarmer {
+public class CacheWarmer implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(CacheWarmer.class);
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final List<WarmupTask> warmupTasks = new ArrayList<>();
+    private final List<WarmupTask> warmupTasks = new CopyOnWriteArrayList<>();
     private ExecutorService executorService;
 
     private boolean warmed = false;
@@ -63,7 +67,29 @@ public class CacheWarmer {
      */
     public void setParallelThreads(int parallelThreads) {
         this.executorService.shutdown();
+        try {
+            if (!this.executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                this.executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            this.executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
         this.executorService = Executors.newFixedThreadPool(parallelThreads);
+    }
+
+    @Override
+    public void destroy() {
+        log.info("[CacheWarmer] Shutting down executor service");
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(10, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

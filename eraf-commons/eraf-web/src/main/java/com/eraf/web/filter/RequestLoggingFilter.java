@@ -220,13 +220,21 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     }
 
     private String maskSensitiveData(String payload) {
-        // 비밀번호, 토큰 등 민감 정보 마스킹
+        // 비밀번호, 토큰, 개인정보 등 민감 정보 마스킹
         return payload
                 .replaceAll("\"password\"\\s*:\\s*\"[^\"]*\"", "\"password\":\"****\"")
                 .replaceAll("\"token\"\\s*:\\s*\"[^\"]*\"", "\"token\":\"****\"")
                 .replaceAll("\"accessToken\"\\s*:\\s*\"[^\"]*\"", "\"accessToken\":\"****\"")
                 .replaceAll("\"refreshToken\"\\s*:\\s*\"[^\"]*\"", "\"refreshToken\":\"****\"")
                 .replaceAll("\"secret\"\\s*:\\s*\"[^\"]*\"", "\"secret\":\"****\"")
-                .replaceAll("\"creditCard\"\\s*:\\s*\"[^\"]*\"", "\"creditCard\":\"****\"");
+                .replaceAll("\"creditCard\"\\s*:\\s*\"[^\"]*\"", "\"creditCard\":\"****\"")
+                .replaceAll("\"ssn\"\\s*:\\s*\"[^\"]*\"", "\"ssn\":\"****\"")
+                .replaceAll("\"apiKey\"\\s*:\\s*\"[^\"]*\"", "\"apiKey\":\"****\"")
+                .replaceAll("\"apiSecret\"\\s*:\\s*\"[^\"]*\"", "\"apiSecret\":\"****\"")
+                .replaceAll("\"pinCode\"\\s*:\\s*\"[^\"]*\"", "\"pinCode\":\"****\"")
+                .replaceAll("\"authorization\"\\s*:\\s*\"[^\"]*\"", "\"authorization\":\"****\"")
+                .replaceAll("\"cardNumber\"\\s*:\\s*\"[^\"]*\"", "\"cardNumber\":\"****\"")
+                .replaceAll("\"cvv\"\\s*:\\s*\"[^\"]*\"", "\"cvv\":\"****\"")
+                .replaceAll("\"privateKey\"\\s*:\\s*\"[^\"]*\"", "\"privateKey\":\"****\"");
     }
 }

@@ -1,5 +1,6 @@
 package com.eraf.security.jwt;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -18,6 +19,8 @@ public class JwtProperties {
     /**
      * 서명 비밀키 (최소 32자, Base64 인코딩 권장)
      */
+    @NotBlank
+    @Size(min = 32, message = "JWT secret must be at least 32 characters")
     private String secret;
 
     /**
@@ -28,16 +31,19 @@ public class JwtProperties {
     /**
      * Access Token 만료 시간
      */
+    @NotNull
     private Duration accessTokenExpiration = Duration.ofHours(1);
 
     /**
      * Refresh Token 만료 시간
      */
+    @NotNull
     private Duration refreshTokenExpiration = Duration.ofDays(7);
 
     /**
      * Authorization 헤더 이름
      */
+    @NotBlank
     private String headerName = "Authorization";
 
     /**

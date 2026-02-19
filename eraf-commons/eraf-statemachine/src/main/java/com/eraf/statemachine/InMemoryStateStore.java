@@ -21,7 +21,20 @@ public class InMemoryStateStore implements StateStore {
     @Override
     public Optional<StateInfo> find(String machineId, String entityId) {
         String key = createKey(machineId, entityId);
-        return Optional.ofNullable(store.get(key));
+        StateInfo existing = store.get(key);
+        if (existing == null) {
+            return Optional.empty();
+        }
+        // 방어적 복사: 호출자가 객체를 수정해도 저장소의 원본에 영향을 주지 않도록 함
+        // CAS(saveIfCurrentState) 비교 시 올바르게 동작하기 위해 필요
+        StateInfo copy = new StateInfo();
+        copy.setMachineId(existing.getMachineId());
+        copy.setEntityId(existing.getEntityId());
+        copy.setCurrentState(existing.getCurrentState());
+        copy.setPreviousState(existing.getPreviousState());
+        copy.setStateChangedAt(existing.getStateChangedAt());
+        copy.setContext(new java.util.concurrent.ConcurrentHashMap<>(existing.getContext()));
+        return Optional.of(copy);
     }
 
     @Override
@@ -34,6 +47,22 @@ public class InMemoryStateStore implements StateStore {
     public boolean exists(String machineId, String entityId) {
         String key = createKey(machineId, entityId);
         return store.containsKey(key);
+    }
+
+    @Override
+    public boolean saveIfCurrentState(String machineId, String entityId, StateInfo stateInfo, String expectedState) {
+        String key = createKey(machineId, entityId);
+        // ConcurrentHashMap의 compute를 사용한 원자적 CAS
+        boolean[] success = {false};
+        store.compute(key, (k, existing) -> {
+            if (existing == null || expectedState.equals(existing.getCurrentState())) {
+                success[0] = true;
+                return stateInfo;
+            }
+            success[0] = false;
+            return existing;
+        });
+        return success[0];
     }
 
     /**

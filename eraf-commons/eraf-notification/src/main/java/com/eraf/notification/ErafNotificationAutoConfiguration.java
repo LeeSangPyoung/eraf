@@ -39,12 +39,14 @@ public class ErafNotificationAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "notificationExecutor")
-    public Executor notificationExecutor() {
+    public Executor notificationExecutor(ErafNotificationProperties properties) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100);
+        executor.setCorePoolSize(properties.getExecutor().getCorePoolSize());
+        executor.setMaxPoolSize(properties.getExecutor().getMaxPoolSize());
+        executor.setQueueCapacity(properties.getExecutor().getQueueCapacity());
         executor.setThreadNamePrefix("notification-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
         executor.initialize();
         return executor;
     }

@@ -1,5 +1,6 @@
 package com.eraf.jpa.slowquery;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -17,6 +18,7 @@ public class SlowQueryProperties {
      * Slow Query 기준 시간 (밀리초)
      * 이 시간보다 오래 걸리는 쿼리는 경고 로그 출력
      */
+    @Positive
     private long thresholdMs = 1000;
 
     /**
@@ -37,12 +39,14 @@ public class SlowQueryProperties {
     /**
      * 스택 트레이스 깊이 (0이면 전체)
      */
+    @PositiveOrZero
     private int stackTraceDepth = 10;
 
     /**
      * 매우 느린 쿼리 기준 시간 (밀리초)
      * 이 시간을 초과하면 무조건 ERROR 레벨로 로깅
      */
+    @Positive
     private long criticalThresholdMs = 5000;
 
     public boolean isEnabled() {

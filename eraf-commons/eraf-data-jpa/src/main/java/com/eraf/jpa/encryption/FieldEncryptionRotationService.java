@@ -49,7 +49,7 @@ public class FieldEncryptionRotationService {
      *
      * @return 재암호화 통계
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public RotationResult rotateAllEncryptedFields() {
         log.info("[FieldEncryptionRotationService] Starting key rotation for all @Encrypt fields");
 
@@ -80,7 +80,7 @@ public class FieldEncryptionRotationService {
      * @param encryptedFields  암호화된 필드 목록
      * @return 재암호화 통계
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public RotationResult rotateEntity(Class<?> entityClass, List<String> encryptedFields) {
         RotationResult result = new RotationResult();
         result.entityClass = entityClass.getSimpleName();

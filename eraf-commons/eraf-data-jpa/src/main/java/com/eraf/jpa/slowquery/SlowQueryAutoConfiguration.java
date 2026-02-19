@@ -3,8 +3,8 @@ package com.eraf.jpa.slowquery;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import javax.sql.DataSource;
@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 /**
  * Slow Query 감지 자동 설정
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnClass({DataSource.class, DelegatingDataSource.class})
 @ConditionalOnProperty(prefix = "eraf.jpa.slow-query", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(SlowQueryProperties.class)

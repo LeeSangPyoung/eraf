@@ -31,7 +31,7 @@ public class NotificationRetentionPolicy {
      * 매일 새벽 4시 실행
      */
     @Scheduled(cron = "${eraf.notification.retention.cron:0 0 4 * * ?}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void cleanupExpiredNotifications() {
         Instant cutoff = Instant.now().minus(retentionDays, ChronoUnit.DAYS);
         log.info("Starting notification history cleanup (retention: {} days, cutoff: {})",
@@ -50,7 +50,7 @@ public class NotificationRetentionPolicy {
     /**
      * 수동 정리 (지정 일수 이전)
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int cleanupBefore(int days) {
         Instant cutoff = Instant.now().minus(days, ChronoUnit.DAYS);
         List<NotificationHistory> expired = repository.findBySentAtBefore(cutoff);

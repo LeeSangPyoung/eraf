@@ -33,12 +33,14 @@
         <module>eraf-core-http</module>
         <module>eraf-core-system</module>
         <module>eraf-test</module>
+        <module>eraf-feature-flag</module>
 
         <!-- Web -->
         <module>eraf-web</module>
         <module>eraf-security</module>
         <module>eraf-session</module>
         <module>eraf-swagger</module>
+        <module>eraf-gateway</module>
 
         <!-- Data -->
         <module>eraf-data-jpa</module>
@@ -99,10 +101,21 @@
         <zip4j.version>2.11.5</zip4j.version>
         <flying-saucer.version>9.1.22</flying-saucer.version>
         <querydsl.version>5.1.0</querydsl.version>
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
+        <jasperreports.version>6.21.3</jasperreports.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Spring Cloud BOM -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Override Spring Boot QueryDSL BOM -->
             <dependency>
                 <groupId>com.querydsl</groupId>
@@ -163,6 +176,11 @@
                 <artifactId>eraf-core-system</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-feature-flag</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
 
             <!-- ERAF Web -->
             <dependency>
@@ -172,52 +190,7 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-http</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-i18n</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-http</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
                 <artifactId>eraf-security</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-http</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
             <dependency>
@@ -227,22 +200,12 @@
             </dependency>
             <dependency>
                 <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-http</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
-                <artifactId>eraf-core-system</artifactId>
-                <version>${eraf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.eraf</groupId>
                 <artifactId>eraf-swagger</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-gateway</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
@@ -336,6 +299,51 @@
             <dependency>
                 <groupId>com.eraf</groupId>
                 <artifactId>eraf-actuator</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-observability</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-outbox</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-config</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-workflow</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-report</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-data-mongo</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-integration-grpc</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-integration-websocket</artifactId>
+                <version>${eraf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.eraf</groupId>
+                <artifactId>eraf-test</artifactId>
                 <version>${eraf.version}</version>
             </dependency>
 
@@ -449,6 +457,13 @@
                 <artifactId>zip4j</artifactId>
                 <version>${zip4j.version}</version>
             </dependency>
+
+            <!-- JasperReports -->
+            <dependency>
+                <groupId>net.sf.jasperreports</groupId>
+                <artifactId>jasperreports</artifactId>
+                <version>${jasperreports.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -499,6 +514,39 @@
                         </execution>
                     </executions>
                 </plugin>
+                <!-- 의존성 검증 (순환참조, 버전 충돌 방지) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.4.1</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-dependency-convergence</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireUpperBoundDeps/>
+                                    <banDuplicatePomDependencyVersions/>
+                                    <requireMavenVersion>
+                                        <version>3.8.0</version>
+                                    </requireMavenVersion>
+                                    <requireJavaVersion>
+                                        <version>21</version>
+                                    </requireJavaVersion>
+                                </rules>
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- 의존성 버전 관리 도구 -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.16.2</version>
+                </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
@@ -530,12 +578,61 @@
                                             <limit>
                                                 <counter>LINE</counter>
                                                 <value>COVEREDRATIO</value>
-                                                <minimum>0.50</minimum>
+                                                <minimum>0.70</minimum>
                                             </limit>
                                         </limits>
                                     </rule>
                                 </rules>
                             </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Checkstyle: 코드 스타일 검사 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>10.12.5</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <configLocation>checkstyle.xml</configLocation>
+                        <consoleOutput>true</consoleOutput>
+                        <failsOnError>false</failsOnError>
+                        <linkXRef>false</linkXRef>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- SpotBugs: 정적 버그 분석 -->
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>4.8.3.0</version>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Medium</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <failOnError>false</failOnError>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>spotbugs-check</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
                         </execution>
                     </executions>
                 </plugin>

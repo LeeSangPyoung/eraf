@@ -121,4 +121,16 @@ public class ErafObservabilityAutoConfiguration {
     public MetricsUtil metricsUtil(OpenTelemetry openTelemetry) {
         return new MetricsUtil(openTelemetry.getMeter("eraf-metrics"));
     }
+
+    /**
+     * @Trace AOP Aspect Bean
+     * 선언적 Span 생성을 위한 AOP Aspect
+     */
+    @Bean
+    @ConditionalOnMissingBean(TraceAspect.class)
+    @ConditionalOnClass(name = "org.aspectj.lang.ProceedingJoinPoint")
+    @ConditionalOnProperty(name = "eraf.observability.tracing.enabled", havingValue = "true", matchIfMissing = true)
+    public TraceAspect traceAspect(Tracer tracer) {
+        return new TraceAspect(tracer);
+    }
 }

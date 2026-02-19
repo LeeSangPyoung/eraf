@@ -34,7 +34,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * ERAF JPA Auto Configuration
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = "com.eraf.web.ErafWebAutoConfiguration")
 @ConditionalOnClass(JpaRepository.class)
 @EnableConfigurationProperties(ErafJpaProperties.class)
 @EnableJpaAuditing(auditorAwareRef = "erafAuditorAware")

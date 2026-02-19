@@ -3,6 +3,7 @@ package com.eraf.report;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -44,6 +45,20 @@ public class ReportAutoConfiguration {
     public HtmlReportGenerator htmlReportGenerator() {
         log.debug("Registering HTML report generator");
         return new HtmlReportGenerator();
+    }
+
+    /**
+     * JasperReports PDF Generator
+     * Only registered when JasperReports is on classpath and enabled
+     */
+    @Bean
+    @ConditionalOnClass(name = "net.sf.jasperreports.engine.JasperReport")
+    @ConditionalOnProperty(name = "eraf.report.jasper.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnMissingBean
+    public JasperReportGenerator jasperReportGenerator(ReportProperties properties) {
+        String templatePath = properties.getJasper().getDefaultTemplate();
+        log.debug("Registering JasperReports generator with template: {}", templatePath);
+        return new JasperReportGenerator(templatePath);
     }
 
     @Bean

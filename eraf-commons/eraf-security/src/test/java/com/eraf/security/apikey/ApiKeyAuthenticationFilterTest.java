@@ -96,7 +96,7 @@ class ApiKeyAuthenticationFilterTest {
     }
 
     @Test
-    @DisplayName("잘못된 API Key는 인증 실패")
+    @DisplayName("잘못된 API Key는 인증 실패 - 401 응답")
     void shouldNotAuthenticateWithInvalidApiKey() throws ServletException, IOException {
         // Given
         request.addHeader("X-API-KEY", "wrong-api-key");
@@ -104,8 +104,9 @@ class ApiKeyAuthenticationFilterTest {
         // When
         filter.doFilterInternal(request, response, filterChain);
 
-        // Then
-        verify(filterChain).doFilter(request, response);
+        // Then - 잘못된 키는 401 반환, filterChain 호출하지 않음
+        verify(filterChain, never()).doFilter(request, response);
+        assertEquals(401, response.getStatus());
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 
@@ -126,7 +127,7 @@ class ApiKeyAuthenticationFilterTest {
     }
 
     @Test
-    @DisplayName("IP 제한이 있는 키의 허용되지 않은 IP에서 인증 실패")
+    @DisplayName("IP 제한이 있는 키의 허용되지 않은 IP에서 인증 실패 - 403 응답")
     void shouldNotAuthenticateFromDisallowedIp() throws ServletException, IOException {
         // Given
         request.addHeader("X-API-KEY", "restricted-key");
@@ -136,8 +137,9 @@ class ApiKeyAuthenticationFilterTest {
         // When
         filter.doFilterInternal(request, response, filterChain);
 
-        // Then
-        verify(filterChain).doFilter(request, response);
+        // Then - 허용되지 않은 IP는 403 반환, filterChain 호출하지 않음
+        verify(filterChain, never()).doFilter(request, response);
+        assertEquals(403, response.getStatus());
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 

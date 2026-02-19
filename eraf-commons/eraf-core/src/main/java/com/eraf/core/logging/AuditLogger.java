@@ -14,7 +14,7 @@ import java.util.Map;
 public class AuditLogger {
 
     private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("AUDIT");
-    private static AuditLogStore auditLogStore = new NoOpAuditLogStore();
+    private static volatile AuditLogStore auditLogStore = new NoOpAuditLogStore();
 
     /**
      * AuditLogStore 설정 (DB 저장용)

@@ -55,7 +55,11 @@ public class IdempotentAspect {
                 return cachedResult.get();
             }
 
-            // 캐시된 결과가 없으면 null 반환 (처리 중일 수 있음)
+            // 캐시된 결과가 없으면 처리 중 상태 — 명시적으로 처리
+            log.warn("요청 처리 중(in-progress): key={}", idempotencyKey);
+            if (idempotent.throwOnDuplicate()) {
+                throw new IdempotentInProgressException(idempotencyKey);
+            }
             return null;
         }
 
@@ -63,9 +67,9 @@ public class IdempotentAspect {
         boolean acquired = idempotencyStore.setIfAbsent(idempotencyKey, timeout);
         if (!acquired) {
             // 동시 요청으로 인한 경합 상황
-            log.debug("동시 요청 경합: key={}", idempotencyKey);
+            log.warn("동시 요청 경합(in-progress): key={}", idempotencyKey);
             if (idempotent.throwOnDuplicate()) {
-                throw new IdempotentException(idempotent.message(), idempotencyKey);
+                throw new IdempotentInProgressException(idempotencyKey);
             }
             return null;
         }

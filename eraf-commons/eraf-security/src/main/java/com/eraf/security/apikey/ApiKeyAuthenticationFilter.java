@@ -70,7 +70,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
         if (keyEntry == null) {
             log.warn("Invalid API key attempt from IP: {}", getClientIp(request));
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Invalid API key\"}");
             return;
         }
 
@@ -79,7 +81,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             String clientIp = getClientIp(request);
             if (!isIpAllowed(clientIp, keyEntry.getAllowedIps())) {
                 log.warn("API key '{}' not allowed from IP: {}", keyEntry.getName(), clientIp);
-                filterChain.doFilter(request, response);
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"IP not allowed\"}");
                 return;
             }
         }
@@ -88,7 +92,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         if (!keyEntry.getAllowedPatterns().isEmpty()) {
             if (!isPatternAllowed(requestPath, keyEntry.getAllowedPatterns())) {
                 log.warn("API key '{}' not allowed for path: {}", keyEntry.getName(), requestPath);
-                filterChain.doFilter(request, response);
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"Path not allowed\"}");
                 return;
             }
         }

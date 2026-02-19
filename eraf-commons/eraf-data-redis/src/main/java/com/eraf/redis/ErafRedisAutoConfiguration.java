@@ -5,7 +5,11 @@ import com.eraf.lock.LockProvider;
 import com.eraf.redis.invalidation.RedisCacheInvalidator;
 import com.eraf.redis.lock.LockStatistics;
 import com.eraf.redis.lock.RedisReadWriteLock;
+import com.eraf.redis.pubsub.RedisMessagePublisher;
+import com.eraf.redis.pubsub.RedisMessageSubscriber;
 import com.eraf.redis.statistics.RedisCacheStatistics;
+import com.eraf.redis.stream.RedisStreamConsumer;
+import com.eraf.redis.stream.RedisStreamProducer;
 import com.eraf.redis.warming.CacheWarmer;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -183,5 +187,45 @@ public class ErafRedisAutoConfiguration {
             RedisMessageListenerContainer listenerContainer,
             CacheManager cacheManager) {
         return new RedisCacheInvalidator(redisTemplate, listenerContainer, cacheManager);
+    }
+
+    /**
+     * Redis Pub/Sub 메시지 발행자
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.pubsub.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisMessagePublisher redisMessagePublisher(RedisTemplate<String, Object> redisTemplate) {
+        return new RedisMessagePublisher(redisTemplate);
+    }
+
+    /**
+     * Redis Pub/Sub 메시지 구독자
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.pubsub.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisMessageSubscriber redisMessageSubscriber(RedisMessageListenerContainer listenerContainer) {
+        return new RedisMessageSubscriber(listenerContainer);
+    }
+
+    /**
+     * Redis Streams 메시지 생산자
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.stream.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisStreamProducer redisStreamProducer(StringRedisTemplate stringRedisTemplate) {
+        return new RedisStreamProducer(stringRedisTemplate);
+    }
+
+    /**
+     * Redis Streams 메시지 소비자
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "eraf.redis.stream.enabled", havingValue = "true", matchIfMissing = true)
+    public RedisStreamConsumer redisStreamConsumer(StringRedisTemplate stringRedisTemplate) {
+        return new RedisStreamConsumer(stringRedisTemplate);
     }
 }

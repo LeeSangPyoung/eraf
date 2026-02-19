@@ -1,5 +1,6 @@
 package com.eraf.s3;
 
+import jakarta.validation.constraints.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -11,6 +12,7 @@ public class ErafStorageProperties {
     /**
      * 저장소 타입 (local, s3, minio)
      */
+    @NotNull
     private StorageType type = StorageType.LOCAL;
 
     /**
@@ -46,11 +48,13 @@ public class ErafStorageProperties {
         /**
          * 버킷 이름
          */
+        @NotBlank
         private String bucket;
 
         /**
          * 리전
          */
+        @NotBlank
         private String region = "ap-northeast-2";
 
         /**

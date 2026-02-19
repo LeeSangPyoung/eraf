@@ -107,9 +107,67 @@ public class IpRestrictionGatewayFilter implements PluginGatewayFilter, Ordered 
         return false;
     }
 
+    /**
+     * CIDR 매칭 로직 구현
+     *
+     * @param ip 클라이언트 IP (예: "192.168.1.100")
+     * @param cidr CIDR 표기법 (예: "192.168.1.0/24")
+     * @return 매칭 여부
+     */
     private boolean matchesCidr(String ip, String cidr) {
-        // TODO: CIDR 매칭 로직 구현
-        // Apache Commons Net의 SubnetUtils 또는 직접 구현
-        return false;
+        try {
+            // CIDR 분리: IP/prefix
+            String[] parts = cidr.split("/");
+            if (parts.length != 2) {
+                log.warn("Invalid CIDR format: {}", cidr);
+                return false;
+            }
+
+            String networkIp = parts[0];
+            int prefixLength = Integer.parseInt(parts[1]);
+
+            // prefix length 검증
+            if (prefixLength < 0 || prefixLength > 32) {
+                log.warn("Invalid prefix length in CIDR: {}", cidr);
+                return false;
+            }
+
+            // IP 주소를 long으로 변환
+            long clientIpLong = ipToLong(ip);
+            long networkIpLong = ipToLong(networkIp);
+
+            // Subnet mask 계산 (prefix length 기반)
+            long mask = prefixLength == 0 ? 0 : (0xFFFFFFFFL << (32 - prefixLength));
+
+            // 네트워크 부분이 일치하는지 확인
+            return (clientIpLong & mask) == (networkIpLong & mask);
+
+        } catch (Exception e) {
+            log.error("Error matching CIDR: {} for IP: {}", cidr, ip, e);
+            return false;
+        }
+    }
+
+    /**
+     * IPv4 주소를 long으로 변환
+     *
+     * @param ip IP 주소 문자열 (예: "192.168.1.100")
+     * @return long 값
+     */
+    private long ipToLong(String ip) {
+        String[] octets = ip.split("\\.");
+        if (octets.length != 4) {
+            throw new IllegalArgumentException("Invalid IP address format: " + ip);
+        }
+
+        long result = 0;
+        for (int i = 0; i < 4; i++) {
+            int octet = Integer.parseInt(octets[i]);
+            if (octet < 0 || octet > 255) {
+                throw new IllegalArgumentException("Invalid IP octet: " + octet);
+            }
+            result |= ((long) octet << ((3 - i) * 8));
+        }
+        return result;
     }
 }

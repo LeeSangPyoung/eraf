@@ -32,7 +32,7 @@ public class AuditLogRetentionPolicy {
      * Cron: Properties에서 설정 가능 (기본: 매일 02:00 AM)
      */
     @Scheduled(cron = "${eraf.jpa.audit-retention.cron:0 0 2 * * ?}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void softDeleteOldLogs() {
         if (!config.isEnabled()) {
             log.debug("Audit log retention policy is disabled");
@@ -73,7 +73,7 @@ public class AuditLogRetentionPolicy {
      * Cron: Properties에서 설정 가능 (기본: 매주 일요일 03:00 AM)
      */
     @Scheduled(cron = "${eraf.jpa.audit-retention.hard-delete-cron:0 0 3 * * SUN}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void hardDeleteOldLogs() {
         if (!config.isEnabled() || !config.isHardDeleteEnabled()) {
             log.debug("Audit log hard delete is disabled");
@@ -96,7 +96,7 @@ public class AuditLogRetentionPolicy {
     /**
      * 수동으로 보관 정책 실행
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public RetentionResult executeRetentionPolicy() {
         Instant cutoffDate = Instant.now().minus(config.getRetentionDays(), ChronoUnit.DAYS);
 
@@ -125,7 +125,7 @@ public class AuditLogRetentionPolicy {
     /**
      * 특정 기간의 로그 삭제 (Soft Delete)
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int softDeleteByPeriod(Instant from, Instant to) {
         List<AuditLogEntity> logs = auditLogRepository.findByTimestampBetweenAndDeletedFalse(from, to);
 
@@ -143,7 +143,7 @@ public class AuditLogRetentionPolicy {
     /**
      * 특정 사용자의 로그 삭제 (Soft Delete)
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int softDeleteByUser(String userId) {
         List<AuditLogEntity> logs = auditLogRepository.findByUserIdAndDeletedFalse(userId);
 
@@ -161,7 +161,7 @@ public class AuditLogRetentionPolicy {
     /**
      * 삭제된 로그 복원
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int restoreDeletedLogs(List<Long> ids) {
         List<AuditLogEntity> logs = auditLogRepository.findAllById(ids);
 

@@ -43,4 +43,32 @@ public interface CodeRepository {
      * @return 코드 정보
      */
     Optional<CodeItem> findByGroupAndCode(String group, String code);
+
+    /**
+     * 코드 저장 (생성/수정)
+     *
+     * @param codeItem 저장할 코드 아이템
+     */
+    default void save(CodeItem codeItem) {
+        throw new UnsupportedOperationException("save() is not implemented");
+    }
+
+    /**
+     * 코드 삭제
+     *
+     * @param group 코드 그룹
+     * @param code  코드
+     */
+    default void delete(String group, String code) {
+        throw new UnsupportedOperationException("delete() is not implemented");
+    }
+
+    /**
+     * 코드 그룹 전체 삭제
+     *
+     * @param group 코드 그룹
+     */
+    default void deleteByGroup(String group) {
+        throw new UnsupportedOperationException("deleteByGroup() is not implemented");
+    }
 }

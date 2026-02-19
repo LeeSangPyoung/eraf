@@ -19,7 +19,7 @@ public class WorkflowContext {
     public WorkflowContext(String workflowInstanceId, String stepName, Map<String, Object> variables) {
         this.workflowInstanceId = workflowInstanceId;
         this.stepName = stepName;
-        this.variables = variables != null ? variables : new HashMap<>();
+        this.variables = variables != null ? new HashMap<>(variables) : new HashMap<>();
     }
 
     /**
